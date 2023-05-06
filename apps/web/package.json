@@ -1,0 +1,47 @@
+{
+  "name": "@localai/web",
+  "private": true,
+  "description": "Front page application, deployed to localai.app",
+  "scripts": {
+    "dev": "next dev --port 3047",
+    "build": "run-s build:*",
+    "build:site": "next build",
+    "build:sitemap": "next-sitemap --config configs/sitemap.js",
+    "start": "next start",
+    "lint": "run-p lint:*",
+    "lint:type": "tsc --noemit",
+    "lint:code": "next lint"
+  },
+  "dependencies": {
+    "@localai/theme": "workspace:*",
+    "@localai/ui": "workspace:*",
+    "clsx": "1.2.1",
+    "feed": "4.2.2",
+    "iconoir-react": "6.7.0",
+    "leven": "4.0.0",
+    "next": "13.4.1",
+    "next-seo": "6.0.0",
+    "puro": "0.8.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-wrap-balancer": "0.4.1"
+  },
+  "devDependencies": {
+    "@next/env": "13.4.1",
+    "@plasmo/config": "workspace:*",
+    "@plasmo/constants": "workspace:*",
+    "@plasmo/utils": "workspace:*",
+    "@types/node": "20.1.0",
+    "@types/react": "18.2.5",
+    "@types/react-scroll": "1.8.7",
+    "@types/uuid": "9.0.1",
+    "next-sitemap": "4.0.9",
+    "react-markdown": "8.0.7",
+    "reading-time": "1.5.0",
+    "sharp": "0.32.1",
+    "postcss": "8.4.23",
+    "autoprefixer": "10.4.14",
+    "tailwindcss": "3.3.2",
+    "typescript": "5.0.4"
+  }
+}

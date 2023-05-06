@@ -1,0 +1,9 @@
+[submodule "packages/constants"]
+	path = packages/constants
+	url = https://github.com/PlasmoHQ/plasmo-constants.git
+[submodule "packages/config"]
+	path = packages/config
+	url = https://github.com/PlasmoHQ/plasmo-config.git
+[submodule "packages/utils"]
+	path = packages/utils
+	url = https://github.com/PlasmoHQ/plasmo-utils.git

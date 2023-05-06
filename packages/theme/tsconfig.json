@@ -1,0 +1,5 @@
+{
+  "extends": "@plasmo/config/ts/nextjs",
+  "include": ["./**/*.ts", "./**/*.tsx"],
+  "exclude": ["node_modules"]
+}

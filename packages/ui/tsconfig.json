@@ -1,0 +1,5 @@
+{
+  "extends": "@plasmo/config/ts/react-library",
+  "include": ["."],
+  "exclude": ["node_modules"]
+}

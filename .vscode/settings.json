@@ -1,0 +1,34 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.configPath": ".prettierrc.cjs",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/node_modules": true,
+    "**/.turbo": true,
+    "**/.next": true,
+    "**/.swc": true,
+    "**/*.log": true
+  },
+  "[svg]": {
+    "editor.defaultFormatter": "jock.svg"
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "cSpell.words": ["letterdrop"],
+  "workbench.colorCustomizations": {
+    "titleBar.activeForeground": "#fff",
+    "titleBar.activeBackground": "#d2048d" // Change this color!
+  },
+  "git.detectSubmodulesLimit": 99,
+  "pasteImage.prefix": "/",
+  "rust-analyzer.linkedProjects": ["apps/desktop/src-tauri/Cargo.toml"],
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+}
