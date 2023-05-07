@@ -18,18 +18,6 @@ module.exports = {
         "delayed-fadein-once": "fadein .42s ease-in-out 1.47s forwards",
         "fadein-once": "fadein ease-in-out 1.47s forwards",
         "fadein-once-quick": "fadein ease-in-out 0.47s forwards"
-      },
-      keyframes: {
-        fadein: {
-          "0%": { opacity: 0 },
-          "100%": {
-            opacity: 1
-          }
-        }
-      },
-      // TODO: Get this to actually work
-      lineClamp: {
-        10: "10"
       }
     }
   },
@@ -37,6 +25,7 @@ module.exports = {
   plugins: [
     require("@tailwindcss/forms"),
     require("@tailwindcss/typography"),
-    require("windy-radix-palette")
+    require("windy-radix-palette"),
+    require("tailwindcss-animate")
   ]
 }

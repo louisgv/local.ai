@@ -13,7 +13,17 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "fs": {
+        "all": true
+      },
+      "http": {
+        "all": true
+      },
       "shell": {
+        "all": false,
+        "open": true
+      },
+      "dialog": {
         "all": false,
         "open": true
       }
@@ -21,7 +31,7 @@
     "bundle": {
       "active": true,
       "category": "DeveloperTool",
-      "copyright": "© 2023 Plasmo",
+      "copyright": "© 2023 Louis ❤️☮️🤚",
       "deb": {
         "depends": []
       },

@@ -1,4 +1,4 @@
-import cn from "clsx"
+import { cn } from "@localai/theme/utils"
 import { KeyAlt } from "iconoir-react"
 import type { ButtonHTMLAttributes, DetailedHTMLProps } from "react"
 
@@ -23,26 +23,25 @@ export const SpinnerButton = ({
   children,
   Icon = null,
   isSpinning = false,
-  spinnerClassName = "stroke-yellow-9",
-  className = "text-yellow-9 border-yellow-9",
+  className = "",
   ...props
 }: ButtonProps & {
   Icon?: typeof KeyAlt
   isSpinning?: boolean
-  spinnerClassName?: string
 }) => (
   <button
     {...props}
     disabled={isSpinning || props.disabled}
     className={cn(
-      `bg-purple-2 hover:bg-purple-4 py-2 px-4 text-sm flex flex-row items-center gap-2 border rounded-md transition`,
-      "disabled:stroke-gray-9 disabled:border-gray-9 disabled:text-gray-9",
+      `bg-gray-3 hover:bg-gray-4 py-2 px-4 text-sm flex flex-row items-center gap-2 border rounded-md transition`,
+      "disabled:border-gray-9 disabled:text-gray-9",
+      "text-gray-11 hover:text-gray-12 border-gray-11 hover:border-gray-12",
       className
     )}>
     {isSpinning ? (
-      <Spinner className={`w-5 h-5 ${spinnerClassName}`} />
+      <Spinner className={`w-5 h-5`} />
     ) : (
-      Icon && <Icon width="1em" />
+      Icon && <Icon className={`w-5 h-5`} />
     )}
     {children}
   </button>

@@ -5,10 +5,3 @@
 html {
   overflow-x: hidden;
 }
-
-@layer components {
-  .blur-on-lose-focus:not(:focus) {
-    color: transparent;
-    text-shadow: 0 0 16px white;
-  }
-}

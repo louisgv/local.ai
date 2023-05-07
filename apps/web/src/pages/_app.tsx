@@ -7,7 +7,7 @@ import { DynamicFavIcon } from "~providers/seo"
 import "@localai/theme/fonts.css"
 import "@localai/theme/tailwind.css"
 
-const LocalAIApp = ({ Component, pageProps }: AppProps) => (
+const LocalAIWebApp = ({ Component, pageProps }: AppProps) => (
   <CoreProvider>
     <GlobalStyle />
     <DynamicFavIcon />
@@ -15,4 +15,4 @@ const LocalAIApp = ({ Component, pageProps }: AppProps) => (
   </CoreProvider>
 )
 
-export default LocalAIApp
+export default LocalAIWebApp
