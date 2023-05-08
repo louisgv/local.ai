@@ -1,84 +1,68 @@
+use md5::Context;
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::{self, Read};
 use std::path::Path;
+use tauri::AppHandle;
 
-use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
-use walkdir::WalkDir;
+use crate::kv_bucket;
 
-#[derive(Serialize, Deserialize)]
-pub struct FileInfo {
-    md5: String,
-    size: u64,
-    name: String,
+const BUFFER_SIZE: usize = 42 * 1024 * 1024; // 42 MiB buffer
+
+fn read_chunk(file: &mut File, buffer: &mut [u8]) -> io::Result<usize> {
+    file.read(buffer)
 }
 
-const BUFFER_SIZE: usize = 8 * 1024; // 8 KiB buffer
-
-fn calculate_md5<P: AsRef<Path>>(path: P) -> Result<String, std::io::Error> {
-    println!("calculate_md5: {:?}", path.as_ref());
-    let file = File::open(path)?;
-    let mut reader = BufReader::new(file);
-    let mut buffer = [0; BUFFER_SIZE];
-    let mut hasher = md5::Context::new();
+pub fn calculate_md5<P: AsRef<Path>>(path: P) -> Result<String, io::Error> {
+    let mut file = File::open(path)?;
+    let mut buffer = vec![0u8; BUFFER_SIZE];
+    let mut context = Context::new();
 
     loop {
-        let bytes_read = reader.read(&mut buffer)?;
-        println!("bytes_read: {}", bytes_read);
+        let bytes_read = file.read(&mut buffer)?;
         if bytes_read == 0 {
             break;
         }
-        hasher.consume(&buffer[..bytes_read]);
+        context.consume(&buffer[..bytes_read]);
     }
 
-    let digest = hasher.compute();
-    println!("digest: {:?}", digest);
-    Ok(format!("{:x}", digest))
+    let result = context.compute();
+    Ok(format!("{:x}", result))
 }
-
-fn process_directory(dir: &str) -> Vec<FileInfo> {
-    let walker = WalkDir::new(dir).into_iter();
-
-    walker
-        .filter_map(Result::ok)
-        .filter(|entry| entry.file_type().is_file())
-        .par_bridge()
-        .map(|entry| {
-            let path = entry.path().to_path_buf();
-            let file_name = entry.path().display().to_string();
-            let file_size = entry.metadata().unwrap().len();
-
-            match calculate_md5(&path) {
-                Ok(md5_hash) => Some(FileInfo {
-                    md5: md5_hash,
-                    size: file_size,
-                    name: file_name,
-                }),
-                Err(e) => {
-                    eprintln!("Error calculating MD5 for {}: {}", file_name, e);
-                    None
-                }
-            }
-        })
-        .filter_map(|x| x)
-        .collect()
+// Key is absolute file path in the file system
+pub fn get_model_checksum_bucket(app_handle: &AppHandle) -> kv::Bucket<'_, String, String> {
+    kv_bucket::get_kv_bucket(
+        app_handle,
+        String::from("data"),
+        String::from("model_checksum"),
+    )
+    .unwrap()
 }
 
 #[tauri::command]
-pub async fn get_hash(path: &str) -> Result<FileInfo, String> {
-    let file_path = Path::new(path);
-    let file_name = file_path.display().to_string();
-    let file_size = file_path
-        .metadata()
-        .map_err(|e| format!("Error getting metadata for {}: {}", file_name, e))?
-        .len();
+pub async fn get_cached_hash(app_handle: AppHandle, path: &str) -> Result<String, String> {
+    let model_checksum_bucket = get_model_checksum_bucket(&app_handle);
 
-    match calculate_md5(&path) {
-        Ok(md5_hash) => Ok(FileInfo {
-            md5: md5_hash,
-            size: file_size,
-            name: file_name,
-        }),
-        Err(e) => Err(format!("Error calculating MD5 for {}: {}", file_name, e)),
+    let file_path = String::from(path);
+
+    match model_checksum_bucket.get(&file_path) {
+        Ok(Some(value)) => return Ok(value),
+        Ok(None) => return Err(format!("No cached hash for {}", path)),
+        Err(e) => return Err(format!("Error retrieving cached hash for {}: {}", path, e)),
     }
+}
+
+#[tauri::command]
+pub async fn get_hash(app_handle: AppHandle, path: &str) -> Result<String, String> {
+    let hash = match calculate_md5(&path) {
+        Ok(md5_hash) => md5_hash,
+        Err(e) => return Err(format!("Error calculating MD5 for {}: {}", path, e)),
+    };
+
+    let model_checksum_bucket = get_model_checksum_bucket(&app_handle);
+
+    let file_path = String::from(path);
+
+    model_checksum_bucket.set(&file_path, &hash);
+
+    Ok(hash)
 }

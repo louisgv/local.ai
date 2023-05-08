@@ -25,7 +25,6 @@ export const SpinnerButton = ({
   children,
   Icon = null,
   isSpinning = false,
-  className = "",
   ...props
 }: ButtonProps & {
   Icon?: typeof KeyAlt

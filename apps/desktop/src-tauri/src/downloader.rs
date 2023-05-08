@@ -24,15 +24,16 @@ struct Payload {
 }
 
 #[derive(Serialize, Deserialize, PartialEq)]
-pub struct DownloadedModelMetadata {
-    file_path: String,
+pub struct ModelMetadata {
+    path: String,
+    hash: String,
     download_url: String,
-    md5_hash: String,
 }
 
+// Key is absolute file path in the file system
 pub fn get_model_metadata_bucket(
     app_handle: &AppHandle,
-) -> kv::Bucket<'_, String, Json<DownloadedModelMetadata>> {
+) -> kv::Bucket<'_, String, Json<ModelMetadata>> {
     kv_bucket::get_kv_bucket(
         app_handle,
         String::from("data"),
@@ -67,13 +68,13 @@ pub async fn download_model(
 
     println!("output_path: {}", output_path);
 
-    let value = Json(DownloadedModelMetadata {
-        file_path: String::from(""),
+    let value = Json(ModelMetadata {
+        path: output_path.clone(),
+        hash: md5_hash.clone(),
         download_url: download_url.clone(),
-        md5_hash: md5_hash.clone(),
     });
 
-    model_bucket.set(&md5_hash, &value).ok();
+    model_bucket.set(&output_path, &value).ok();
 
     let (tx, mut rx) = mpsc::channel::<f64>(10);
 

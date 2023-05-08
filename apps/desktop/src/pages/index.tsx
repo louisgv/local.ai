@@ -1,9 +1,17 @@
-import { Button } from "@localai/ui/button"
+import { cn } from "@localai/theme/utils"
+import { Button, SpinnerButton } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
 import { open } from "@tauri-apps/api/dialog"
 import { invoke } from "@tauri-apps/api/tauri"
 import clsx from "clsx"
+
+import "iconoir-react"
+
 import { useEffect, useRef, useState } from "react"
+import Balancer from "react-wrap-balancer"
+
+import { ModelChecksum } from "~features/inference-server/model-checksum"
+import { ServerConfig } from "~features/inference-server/server-config"
 
 // Flow: Pick a models directory
 
@@ -15,17 +23,30 @@ import { useEffect, useRef, useState } from "react"
 
 // A button to "spawn" an inference server for the selected model
 
-type ModelMetadata = {
+type FileInfo = {
   name: string
-  hash: string
-  description: string
   size: number
   path: string
 }
 
+export type ModelMetadata = FileInfo & {
+  hash?: string
+  label?: string
+  description?: string
+}
+
+type ModelDirectoryState = {
+  path: string
+  files: FileInfo[]
+}
+
+function toGB(size: number) {
+  return size / 1024 / 1024 / 1024
+}
+
 function IndexPage() {
   const [modelsDirectory, setModelsDirectory] = useState("")
-  const [models, setModels] = useState([])
+  const [models, setModels] = useState<ModelMetadata[]>([])
 
   const initializedRef = useRef(false)
   useEffect(() => {
@@ -35,10 +56,12 @@ function IndexPage() {
     initializedRef.current = true
     // get the models directory saved in config
     async function init() {
-      console.log("RUNING FAM")
-
-      const resp = await invoke("get_initial_directory")
-      console.log(resp)
+      const resp = await invoke<ModelDirectoryState>("initialize_models_dir")
+      if (!resp) {
+        return
+      }
+      setModelsDirectory(resp.path)
+      setModels(resp.files)
     }
     init()
   }, [])
@@ -50,12 +73,13 @@ function IndexPage() {
       )}>
       <div className="flex gap-2">
         <Input
+          className="w-full"
           value={modelsDirectory}
           readOnly
           placeholder="Models directory"
         />
         <Button
-          className="w-24"
+          className="w-24 justify-center"
           onClick={async () => {
             const selected = (await open({
               directory: true,
@@ -66,23 +90,39 @@ function IndexPage() {
               return
             }
 
-            setModelsDirectory(selected)
-            const resp = await invoke("read_directory", {
-              dir: selected
-            })
-            console.log(resp)
+            const resp = await invoke<ModelDirectoryState>(
+              "update_models_dir",
+              {
+                dir: selected
+              }
+            )
+            setModelsDirectory(resp.path)
+            setModels(resp.files)
           }}>
-          Open
+          Change
         </Button>
       </div>
 
       <div className="flex flex-col gap-2">
         {models.map((model: ModelMetadata) => (
-          <div className="flex gap-2">
-            <Input value={model.name} readOnly />
-            <Input value={model.hash} readOnly />
-            <Input value={model.description} readOnly />
-            <Input value={model.size} readOnly />
+          <div
+            className={cn(
+              "flex flex-col gap-4 rounded-md p-4",
+              "text-gray-11 hover:text-gray-12",
+              "transition-colors",
+              "ring ring-gray-7 hover:ring-gray-8"
+            )}
+            key={model.name}>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex flex-col justify-between w-full">
+                <div className={"text-md"}>{model.name}</div>
+                <div className="text-xs text-gray-10">
+                  {`${toGB(model.size).toFixed(2)} GB`}
+                </div>
+              </div>
+              <ModelChecksum model={model} />
+            </div>
+            <ServerConfig model={model} />
           </div>
         ))}
       </div>

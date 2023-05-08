@@ -5,7 +5,10 @@ use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 use walkdir::WalkDir;
 
-use crate::{config::get_models_path, path::get_app_dir_path_buf};
+use crate::{
+    config::{get_models_path, set_models_path},
+    path::get_app_dir_path_buf,
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct FileInfo {
@@ -52,7 +55,7 @@ pub async fn get_default_models_path_buf(app_handle: &AppHandle) -> PathBuf {
 }
 
 #[tauri::command]
-pub async fn get_initial_directory(app_handle: AppHandle) -> Result<ModelDirectoryState, String> {
+pub async fn initialize_models_dir(app_handle: AppHandle) -> Result<ModelDirectoryState, String> {
     let default_directory = get_default_models_path_buf(&app_handle)
         .await
         .display()
@@ -71,7 +74,11 @@ pub async fn get_initial_directory(app_handle: AppHandle) -> Result<ModelDirecto
 }
 
 #[tauri::command]
-pub async fn set_models_path(dir: &str) -> Result<ModelDirectoryState, String> {
+pub async fn update_models_dir(
+    app_handle: AppHandle,
+    dir: &str,
+) -> Result<ModelDirectoryState, String> {
+    set_models_path(&app_handle, dir.to_string());
     let files = read_directory(dir).await?;
 
     Ok(ModelDirectoryState {

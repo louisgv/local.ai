@@ -5,7 +5,7 @@ use tokio::fs::create_dir_all;
 pub async fn get_app_dir_path_buf(
     app_handle: &tauri::AppHandle,
     namespace: String,
-) -> Result<PathBuf, String> {
+) -> Result<PathBuf, std::io::Error> {
     let ns_dir = app_handle
         .path_resolver()
         .app_data_dir()
@@ -13,7 +13,7 @@ pub async fn get_app_dir_path_buf(
         .join(namespace);
 
     if !ns_dir.exists() {
-        create_dir_all(&ns_dir).await;
+        create_dir_all(&ns_dir).await?;
     }
 
     Ok(ns_dir)
