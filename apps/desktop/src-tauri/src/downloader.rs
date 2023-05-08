@@ -1,49 +1,40 @@
-use tauri::Window;
-use tokio::io::AsyncWriteExt;
-use tokio::sync::mpsc;
+use crate::{kv_bucket, models_directory::get_default_models_path_buf};
+use anyhow::{Context, Result};
+use kv::*;
+use serde::{Deserialize, Serialize};
+use std::error::Error;
+use tauri::{AppHandle, Window};
+use tokio::{
+    fs::{File, OpenOptions},
+    io::AsyncWriteExt,
+    sync::mpsc,
+    task,
+};
 use tokio_stream::StreamExt;
 use url::Url;
 
-use tokio::fs::{File, OpenOptions};
-use tokio::task;
+// use md5::{Digest, Md5};
+// use std::fs::File;
+// use std::io::{BufReader, Read};
 
-const CHUNK_SIZE: usize = 1024 * 1024; // 1 MB
-
-#[derive(Clone, serde::Serialize)]
+#[derive(Clone, Serialize)]
 struct Payload {
     md5_hash: String,
     progress: f64,
 }
 
-use crate::kv_bucket;
-use kv::*;
-
-#[derive(serde::Serialize, serde::Deserialize, PartialEq)]
+#[derive(Serialize, Deserialize, PartialEq)]
 pub struct DownloadedModelMetadata {
     file_path: String,
     download_url: String,
     md5_hash: String,
 }
 
-pub fn get_download_path(
-    app_handle: &tauri::AppHandle,
-    namespace: String,
-    name: String,
-) -> Result<String, Error> {
-    let app_dir = app_handle.path_resolver().app_data_dir().unwrap();
-
-    Ok(app_dir
-        .join(namespace)
-        .join(name)
-        .to_string_lossy()
-        .to_string())
-}
-
 pub fn get_model_metadata_bucket(
-    app_handle: &tauri::AppHandle,
+    app_handle: &AppHandle,
 ) -> kv::Bucket<'_, String, Json<DownloadedModelMetadata>> {
     kv_bucket::get_kv_bucket(
-        &app_handle,
+        app_handle,
         String::from("data"),
         String::from("model_metadata"),
     )
@@ -53,133 +44,129 @@ pub fn get_model_metadata_bucket(
 #[tauri::command]
 pub async fn download_model(
     window: Window,
-    app_handle: tauri::AppHandle,
+    app_handle: AppHandle,
     download_url: String,
     md5_hash: String,
 ) -> Result<bool, String> {
+    println!("download_model: {}", download_url);
+    println!("md5_hash: {}", md5_hash);
+
     if md5_hash.is_empty() {
-        Ok(false)
-    } else {
-        // Check if model_bucket already downloaded the file:
-
-        // Otherwise, start the async download and sending download progress event:
-        let model_bucket = get_model_metadata_bucket(&app_handle);
-        let model_metadata = model_bucket.get(&md5_hash).ok();
-
-        // if model_metadata.is_some() {
-        //     Ok(false)
-        // } else {
-
-        let output_path = get_download_path(
-            &app_handle,
-            String::from("models"),
-            extract_file_name(&download_url).unwrap(),
-        )
-        .unwrap();
-
-        let value = Json(DownloadedModelMetadata {
-            file_path: String::from(""),
-            download_url: download_url.clone(),
-            md5_hash: md5_hash.clone(),
-        });
-
-        model_bucket.set(&md5_hash, &value).ok();
-
-        let (tx, mut rx) = mpsc::channel::<f64>(10);
-
-        let progress_thread = std::thread::spawn(move || loop {
-            if let Some(progress) = rx.blocking_recv() {
-                window
-                    .emit(
-                        "download-progress",
-                        Payload {
-                            md5_hash: md5_hash.clone(),
-                            progress,
-                        },
-                    )
-                    .unwrap();
-            } else {
-                break;
-            }
-        });
-
-        let download_task =
-            task::spawn(
-                async move { download_file(&download_url, &output_path, tx.clone()).await },
-            );
-
-        Ok(true)
-        // }
+        return Ok(false);
     }
+
+    let model_bucket = get_model_metadata_bucket(&app_handle);
+
+    let file_name = extract_file_name(&download_url).unwrap();
+
+    let output_path = get_default_models_path_buf(&app_handle)
+        .await
+        .join(&file_name)
+        .display()
+        .to_string();
+
+    println!("output_path: {}", output_path);
+
+    let value = Json(DownloadedModelMetadata {
+        file_path: String::from(""),
+        download_url: download_url.clone(),
+        md5_hash: md5_hash.clone(),
+    });
+
+    model_bucket.set(&md5_hash, &value).ok();
+
+    let (tx, mut rx) = mpsc::channel::<f64>(10);
+
+    std::thread::spawn(move || loop {
+        if let Some(progress) = rx.blocking_recv() {
+            window
+                .emit(
+                    "download-progress",
+                    Payload {
+                        md5_hash: md5_hash.clone(),
+                        progress,
+                    },
+                )
+                .unwrap();
+        } else {
+            break;
+        }
+    });
+
+    task::spawn(async move {
+        match download_file(&download_url, &output_path, tx.clone()).await {
+            Ok(_) => {
+                // Handle the success case, if needed
+            }
+            Err(e) => {
+                // Handle the error case, e.g., log the error
+                eprintln!("Error downloading file: {}", e);
+            }
+        }
+    });
+
+    Ok(true)
 }
 
 async fn download_file(
     url: &str,
     output_path: &str,
     progress_tx: mpsc::Sender<f64>,
-) -> Result<(), Box<dyn std::error::Error + Send>> {
+) -> Result<(), Box<dyn Error>> {
     let client = reqwest::Client::new();
 
+    println!("Downloading {} to {}", url, output_path);
+
     let mut file = open_file(output_path).await?;
-    let current_length = file
-        .metadata()
-        .await
-        .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send>)?
-        .len();
+    let current_length = file.metadata().await?.len();
 
     let mut request_builder = client.get(url);
     if current_length > 0 {
         request_builder = request_builder.header("Range", format!("bytes={}-", current_length));
     }
 
-    let response = request_builder
-        .send()
-        .await
-        .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send>)?;
+    let response = request_builder.send().await?;
 
     let content_length = response
         .headers()
         .get(reqwest::header::CONTENT_LENGTH)
         .ok_or_else(|| {
-            Box::new(std::io::Error::new(
+            std::io::Error::new(
                 std::io::ErrorKind::NotFound,
                 "Missing Content-Length header",
-            )) as Box<dyn std::error::Error + Send>
+            )
         })?
-        .to_str()
-        .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send>)?
-        .parse::<u64>()
-        .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send>)?;
+        .to_str()?
+        .parse::<u64>()?;
 
     let total_length = current_length + content_length;
 
     let mut downloaded: u64 = current_length;
 
     let mut stream = response.bytes_stream();
-    while let Some(chunk_result) = stream.next().await {
-        let chunk = chunk_result.map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send>)?;
+    while let Some(chunk) = stream.next().await {
+        let chunk = chunk.context("Failed to read chunk")?;
         file.write_all(&chunk)
             .await
-            .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send>)?;
+            .context("Failed to write chunk")?;
         downloaded += chunk.len() as u64;
         let progress = downloaded as f64 / total_length as f64 * 100.0;
         progress_tx
             .send(progress)
             .await
-            .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send>)?;
+            .context("Failed to send progress")?;
     }
 
     Ok(())
 }
 
-async fn open_file(path: &str) -> Result<File, Box<dyn std::error::Error + Send>> {
-    let file = OpenOptions::new()
+async fn open_file(path: &str) -> Result<File, Box<dyn Error>> {
+    OpenOptions::new()
         .write(true)
         .create(true)
         .open(path)
         .await
-        .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send>)?;
-    Ok(file)
+        .map_err(|e| Box::new(e) as Box<dyn Error>)
 }
 
 fn extract_file_name(uri: &str) -> Result<String, url::ParseError> {

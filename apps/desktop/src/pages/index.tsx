@@ -1,106 +1,90 @@
-import { cn } from "@localai/theme/utils"
-import { SpinnerButton } from "@localai/ui/button"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@localai/ui/select"
-import { DownloadIcon } from "@radix-ui/react-icons"
+import { Button } from "@localai/ui/button"
+import { Input } from "@localai/ui/input"
+import { open } from "@tauri-apps/api/dialog"
 import { invoke } from "@tauri-apps/api/tauri"
 import clsx from "clsx"
 import { useEffect, useRef, useState } from "react"
-import Balancer from "react-wrap-balancer"
 
-import { modelList, modelMap } from "~core/model-metadata"
+// Flow: Pick a models directory
 
-const DRY_RUN = false
+// For each model file in the directory, show an items with the following:
+// - Model name
+// - Model hash
+// - Model description
+// - Model size
+
+// A button to "spawn" an inference server for the selected model
+
+type ModelMetadata = {
+  name: string
+  hash: string
+  description: string
+  size: number
+  path: string
+}
 
 function IndexPage() {
-  const [modelUri, setModelUri] = useState("")
-  const [selectedModelHash, setSelectedModelHash] = useState("")
-  const [downloadedModels, setDownloadedModels] = useState<string[]>([])
+  const [modelsDirectory, setModelsDirectory] = useState("")
+  const [models, setModels] = useState([])
 
-  const migratedRef = useRef(false)
-
+  const initializedRef = useRef(false)
   useEffect(() => {
-    if (!window) {
+    if (initializedRef.current) {
       return
     }
+    initializedRef.current = true
+    // get the models directory saved in config
+    async function init() {
+      console.log("RUNING FAM")
 
-    let unlisten: (() => void) | undefined
-    async function startListen() {
-      const { appWindow } = await import("@tauri-apps/api/window")
-      unlisten = await appWindow.listen("download-progress", (event) => {
-        console.log(event)
-      })
+      const resp = await invoke("get_initial_directory")
+      console.log(resp)
     }
-
-    startListen()
-
-    return () => {
-      unlisten?.()
-    }
+    init()
   }, [])
 
   return (
     <div
       className={clsx(
-        "h-full w-full flex flex-col p-8 gap-6 transition-all will-change-transform",
-        downloadedModels.length > 0
-          ? "justify-start items-start"
-          : "justify-center items-center"
+        "h-full w-full flex flex-col p-8 gap-6 transition-all will-change-transform"
       )}>
-      <div className="flex gap-2 w-full">
-        <Select value={selectedModelHash} onValueChange={setSelectedModelHash}>
-          <SelectTrigger
-            className={cn(
-              "w-4/5",
-              selectedModelHash ? "text-gray-12" : "text-gray-11"
-            )}>
-            <SelectValue aria-label={modelUri}>
-              {modelMap[selectedModelHash]?.downloadUrl.split("/").pop() ||
-                "Select a Model to download"}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent className="flex h-48 w-full">
-            {modelList.map((model) => (
-              <SelectItem key={model.downloadUrl} value={model.md5Hash}>
-                <div className="text-md w-full">
-                  <div className="flex items-center justify-between w-full">
-                    <div
-                      className={cn(
-                        "w-full",
-                        selectedModelHash === model.md5Hash
-                          ? "text-gray-12"
-                          : "text-gray-11"
-                      )}>
-                      {model.downloadUrl.split("/").pop()}
-                    </div>
+      <div className="flex gap-2">
+        <Input
+          value={modelsDirectory}
+          readOnly
+          placeholder="Models directory"
+        />
+        <Button
+          className="w-24"
+          onClick={async () => {
+            const selected = (await open({
+              directory: true,
+              multiple: false
+            })) as string
 
-                    <div className="text-xs text-gray-10 w-24">
-                      {model.md5Hash}
-                    </div>
-                  </div>
-                  <p className="text-xs">
-                    <Balancer>{model.description}</Balancer>
-                  </p>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <SpinnerButton
-          className="w-1/5"
-          Icon={DownloadIcon}
-          disabled={!selectedModelHash}
-          // isSpinning
-          onClick={() => {
-            invoke("download_model", modelMap[selectedModelHash])
+            if (!selected) {
+              return
+            }
+
+            setModelsDirectory(selected)
+            const resp = await invoke("read_directory", {
+              dir: selected
+            })
+            console.log(resp)
           }}>
-          Download
-        </SpinnerButton>
+          Open
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {models.map((model: ModelMetadata) => (
+          <div className="flex gap-2">
+            <Input value={model.name} readOnly />
+            <Input value={model.hash} readOnly />
+            <Input value={model.description} readOnly />
+            <Input value={model.size} readOnly />
+          </div>
+        ))}
       </div>
     </div>
   )

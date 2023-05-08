@@ -13,9 +13,7 @@ edition = "2021"
 tauri-build = { version = "1.3.0", features = [] }
 
 [dependencies]
-llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
-  "gptj",
-] }
+llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm" }
 
 tauri-plugin-persisted-scope = { version = "0.1.0" }
 reqwest = { version = "0.11.17", features = ["json", "stream"] }
@@ -25,9 +23,19 @@ tracing = "0.1.36"
 tracing-subscriber = "0.3.15"
 url = "2.3.1"
 kv = { version = "0.24.0", features = ["json-value"] }
-tauri = { version = "1.3.0", features = ["dialog-open", "fs-all", "http-all", "shell-open"] }
+tauri = { version = "1.3.0", features = [
+  "dialog-open",
+  "fs-all",
+  "http-all",
+  "shell-open",
+] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
+anyhow = "1.0.71"
+md5 = "0.7.0"
+rayon = "1.7.0"
+walkdir = "2.3.3"
+
 # [target."cfg(target_os = \"macos\")".dependencies]
 # cocoa = "0.24.1"
 # objc = "0.2.7"

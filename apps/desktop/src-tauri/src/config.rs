@@ -1,3 +1,7 @@
+use crate::kv_bucket;
+use std::path::Path;
+use tauri::AppHandle;
+
 pub fn get_config_settings_bucket(app_handle: &tauri::AppHandle) -> kv::Bucket<'_, String, String> {
     kv_bucket::get_kv_bucket(
         &app_handle,
@@ -7,26 +11,23 @@ pub fn get_config_settings_bucket(app_handle: &tauri::AppHandle) -> kv::Bucket<'
     .unwrap()
 }
 
-#[tauri::command]
-pub fn set_models_path(app_handle: tauri::AppHandle, abs_path: String) -> Result<bool, String> {
-    if abs_path.is_empty() {
-        Ok(false)
-    } else {
-        let settings_bucket = get_crx_bucket(&app_handle);
+const CONFIG_KEY_MODELS_DIRECTORY: &str = "models";
 
-        settings_bucket
-            .set(&String::from("models_path"), &abs_path)
-            .ok();
-
-        Ok(true)
+pub fn set_models_path(app_handle: &AppHandle, abs_path: String) -> Result<bool, String> {
+    // Check if abs_path is not empty and is an absolute path
+    if abs_path.is_empty() || !Path::new(&abs_path).is_absolute() {
+        return Ok(false);
     }
+
+    get_config_settings_bucket(app_handle)
+        .set(&String::from(CONFIG_KEY_MODELS_DIRECTORY), &abs_path)
+        .map(|_| true)
+        .map_err(|e| format!("Error setting models path: {}", e))
 }
 
-#[tauri::command]
-pub fn get_models_path(app_handle: tauri::AppHandle) -> Result<String, String> {
-    let settings_bucket = get_crx_bucket(&app_handle);
-
-    let path = settings_bucket.get(&String::from("models_path")).ok();
-
-    Ok(path)
+pub fn get_models_path(app_handle: &AppHandle) -> Result<String, String> {
+    get_config_settings_bucket(app_handle)
+        .get(&String::from(CONFIG_KEY_MODELS_DIRECTORY))
+        .map_err(|e| format!("Error getting models path: {}", e))
+        .and_then(|opt| opt.ok_or_else(|| "Error getting models path".to_string()))
 }
