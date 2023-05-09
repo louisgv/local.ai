@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react"
 import Balancer from "react-wrap-balancer"
 
 import { ModelChecksum } from "~features/inference-server/model-checksum"
+import { ModelConfig } from "~features/inference-server/model-config"
 import { ServerConfig } from "~features/inference-server/server-config"
 
 // Flow: Pick a models directory
@@ -101,9 +102,10 @@ function IndexPage() {
           }}>
           Change
         </Button>
+        <ServerConfig />
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-6">
         {models.map((model: ModelMetadata) => (
           <div
             className={cn(
@@ -122,7 +124,7 @@ function IndexPage() {
               </div>
               <ModelChecksum model={model} />
             </div>
-            <ServerConfig model={model} />
+            <ModelConfig model={model} />
           </div>
         ))}
       </div>

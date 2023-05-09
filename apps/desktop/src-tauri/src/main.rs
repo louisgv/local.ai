@@ -12,6 +12,7 @@ mod inference_server;
 mod kv_bucket;
 mod models_directory;
 mod path;
+mod test;
 
 fn main() {
     tauri::Builder::default()
@@ -26,6 +27,7 @@ fn main() {
             models_directory::initialize_models_dir,
             inference_server::start_server,
             inference_server::stop_server,
+            test::load_model,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

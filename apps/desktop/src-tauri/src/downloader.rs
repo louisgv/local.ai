@@ -16,6 +16,7 @@ use url::Url;
 // use md5::{Digest, Md5};
 // use std::fs::File;
 // use std::io::{BufReader, Read};
+// Study this perhaps: https://github.com/rfdonnelly/tauri-async-example/blob/main/src-tauri/src/main.rs
 
 #[derive(Clone, Serialize)]
 struct Payload {

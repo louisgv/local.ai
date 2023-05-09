@@ -1,10 +1,25 @@
+use crate::kv_bucket;
 use md5::Context;
+use once_cell::sync::Lazy;
 use std::fs::File;
 use std::io::{self, Read};
 use std::path::Path;
+use std::sync::Mutex;
 use tauri::AppHandle;
 
-use crate::kv_bucket;
+static BUCKET_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
+
+// Key is absolute file path in the file system
+pub fn get_model_checksum_bucket(app_handle: &AppHandle) -> kv::Bucket<'_, String, String> {
+    let _guard = BUCKET_LOCK.lock().unwrap();
+
+    kv_bucket::get_kv_bucket(
+        app_handle,
+        String::from("data"),
+        String::from("model_checksum"),
+    )
+    .unwrap()
+}
 
 const BUFFER_SIZE: usize = 42 * 1024 * 1024; // 42 MiB buffer
 
@@ -27,15 +42,6 @@ pub fn calculate_md5<P: AsRef<Path>>(path: P) -> Result<String, io::Error> {
 
     let result = context.compute();
     Ok(format!("{:x}", result))
-}
-// Key is absolute file path in the file system
-pub fn get_model_checksum_bucket(app_handle: &AppHandle) -> kv::Bucket<'_, String, String> {
-    kv_bucket::get_kv_bucket(
-        app_handle,
-        String::from("data"),
-        String::from("model_checksum"),
-    )
-    .unwrap()
 }
 
 #[tauri::command]
