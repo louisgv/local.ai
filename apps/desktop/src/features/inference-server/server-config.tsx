@@ -1,5 +1,6 @@
 import { SpinnerButton } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
+import { invoke } from "@tauri-apps/api/tauri"
 import { useState } from "react"
 
 import type { ModelMetadata } from "~pages"
@@ -19,7 +20,11 @@ export const ServerConfig = ({ model }: { model: ModelMetadata }) => {
         value={endpoint}
         onChange={(e) => setEndpoint(e.target.value)}
       />
-      <SpinnerButton className="w-40 justify-center">
+      <SpinnerButton
+        className="w-40 justify-center"
+        onClick={async () => {
+          invoke("start_server", { model, port: parseInt(port) })
+        }}>
         Start Server
       </SpinnerButton>
     </div>
