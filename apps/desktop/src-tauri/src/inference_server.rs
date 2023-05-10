@@ -3,15 +3,12 @@ use actix_web::web::{Bytes, Json};
 
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use once_cell::sync::Lazy;
-use parking_lot::Mutex;
-use rand::distributions::Alphanumeric;
+use parking_lot::{Mutex, RwLock};
 use rand::rngs::{OsRng, StdRng};
-use rand::{Rng, SeedableRng};
+use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::time::Duration;
 use tokio::io::AsyncWriteExt;
-use tokio::time::sleep;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 use futures::StreamExt;
@@ -28,7 +25,8 @@ static LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
 // Single model for now
-static LOADED_MODEL: Lazy<Mutex<Option<Box<dyn Model>>>> = Lazy::new(|| Mutex::new(None));
+static LOADED_MODEL: Lazy<Arc<RwLock<Option<Box<dyn Model>>>>> =
+    Lazy::new(|| Arc::new(RwLock::new(None)));
 
 pub struct InferenceServerState {
     server: Arc<Mutex<Option<ServerHandle>>>,
@@ -64,63 +62,44 @@ pub struct CompletionResponse {
 
 #[get("/")]
 async fn ping() -> impl Responder {
-    let model = {
-        let guard = LOADED_MODEL.lock();
-        let model = match guard.as_ref() {
-            Some(model) => model,
-            None => return HttpResponse::Ok().body("No model loaded"),
-        };
-
-        let mut session = model.start_session(Default::default());
-
-        let prompt = "What is LLM?";
-
-        let res = session.infer::<Infallible>(
-            model.as_ref(),
-            &mut rand::thread_rng(),
-            &InferenceRequest {
-                prompt,
-
-                ..Default::default()
-            },
-            // OutputRequest
-            &mut Default::default(),
-            |t| Ok(()),
-        );
-    };
     HttpResponse::Ok().body("pong")
 }
 
 #[post("/completions")]
 async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     let (mut to_write, to_read) = tokio::io::duplex(1024);
+    let model_guard = Arc::clone(&LOADED_MODEL);
 
     tauri::async_runtime::spawn(async move {
         let mut rng = StdRng::from_rng(OsRng).unwrap();
 
-        for i in 0..512 {
-            // for every 5th iteration, random string is a space
-            let random_string = if i % 5 == 0 {
-                " ".to_string()
-            } else {
-                char::from(rng.sample(&Alphanumeric)).to_string()
-            };
+        let model_reader = model_guard.read();
+        let model = model_reader.as_ref().unwrap();
+        let mut session = model.start_session(Default::default());
 
-            let choice = Choice {
-                text: random_string,
-            };
-            let completion_response = CompletionResponse {
-                choices: vec![choice],
-            };
-            let serialized = serde_json::to_string(&completion_response).unwrap();
+        session.infer::<Infallible>(
+            model.as_ref(),
+            &mut rng,
+            &InferenceRequest {
+                prompt: &payload.prompt,
+                ..Default::default()
+            },
+            // OutputRequest
+            &mut Default::default(),
+            |t| {
+                let completion_response = CompletionResponse {
+                    choices: vec![Choice {
+                        text: t.to_string(),
+                    }],
+                };
 
-            to_write
-                .write_all(format!("data: {}\n\n", serialized).as_bytes())
-                .await
-                .unwrap();
+                let serialized = serde_json::to_string(&completion_response).unwrap();
 
-            sleep(Duration::from_millis(42)).await;
-        }
+                to_write.write_all(format!("data: {}\n\n", serialized).as_bytes());
+
+                Ok(())
+            },
+        );
     });
 
     let stream = FramedRead::new(to_read, BytesCodec::new()).map(|res| match res {
@@ -211,7 +190,7 @@ pub async fn load_model(name: &str, path: &str, model_type: &str) -> Result<(), 
         now.elapsed().as_millis()
     );
 
-    let mut model_opt = LOADED_MODEL.lock();
+    let mut model_opt = LOADED_MODEL.write();
     *model_opt = Some(model);
 
     // let mut modelmap = LOADED_MODELMAP.lock();
