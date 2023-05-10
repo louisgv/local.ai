@@ -1,5 +1,5 @@
 import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
+import { Button, SpinnerButton } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
 import {
   Select,
@@ -25,8 +25,18 @@ export enum ModelType {
 
 const modelTypeList = Object.values(ModelType)
 
+export enum ModelLoadState {
+  Default,
+  Loading,
+  Loaded
+}
+
 export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
   const [label, setLabel] = useState("")
+  const [modelLoadState, setModelLoadState] = useState<ModelLoadState>(
+    ModelLoadState.Default
+  )
+
   // TODO: Cache the model type in a kv later
   const [modelType, setModelType] = useState<ModelType>(ModelType.GptJ)
   return (
@@ -51,16 +61,20 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
         </SelectContent>
       </Select>
 
-      <Button
+      <SpinnerButton
+        isSpinning={modelLoadState === ModelLoadState.Loading}
+        disabled={modelLoadState === ModelLoadState.Loaded}
         onClick={async () => {
+          setModelLoadState(ModelLoadState.Loading)
           await invoke("load_model", {
             ...model,
             modelType,
             label
           })
+          setModelLoadState(ModelLoadState.Loaded)
         }}>
-        Load Model
-      </Button>
+        {modelLoadState === ModelLoadState.Loaded ? "Loaded" : "Load Model"}
+      </SpinnerButton>
     </div>
   )
 }

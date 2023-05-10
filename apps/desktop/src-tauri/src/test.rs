@@ -3,7 +3,7 @@ use llm::{load_progress_callback_stdout, InferenceRequest};
 use std::{convert::Infallible, io::Write, path::Path};
 
 #[tauri::command]
-pub async fn load_model(path: &str, model_type: &str) -> Result<(), String> {
+pub async fn test(path: &str, model_type: &str) -> Result<(), String> {
     let now = std::time::Instant::now();
     let model_path = Path::new(path);
 
@@ -32,16 +32,12 @@ pub async fn load_model(path: &str, model_type: &str) -> Result<(), String> {
         &mut rand::thread_rng(),
         &InferenceRequest {
             prompt,
+
             ..Default::default()
         },
         // OutputRequest
         &mut Default::default(),
-        |t| {
-            print!("{t}");
-            std::io::stdout().flush().unwrap();
-
-            Ok(())
-        },
+        |t| Ok(()),
     );
 
     match res {

@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/tauri"
 import { useState } from "react"
 
 export const ServerConfig = () => {
-  const [port, setPort] = useState(8080)
+  const [port, setPort] = useState(8000)
   const [isStarted, setIsStarted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   return (
@@ -14,7 +14,7 @@ export const ServerConfig = () => {
         disabled={isStarted}
         placeholder="Port"
         value={port}
-        onChange={(e) => setPort(e.target.valueAsNumber)}
+        onChange={(e) => setPort(e.target.valueAsNumber || 0)}
       />
       <SpinnerButton
         isSpinning={isLoading}

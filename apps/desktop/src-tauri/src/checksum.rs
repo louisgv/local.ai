@@ -11,8 +11,6 @@ static BUCKET_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
 // Key is absolute file path in the file system
 pub fn get_model_checksum_bucket(app_handle: &AppHandle) -> kv::Bucket<'_, String, String> {
-    let _guard = BUCKET_LOCK.lock().unwrap();
-
     kv_bucket::get_kv_bucket(
         app_handle,
         String::from("data"),
@@ -46,6 +44,7 @@ pub fn calculate_md5<P: AsRef<Path>>(path: P) -> Result<String, io::Error> {
 
 #[tauri::command]
 pub async fn get_cached_hash(app_handle: AppHandle, path: &str) -> Result<String, String> {
+    let _guard = BUCKET_LOCK.lock().unwrap();
     let model_checksum_bucket = get_model_checksum_bucket(&app_handle);
 
     let file_path = String::from(path);
