@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "LocalAI Model Manager",
+    "productName": "LocalAI",
     "version": "0.0.0"
   },
   "tauri": {
@@ -72,7 +72,7 @@
         "fullscreen": false,
         "height": 720,
         "resizable": true,
-        "title": "LocalAI Model Manager",
+        "title": "LocalAI",
         "width": 1024
       }
     ]

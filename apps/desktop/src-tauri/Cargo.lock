@@ -1275,7 +1275,7 @@ dependencies = [
 [[package]]
 name = "ggml"
 version = "0.1.1"
-source = "git+https://github.com/rustformers/llm?branch=main#67ee7530eac0e625a2e8b0ae164bd7c32b66de97"
+source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/refactor/inference-callback#3b47302d407eb613a553d73a1a54f927f8839607"
 dependencies = [
  "ggml-sys",
  "thiserror",
@@ -1284,7 +1284,7 @@ dependencies = [
 [[package]]
 name = "ggml-sys"
 version = "0.1.1"
-source = "git+https://github.com/rustformers/llm?branch=main#67ee7530eac0e625a2e8b0ae164bd7c32b66de97"
+source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/refactor/inference-callback#3b47302d407eb613a553d73a1a54f927f8839607"
 dependencies = [
  "cc",
 ]
@@ -1912,7 +1912,7 @@ checksum = "d59d8c75012853d2e872fb56bc8a2e53718e2cafe1a4c823143141c6d90c322f"
 [[package]]
 name = "llm"
 version = "0.1.1"
-source = "git+https://github.com/rustformers/llm?branch=main#67ee7530eac0e625a2e8b0ae164bd7c32b66de97"
+source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/refactor/inference-callback#3b47302d407eb613a553d73a1a54f927f8839607"
 dependencies = [
  "llm-base",
  "llm-bloom",
@@ -1926,7 +1926,7 @@ dependencies = [
 [[package]]
 name = "llm-base"
 version = "0.1.1"
-source = "git+https://github.com/rustformers/llm?branch=main#67ee7530eac0e625a2e8b0ae164bd7c32b66de97"
+source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/refactor/inference-callback#3b47302d407eb613a553d73a1a54f927f8839607"
 dependencies = [
  "bytemuck",
  "ggml",
@@ -1942,7 +1942,7 @@ dependencies = [
 [[package]]
 name = "llm-bloom"
 version = "0.1.1"
-source = "git+https://github.com/rustformers/llm?branch=main#67ee7530eac0e625a2e8b0ae164bd7c32b66de97"
+source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/refactor/inference-callback#3b47302d407eb613a553d73a1a54f927f8839607"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -1951,7 +1951,7 @@ dependencies = [
 [[package]]
 name = "llm-gpt2"
 version = "0.1.1"
-source = "git+https://github.com/rustformers/llm?branch=main#67ee7530eac0e625a2e8b0ae164bd7c32b66de97"
+source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/refactor/inference-callback#3b47302d407eb613a553d73a1a54f927f8839607"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -1960,7 +1960,7 @@ dependencies = [
 [[package]]
 name = "llm-gptj"
 version = "0.1.1"
-source = "git+https://github.com/rustformers/llm?branch=main#67ee7530eac0e625a2e8b0ae164bd7c32b66de97"
+source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/refactor/inference-callback#3b47302d407eb613a553d73a1a54f927f8839607"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -1969,7 +1969,7 @@ dependencies = [
 [[package]]
 name = "llm-llama"
 version = "0.1.1"
-source = "git+https://github.com/rustformers/llm?branch=main#67ee7530eac0e625a2e8b0ae164bd7c32b66de97"
+source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/refactor/inference-callback#3b47302d407eb613a553d73a1a54f927f8839607"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -1984,7 +1984,7 @@ dependencies = [
 [[package]]
 name = "llm-neox"
 version = "0.1.1"
-source = "git+https://github.com/rustformers/llm?branch=main#67ee7530eac0e625a2e8b0ae164bd7c32b66de97"
+source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/refactor/inference-callback#3b47302d407eb613a553d73a1a54f927f8839607"
 dependencies = [
  "bytemuck",
  "llm-base",

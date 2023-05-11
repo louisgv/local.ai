@@ -2,13 +2,13 @@ use actix_web::dev::ServerHandle;
 use actix_web::web::{Bytes, Json};
 
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
+use llm::{InferenceError, InferenceFeedback, InferenceResponse};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
 use rand::rngs::{OsRng, StdRng};
 use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::io::Write;
 use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
@@ -87,9 +87,9 @@ fn clean_prompt(s: &str) -> String {
 
 #[post("/completions")]
 async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
-    let (mut to_write, to_read) = tokio::io::duplex(1024);
+    let (mut to_write, to_read) = tokio::io::duplex(1024 * 1024);
 
-    let (tx, mut rx) = tauri::async_runtime::channel::<Vec<u8>>(100);
+    let (tx, mut rx) = tauri::async_runtime::channel::<Vec<u8>>(4200);
 
     tauri::async_runtime::spawn(async move {
         while let Some(data) = rx.recv().await {
@@ -121,15 +121,17 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
             },
             // OutputRequest
             &mut Default::default(),
-            |t| {
-                // tx.try_send(get_completion_resp(t.to_string())).unwrap();
-
-                // for each character in t, send a completion response
-                for ch in t.chars() {
+            |r| match r {
+                InferenceResponse::InferredToken(t) => {
+                    tx.try_send(get_completion_resp(t.to_string())).unwrap();
+                    // for ch in t.chars() {
+                    //     // for each character in t, send a completion response
+                    //     tx.try_send(get_completion_resp(ch.to_string())).unwrap();
+                    // }
+                    Ok(InferenceFeedback::Continue)
                     // for each character in t, send a completion response
-                    tx.try_send(get_completion_resp(ch.to_string())).unwrap();
                 }
-                Ok(())
+                _ => Ok(InferenceFeedback::Continue),
             },
         );
         match res {

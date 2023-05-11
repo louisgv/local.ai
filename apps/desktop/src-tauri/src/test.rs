@@ -1,4 +1,4 @@
-use llm::{load_progress_callback_stdout, InferenceRequest};
+use llm::{load_progress_callback_stdout, InferenceFeedback, InferenceRequest, InferenceResponse};
 
 use std::{convert::Infallible, io::Write, path::Path};
 
@@ -36,10 +36,14 @@ pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
         },
         // OutputRequest
         &mut Default::default(),
-        move |t| {
-            print!("{t}");
-            std::io::stdout().flush().unwrap();
-            Ok(())
+        |r| match r {
+            InferenceResponse::PromptToken(t) | InferenceResponse::InferredToken(t) => {
+                print!("{t}");
+                std::io::stdout().flush().unwrap();
+
+                Ok(InferenceFeedback::Continue)
+            }
+            _ => Ok(InferenceFeedback::Continue),
         },
     );
 
