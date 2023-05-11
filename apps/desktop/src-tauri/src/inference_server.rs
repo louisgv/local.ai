@@ -9,7 +9,9 @@ use rand::rngs::{OsRng, StdRng};
 use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::time::Duration;
 use tokio::io::AsyncWriteExt;
+use tokio::time::sleep;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 use futures::StreamExt;
@@ -79,21 +81,21 @@ fn get_completion_resp(text: String) -> Vec<u8> {
 }
 
 fn clean_prompt(s: &str) -> String {
-    s.replacen("!", ".", 2)
-        .replacen("?", ".", 2)
+    s.replacen("!", ".", 4)
         .replace("<bot>: ", "bot: ")
         .replace("\n<human>: ", "\n===\nhuman: ")
 }
 
 #[post("/completions")]
 async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
+    let (tx, rx) = flume::unbounded::<Vec<u8>>();
+
     let (mut to_write, to_read) = tokio::io::duplex(1024 * 1024);
 
-    let (tx, mut rx) = tauri::async_runtime::channel::<Vec<u8>>(4200);
-
     tauri::async_runtime::spawn(async move {
-        while let Some(data) = rx.recv().await {
+        while let Ok(data) = rx.recv_async().await {
             to_write.write_all(&data).await.unwrap();
+            sleep(Duration::from_millis(420)).await;
         }
     });
 
@@ -117,19 +119,20 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
             &InferenceRequest {
                 prompt,
                 play_back_previous_tokens: false,
+                maximum_token_count: None,
                 ..Default::default()
             },
             // OutputRequest
             &mut Default::default(),
             |r| match r {
                 InferenceResponse::InferredToken(t) => {
-                    tx.try_send(get_completion_resp(t.to_string())).unwrap();
+                    tx.send(get_completion_resp(t.to_string())).unwrap();
                     // for ch in t.chars() {
                     //     // for each character in t, send a completion response
                     //     tx.try_send(get_completion_resp(ch.to_string())).unwrap();
                     // }
+
                     Ok(InferenceFeedback::Continue)
-                    // for each character in t, send a completion response
                 }
                 _ => Ok(InferenceFeedback::Continue),
             },
@@ -137,7 +140,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
         match res {
             Ok(result) => println!("\n\nInference stats:\n{result}"),
             Err(err) => {
-                tx.try_send(get_completion_resp(err.to_string())).unwrap();
+                tx.send(get_completion_resp(err.to_string())).unwrap();
             }
         }
     });

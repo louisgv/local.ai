@@ -11,6 +11,10 @@ export const GlobalStyle = () => (
         sans-serif;
     }
 
+    html {
+      overflow: hidden;
+    }
+
     body {
       /* overflow-x: hidden; */
     }

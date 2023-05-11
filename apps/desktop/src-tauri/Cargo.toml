@@ -37,6 +37,7 @@ parking_lot = "0.12"
 rand = "0.8.5"
 once_cell = "1.17.1"
 futures = "0.3.28"
+flume = "0.10.14"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 cocoa = "0.24.1"
