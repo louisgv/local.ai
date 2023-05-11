@@ -78,8 +78,11 @@ fn get_completion_resp(text: String) -> Vec<u8> {
     format!("data: {}\n\n", serialized).as_bytes().to_vec()
 }
 
-fn remove_newlines(s: &str) -> String {
-    s.replace("\n", "").replace("\r", "")
+fn clean_prompt(s: &str) -> String {
+    s.replacen("!", ".", 2)
+        .replacen("?", ".", 2)
+        .replace("<bot>: ", "bot: ")
+        .replace("\n<human>: ", "\n===\nhuman: ")
 }
 
 #[post("/completions")]
@@ -103,10 +106,10 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
         let model = model_reader.as_ref().unwrap();
         let mut session = model.start_session(Default::default());
 
-        let raw_prompt = remove_newlines(payload.prompt.as_str()).clone();
+        let raw_prompt = clean_prompt(payload.prompt.as_str()).clone();
         let prompt = &raw_prompt;
 
-        println!("Prompt: {}", prompt);
+        println!(">>> Prompt:\n{}", prompt);
 
         let res = session.infer::<Infallible>(
             model.as_ref(),
