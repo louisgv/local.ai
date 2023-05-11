@@ -70,9 +70,9 @@ function IndexPage() {
   return (
     <div
       className={clsx(
-        "h-full w-full flex flex-col p-8 gap-6 transition-all will-change-transform"
+        "h-full w-full flex flex-col gap-6 transition-all will-change-transform overflow-auto"
       )}>
-      <div className="flex gap-2">
+      <div className="flex gap-2 sticky top-0 bg-gray-1 w-full p-8 z-50">
         <Input
           className="w-full"
           value={modelsDirectory}
@@ -105,7 +105,7 @@ function IndexPage() {
         <ServerConfig />
       </div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 p-8 bg-gray-2">
         {models.map((model: ModelMetadata) => (
           <div
             className={cn(

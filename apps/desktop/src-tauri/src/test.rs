@@ -3,7 +3,7 @@ use llm::{load_progress_callback_stdout, InferenceRequest};
 use std::{convert::Infallible, io::Write, path::Path};
 
 #[tauri::command]
-pub async fn test(path: &str, model_type: &str) -> Result<(), String> {
+pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
     let now = std::time::Instant::now();
     let model_path = Path::new(path);
 
@@ -25,19 +25,22 @@ pub async fn test(path: &str, model_type: &str) -> Result<(), String> {
     // use the model to generate text from a prompt
     let mut session = model.start_session(Default::default());
 
-    let prompt = "What is LLM?";
+    let prompt = "Who is the president of the USA in 1980, 1960, and 1999?";
 
     let res = session.infer::<Infallible>(
         model.as_ref(),
         &mut rand::thread_rng(),
         &InferenceRequest {
             prompt,
-
             ..Default::default()
         },
         // OutputRequest
         &mut Default::default(),
-        |t| Ok(()),
+        move |t| {
+            print!("{t}");
+            std::io::stdout().flush().unwrap();
+            Ok(())
+        },
     );
 
     match res {

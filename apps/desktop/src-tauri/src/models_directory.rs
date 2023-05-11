@@ -27,7 +27,7 @@ pub struct ModelDirectoryState {
 pub async fn read_directory(dir: &str) -> Result<Vec<FileInfo>, String> {
     let walker = WalkDir::new(dir).into_iter();
 
-    let file_infos: Vec<FileInfo> = walker
+    let mut file_infos: Vec<FileInfo> = walker
         .filter_map(Result::ok)
         .filter(|entry| entry.file_type().is_file())
         .par_bridge()
@@ -44,6 +44,8 @@ pub async fn read_directory(dir: &str) -> Result<Vec<FileInfo>, String> {
             FileInfo { path, size, name }
         })
         .collect();
+
+    file_infos.sort_by(|a, b| a.name.cmp(&b.name));
 
     Ok(file_infos)
 }

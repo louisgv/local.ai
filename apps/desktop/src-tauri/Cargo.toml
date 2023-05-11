@@ -13,7 +13,7 @@ edition = "2021"
 tauri-build = { version = "1.3.0", features = [] }
 
 [dependencies]
-llm = "0.1.1"
+llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm" }
 
 tauri-plugin-persisted-scope = { version = "0.1.0" }
 reqwest = { version = "0.11.17", features = ["json", "stream"] }
@@ -37,9 +37,10 @@ parking_lot = "0.12"
 rand = "0.8.5"
 once_cell = "1.17.1"
 futures = "0.3.28"
-# [target."cfg(target_os = \"macos\")".dependencies]
-# cocoa = "0.24.1"
-# objc = "0.2.7"
+
+[target."cfg(target_os = \"macos\")".dependencies]
+cocoa = "0.24.1"
+objc = "0.2.7"
 
 # [target."cfg(target_os = \"linux\")".dependencies]
 # webkit2gtk = "0.18.2"
@@ -47,7 +48,6 @@ futures = "0.3.28"
 [target."cfg(target_os = \"windows\")".dependencies]
 webview2-com = "0.19.1"
 windows = "0.39.0"
-winreg = "0.11.0"
 
 
 [features]

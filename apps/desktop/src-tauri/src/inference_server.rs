@@ -8,6 +8,7 @@ use rand::rngs::{OsRng, StdRng};
 use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::io::Write;
 use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
@@ -16,6 +17,8 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
 };
+
+use futures::stream::{FuturesOrdered, FuturesUnordered};
 
 use llm::{load_progress_callback_stdout, InferenceRequest, Model};
 
@@ -65,41 +68,73 @@ async fn ping() -> impl Responder {
     HttpResponse::Ok().body("pong")
 }
 
+fn get_completion_resp(text: String) -> Vec<u8> {
+    let completion_response = CompletionResponse {
+        choices: vec![Choice { text }],
+    };
+
+    let serialized = serde_json::to_string(&completion_response).unwrap();
+
+    format!("data: {}\n\n", serialized).as_bytes().to_vec()
+}
+
+fn remove_newlines(s: &str) -> String {
+    s.replace("\n", "").replace("\r", "")
+}
+
 #[post("/completions")]
 async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     let (mut to_write, to_read) = tokio::io::duplex(1024);
-    let model_guard = Arc::clone(&LOADED_MODEL);
+
+    let (tx, mut rx) = tauri::async_runtime::channel::<Vec<u8>>(100);
 
     tauri::async_runtime::spawn(async move {
-        let mut rng = StdRng::from_rng(OsRng).unwrap();
+        while let Some(data) = rx.recv().await {
+            to_write.write_all(&data).await.unwrap();
+        }
+    });
+
+    tauri::async_runtime::spawn(async move {
+        let model_guard = Arc::clone(&LOADED_MODEL);
+
+        let mut rng = rand::rngs::StdRng::from_entropy();
 
         let model_reader = model_guard.read();
         let model = model_reader.as_ref().unwrap();
         let mut session = model.start_session(Default::default());
 
-        session.infer::<Infallible>(
+        let raw_prompt = remove_newlines(payload.prompt.as_str()).clone();
+        let prompt = &raw_prompt;
+
+        println!("Prompt: {}", prompt);
+
+        let res = session.infer::<Infallible>(
             model.as_ref(),
             &mut rng,
             &InferenceRequest {
-                prompt: &payload.prompt,
+                prompt,
+                play_back_previous_tokens: false,
                 ..Default::default()
             },
             // OutputRequest
             &mut Default::default(),
             |t| {
-                let completion_response = CompletionResponse {
-                    choices: vec![Choice {
-                        text: t.to_string(),
-                    }],
-                };
+                // tx.try_send(get_completion_resp(t.to_string())).unwrap();
 
-                let serialized = serde_json::to_string(&completion_response).unwrap();
-
-                to_write.write_all(format!("data: {}\n\n", serialized).as_bytes());
-
+                // for each character in t, send a completion response
+                for ch in t.chars() {
+                    // for each character in t, send a completion response
+                    tx.try_send(get_completion_resp(ch.to_string())).unwrap();
+                }
                 Ok(())
             },
         );
+        match res {
+            Ok(result) => println!("\n\nInference stats:\n{result}"),
+            Err(err) => {
+                tx.try_send(get_completion_resp(err.to_string())).unwrap();
+            }
+        }
     });
 
     let stream = FramedRead::new(to_read, BytesCodec::new()).map(|res| match res {

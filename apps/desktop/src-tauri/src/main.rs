@@ -28,6 +28,7 @@ fn main() {
             inference_server::start_server,
             inference_server::stop_server,
             inference_server::load_model,
+            test::test_model,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

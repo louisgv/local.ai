@@ -45,17 +45,14 @@ export function ModelChecksum({ model }: { model: ModelMetadata }) {
   }
 
   return (
-    <div className="flex justify-end text-xs text-gray-10 w-64">
+    <div className="flex justify-end text-gray-10 w-64">
       {checksumHash ? (
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <ReloadIcon className="hover:text-gray-12" onClick={getChecksum} />
           <p>{checksumHash}</p>
         </div>
       ) : (
-        <SpinnerButton
-          isSpinning={isCalculating}
-          className="text-xs"
-          onClick={getChecksum}>
+        <SpinnerButton isSpinning={isCalculating} onClick={getChecksum}>
           {isCalculating ? "Calculating" : "Get Checksum"}
         </SpinnerButton>
       )}

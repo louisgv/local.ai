@@ -1,5 +1,5 @@
 import { cn } from "@localai/theme/utils"
-import { Button, SpinnerButton } from "@localai/ui/button"
+import { SpinnerButton } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
 import {
   Select,
@@ -10,9 +10,7 @@ import {
 } from "@localai/ui/select"
 import { invoke } from "@tauri-apps/api/tauri"
 import { useState } from "react"
-import Balancer from "react-wrap-balancer"
 
-import { modelList, modelMap } from "~core/model-metadata"
 import type { ModelMetadata } from "~pages"
 
 export enum ModelType {
@@ -61,6 +59,18 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
         </SelectContent>
       </Select>
 
+      {/* <SpinnerButton
+        isSpinning={modelLoadState === ModelLoadState.Loading}
+        disabled={modelLoadState === ModelLoadState.Loaded}
+        onClick={async () => {
+          await invoke("test_model", {
+            ...model,
+            modelType,
+            label
+          })
+        }}>
+        Test Model
+      </SpinnerButton> */}
       <SpinnerButton
         isSpinning={modelLoadState === ModelLoadState.Loading}
         disabled={modelLoadState === ModelLoadState.Loaded}
