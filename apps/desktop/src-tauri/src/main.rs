@@ -10,6 +10,7 @@ mod config;
 mod downloader;
 mod inference_server;
 mod kv_bucket;
+mod model_type;
 mod models_directory;
 mod path;
 mod test;
@@ -28,6 +29,8 @@ fn main() {
             inference_server::start_server,
             inference_server::stop_server,
             inference_server::load_model,
+            model_type::get_cached_model_type,
+            model_type::set_model_type,
             test::test_model,
         ])
         .run(tauri::generate_context!())

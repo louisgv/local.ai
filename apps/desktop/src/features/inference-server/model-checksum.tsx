@@ -3,32 +3,21 @@ import { ReloadIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
 import { useEffect, useRef, useState } from "react"
 
-import type { ModelMetadata } from "~pages"
+import type { ModelMetadata } from "~core/model-file"
+import { InitState, useInit } from "~features/inference-server/use-init"
 
 export function ModelChecksum({ model }: { model: ModelMetadata }) {
   const [checksumHash, setChecksumHash] = useState("")
   const [isCalculating, setIsCalculating] = useState(false)
-  const initializedRef = useRef(false)
 
-  useEffect(() => {
-    if (initializedRef.current) {
-      return
+  const { initState } = useInit(async () => {
+    const resp = await invoke<string>("get_cached_hash", {
+      path: model.path
+    }).catch(() => null)
+
+    if (!!resp) {
+      setChecksumHash(resp)
     }
-    initializedRef.current = true
-    // get the models directory saved in config
-    async function init() {
-      setIsCalculating(true)
-      const resp = await invoke<string>("get_cached_hash", {
-        path: model.path
-      }).catch(() => null)
-
-      if (!!resp) {
-        setChecksumHash(resp)
-      }
-
-      setIsCalculating(false)
-    }
-    init()
   }, [model])
 
   async function getChecksum() {
@@ -52,7 +41,9 @@ export function ModelChecksum({ model }: { model: ModelMetadata }) {
           <p>{checksumHash}</p>
         </div>
       ) : (
-        <SpinnerButton isSpinning={isCalculating} onClick={getChecksum}>
+        <SpinnerButton
+          isSpinning={isCalculating || initState === InitState.Initializing}
+          onClick={getChecksum}>
           {isCalculating ? "Calculating" : "Get Checksum"}
         </SpinnerButton>
       )}

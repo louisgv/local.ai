@@ -1,5 +1,5 @@
 import { cn } from "@localai/theme/utils"
-import { Button, SpinnerButton } from "@localai/ui/button"
+import { Button } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
 import { open } from "@tauri-apps/api/dialog"
 import { invoke } from "@tauri-apps/api/tauri"
@@ -7,12 +7,18 @@ import clsx from "clsx"
 
 import "iconoir-react"
 
-import { useEffect, useRef, useState } from "react"
-import Balancer from "react-wrap-balancer"
+import { useState } from "react"
 
+import {
+  type ModelDirectoryState,
+  type ModelMetadata,
+  toGB
+} from "~core/model-file"
 import { ModelChecksum } from "~features/inference-server/model-checksum"
 import { ModelConfig } from "~features/inference-server/model-config"
 import { ServerConfig } from "~features/inference-server/server-config"
+import { useInit } from "~features/inference-server/use-init"
+import { useGlobal } from "~providers/global"
 
 // Flow: Pick a models directory
 
@@ -24,53 +30,27 @@ import { ServerConfig } from "~features/inference-server/server-config"
 
 // A button to "spawn" an inference server for the selected model
 
-type FileInfo = {
-  name: string
-  size: number
-  path: string
-}
-
-export type ModelMetadata = FileInfo & {
-  hash?: string
-  label?: string
-  description?: string
-}
-
-type ModelDirectoryState = {
-  path: string
-  files: FileInfo[]
-}
-
-function toGB(size: number) {
-  return size / 1024 / 1024 / 1024
-}
-
 function IndexPage() {
+  const {
+    activeModelState: [activeModel]
+  } = useGlobal()
   const [modelsDirectory, setModelsDirectory] = useState("")
   const [models, setModels] = useState<ModelMetadata[]>([])
 
-  const initializedRef = useRef(false)
-  useEffect(() => {
-    if (initializedRef.current) {
+  useInit(async () => {
+    // get the models directory saved in config
+    const resp = await invoke<ModelDirectoryState>("initialize_models_dir")
+    if (!resp) {
       return
     }
-    initializedRef.current = true
-    // get the models directory saved in config
-    async function init() {
-      const resp = await invoke<ModelDirectoryState>("initialize_models_dir")
-      if (!resp) {
-        return
-      }
-      setModelsDirectory(resp.path)
-      setModels(resp.files)
-    }
-    init()
-  }, [])
+    setModelsDirectory(resp.path)
+    setModels(resp.files)
+  })
 
   return (
     <div
       className={clsx(
-        "h-full w-full flex flex-col gap-6 transition-all will-change-transform overflow-auto"
+        "h-full w-full flex flex-col gap-6 overflow-auto bg-gray-2"
       )}>
       <div className="flex gap-2 sticky top-0 bg-gray-1 w-full p-8 z-50">
         <Input
@@ -102,17 +82,25 @@ function IndexPage() {
           }}>
           Change
         </Button>
+        <Input
+          className="w-full"
+          readOnly
+          value={activeModel?.name}
+          placeholder="Active Model"
+        />
         <ServerConfig />
       </div>
 
-      <div className="flex flex-col gap-6 p-8 bg-gray-2 h-full">
+      <div className="flex flex-col gap-6 p-8">
         {models.map((model: ModelMetadata) => (
           <div
             className={cn(
               "flex flex-col gap-4 rounded-md p-4",
               "text-gray-11 hover:text-gray-12",
               "transition-colors",
-              "ring ring-gray-7 hover:ring-gray-8"
+              activeModel?.path === model.path
+                ? "ring ring-green-7 hover:ring-green-8"
+                : "ring ring-gray-7 hover:ring-gray-8"
             )}
             key={model.name}>
             <div className="flex items-center justify-between w-full">

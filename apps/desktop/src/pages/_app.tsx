@@ -5,8 +5,6 @@ import "@localai/theme/fonts.css"
 import "@localai/theme/scrollbar.css"
 import "@localai/theme/tailwind.css"
 
-import Head from "next/head"
-
 import { GlobalProvider } from "~providers/global"
 
 // This default export is required in a new `pages/_app.js` file.

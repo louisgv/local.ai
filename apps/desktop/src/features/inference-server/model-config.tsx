@@ -11,7 +11,8 @@ import {
 import { invoke } from "@tauri-apps/api/tauri"
 import { useEffect, useState } from "react"
 
-import type { ModelMetadata } from "~pages"
+import type { ModelMetadata } from "~core/model-file"
+import { useInit } from "~features/inference-server/use-init"
 import { useGlobal } from "~providers/global"
 
 export enum ModelType {
@@ -35,18 +36,28 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
   const {
     activeModelState: [activeModel, setActiveModel]
   } = useGlobal()
+  // TODO: Cache the model type in a kv later
+  const [modelType, setModelType] = useState<ModelType>(ModelType.GptJ)
   const [modelLoadState, setModelLoadState] = useState<ModelLoadState>(
     ModelLoadState.Default
   )
 
+  useInit(async () => {
+    const resp = await invoke<string>("get_cached_model_type", {
+      path: model.path
+    }).catch(() => null)
+
+    if (!!resp) {
+      setModelType(resp)
+    }
+  }, [model])
+
   useEffect(() => {
-    if (activeModel !== model.hash) {
+    if (activeModel?.path !== model.path) {
       setModelLoadState(ModelLoadState.Default)
     }
-  }, [activeModel, model.hash])
+  }, [activeModel, model])
 
-  // TODO: Cache the model type in a kv later
-  const [modelType, setModelType] = useState<ModelType>(ModelType.GptJ)
   return (
     <div className="flex items-center justify-between w-full gap-2">
       <Input
@@ -70,7 +81,13 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
       <div className="flex items-center justify-end w-96 gap-2">
         <Select
           value={modelType}
-          onValueChange={(s: ModelType) => setModelType(s)}>
+          onValueChange={(s: ModelType) => {
+            setModelType(s)
+            invoke("set_model_type", {
+              path: model.path,
+              modelType: s
+            })
+          }}>
           <SelectTrigger className={cn("text-gray-11", "w-24")}>
             <SelectValue aria-label={modelType}>{modelType}</SelectValue>
           </SelectTrigger>
@@ -88,13 +105,18 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
           disabled={modelLoadState === ModelLoadState.Loaded}
           onClick={async () => {
             setModelLoadState(ModelLoadState.Loading)
-            await invoke("load_model", {
-              ...model,
-              modelType,
-              label
-            })
-            setActiveModel(model.hash)
-            setModelLoadState(ModelLoadState.Loaded)
+            try {
+              await invoke("load_model", {
+                ...model,
+                modelType,
+                label
+              })
+              setActiveModel(model)
+              setModelLoadState(ModelLoadState.Loaded)
+            } catch (error) {
+              alert(error)
+              setModelLoadState(ModelLoadState.Default)
+            }
           }}>
           {modelLoadState === ModelLoadState.Loaded ? "Loaded" : "Load Model"}
         </SpinnerButton>

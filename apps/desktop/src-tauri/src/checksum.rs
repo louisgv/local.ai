@@ -13,8 +13,8 @@ static BUCKET_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 pub fn get_model_checksum_bucket(app_handle: &AppHandle) -> kv::Bucket<'_, String, String> {
     kv_bucket::get_kv_bucket(
         app_handle,
-        String::from("data"),
         String::from("model_checksum"),
+        String::from("v1"),
     )
     .unwrap()
 }

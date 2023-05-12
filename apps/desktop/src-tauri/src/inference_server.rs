@@ -235,15 +235,20 @@ pub async fn load_model(name: &str, path: &str, model_type: &str) -> Result<(), 
     let now = std::time::Instant::now();
     let model_path = Path::new(path);
 
-    let architecture = model_type.parse().unwrap_or_else(|e| panic!("{e}"));
+    let architecture = match model_type.parse() {
+        Ok(architecture) => architecture,
+        Err(_) => return Err(format!("Invalid model type: {model_type}")),
+    };
 
-    let model = llm::load_dynamic(
+    let model = match llm::load_dynamic(
         architecture,
         model_path,
         Default::default(),
         load_progress_callback_stdout,
-    )
-    .unwrap_or_else(|err| panic!("Failed to load model from {model_path:?}: {err}"));
+    ) {
+        Ok(model) => model,
+        Err(err) => return Err(format!("Error loading model: {}", err)),
+    };
 
     println!(
         "Model fully loaded! Elapsed: {}ms",
