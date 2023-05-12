@@ -9,6 +9,7 @@ const baseConfig = {
     "@plasmo/utils",
     "@plasmo/constants"
   ],
+  output: "export",
   swcMinify: true,
   compiler: {
     emotion: true

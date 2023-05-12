@@ -9,8 +9,9 @@ export const ServerConfig = () => {
   const [isStarted, setIsStarted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   return (
-    <div className="flex items-center justify-between w-full gap-2">
+    <div className="flex items-center justify-end w-full gap-2">
       <Input
+        className="w-24"
         disabled={isStarted}
         placeholder="Port"
         value={port}

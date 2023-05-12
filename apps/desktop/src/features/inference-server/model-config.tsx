@@ -9,9 +9,10 @@ import {
   SelectValue
 } from "@localai/ui/select"
 import { invoke } from "@tauri-apps/api/tauri"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import type { ModelMetadata } from "~pages"
+import { useGlobal } from "~providers/global"
 
 export enum ModelType {
   GptJ = "gptj",
@@ -31,9 +32,18 @@ export enum ModelLoadState {
 
 export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
   const [label, setLabel] = useState("")
+  const {
+    activeModelState: [activeModel, setActiveModel]
+  } = useGlobal()
   const [modelLoadState, setModelLoadState] = useState<ModelLoadState>(
     ModelLoadState.Default
   )
+
+  useEffect(() => {
+    if (activeModel !== model.hash) {
+      setModelLoadState(ModelLoadState.Default)
+    }
+  }, [activeModel, model.hash])
 
   // TODO: Cache the model type in a kv later
   const [modelType, setModelType] = useState<ModelType>(ModelType.GptJ)
@@ -44,20 +54,6 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
         value={label}
         onChange={(e) => setLabel(e.target.value)}
       />
-      <Select
-        value={modelType}
-        onValueChange={(s: ModelType) => setModelType(s)}>
-        <SelectTrigger className={cn("text-gray-11", "w-24")}>
-          <SelectValue aria-label={modelType}>{modelType}</SelectValue>
-        </SelectTrigger>
-        <SelectContent className="flex h-48 w-full">
-          {modelTypeList.map((mt) => (
-            <SelectItem key={mt} value={mt}>
-              {mt}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
 
       {/* <SpinnerButton
         isSpinning={modelLoadState === ModelLoadState.Loading}
@@ -71,20 +67,38 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
         }}>
         Test Model
       </SpinnerButton> */}
-      <SpinnerButton
-        isSpinning={modelLoadState === ModelLoadState.Loading}
-        disabled={modelLoadState === ModelLoadState.Loaded}
-        onClick={async () => {
-          setModelLoadState(ModelLoadState.Loading)
-          await invoke("load_model", {
-            ...model,
-            modelType,
-            label
-          })
-          setModelLoadState(ModelLoadState.Loaded)
-        }}>
-        {modelLoadState === ModelLoadState.Loaded ? "Loaded" : "Load Model"}
-      </SpinnerButton>
+      <div className="flex items-center justify-end w-96 gap-2">
+        <Select
+          value={modelType}
+          onValueChange={(s: ModelType) => setModelType(s)}>
+          <SelectTrigger className={cn("text-gray-11", "w-24")}>
+            <SelectValue aria-label={modelType}>{modelType}</SelectValue>
+          </SelectTrigger>
+          <SelectContent className="flex h-48 w-full">
+            {modelTypeList.map((mt) => (
+              <SelectItem key={mt} value={mt}>
+                {mt}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <SpinnerButton
+          isSpinning={modelLoadState === ModelLoadState.Loading}
+          disabled={modelLoadState === ModelLoadState.Loaded}
+          onClick={async () => {
+            setModelLoadState(ModelLoadState.Loading)
+            await invoke("load_model", {
+              ...model,
+              modelType,
+              label
+            })
+            setActiveModel(model.hash)
+            setModelLoadState(ModelLoadState.Loaded)
+          }}>
+          {modelLoadState === ModelLoadState.Loaded ? "Loaded" : "Load Model"}
+        </SpinnerButton>
+      </div>
     </div>
   )
 }

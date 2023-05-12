@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev:next": "next dev -p 1470",
-    "build:next": "next build && next export -o dist",
+    "build:next": "next build",
     "dev": "tauri dev",
     "build": "tauri build",
     "tauri": "tauri"
@@ -16,6 +16,7 @@
     "@radix-ui/react-select": "1.2.1",
     "@tauri-apps/api": "1.3.0",
     "clsx": "1.2.1",
+    "puro": "0.8.4",
     "iconoir-react": "6.8.0",
     "next": "13.4.1",
     "react": "18.2.0",

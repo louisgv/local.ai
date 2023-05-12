@@ -113,6 +113,10 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 
         println!(">>> Prompt:\n{}", prompt);
 
+        let timer = std::time::Instant::now();
+        let mut time_to_first_token = timer.elapsed();
+        let mut clocked = false;
+
         let res = session.infer::<Infallible>(
             model.as_ref(),
             &mut rng,
@@ -126,7 +130,11 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
             &mut Default::default(),
             |r| match r {
                 InferenceResponse::InferredToken(t) => {
-                    tx.send(get_completion_resp(t.to_string())).unwrap();
+                    if !clocked {
+                        time_to_first_token = timer.elapsed();
+                        clocked = true;
+                    }
+                    tx.send(get_completion_resp(t)).unwrap();
                     // for ch in t.chars() {
                     //     // for each character in t, send a completion response
                     //     tx.try_send(get_completion_resp(ch.to_string())).unwrap();
@@ -138,7 +146,16 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
             },
         );
         match res {
-            Ok(result) => println!("\n\nInference stats:\n{result}"),
+            Ok(result) => tx
+                .send(get_completion_resp(
+                    format!(
+                        "\n\n===\n\nInference stats:\n\n{}\ntime_to_first_token: {}ms",
+                        result,
+                        time_to_first_token.as_millis()
+                    )
+                    .to_string(),
+                ))
+                .unwrap(),
             Err(err) => {
                 tx.send(get_completion_resp(err.to_string())).unwrap();
             }

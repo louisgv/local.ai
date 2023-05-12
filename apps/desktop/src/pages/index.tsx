@@ -105,7 +105,7 @@ function IndexPage() {
         <ServerConfig />
       </div>
 
-      <div className="flex flex-col gap-6 p-8 bg-gray-2">
+      <div className="flex flex-col gap-6 p-8 bg-gray-2 h-full">
         {models.map((model: ModelMetadata) => (
           <div
             className={cn(

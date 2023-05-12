@@ -7,11 +7,15 @@ import "@localai/theme/tailwind.css"
 
 import Head from "next/head"
 
+import { GlobalProvider } from "~providers/global"
+
 // This default export is required in a new `pages/_app.js` file.
 const LocalAIDesktopApp = ({ Component, pageProps }: AppProps) => (
   <div className="bg-gray-1 text-gray-11 w-screen h-screen">
     <GlobalStyle />
-    <Component {...pageProps} />
+    <GlobalProvider>
+      <Component {...pageProps} />
+    </GlobalProvider>
   </div>
 )
 
