@@ -34,7 +34,8 @@ pub async fn set_model_type(
 
     let file_path = String::from(path);
 
-    model_type_bucket.set(&file_path, &String::from(model_type));
-
-    Ok(true)
+    match model_type_bucket.set(&file_path, &String::from(model_type)) {
+        Ok(_) => return Ok(true),
+        Err(e) => return Err(format!("Error setting model type for {}: {}", path, e)),
+    }
 }

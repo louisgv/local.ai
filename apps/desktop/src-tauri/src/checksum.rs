@@ -21,10 +21,6 @@ pub fn get_model_checksum_bucket(app_handle: &AppHandle) -> kv::Bucket<'_, Strin
 
 const BUFFER_SIZE: usize = 42 * 1024 * 1024; // 42 MiB buffer
 
-fn read_chunk(file: &mut File, buffer: &mut [u8]) -> io::Result<usize> {
-    file.read(buffer)
-}
-
 pub fn calculate_md5<P: AsRef<Path>>(path: P) -> Result<String, io::Error> {
     let mut file = File::open(path)?;
     let mut buffer = vec![0u8; BUFFER_SIZE];
@@ -67,7 +63,8 @@ pub async fn get_hash(app_handle: AppHandle, path: &str) -> Result<String, Strin
 
     let file_path = String::from(path);
 
-    model_checksum_bucket.set(&file_path, &hash);
-
-    Ok(hash)
+    match model_checksum_bucket.set(&file_path, &hash) {
+        Ok(_) => Ok(hash),
+        Err(e) => return Err(format!("Error caching hash for {}: {}", path, e)),
+    }
 }

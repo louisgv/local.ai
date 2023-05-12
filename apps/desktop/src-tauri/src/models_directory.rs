@@ -80,7 +80,11 @@ pub async fn update_models_dir(
     app_handle: AppHandle,
     dir: &str,
 ) -> Result<ModelDirectoryState, String> {
-    set_models_path(&app_handle, dir.to_string());
+    match set_models_path(&app_handle, dir.to_string()) {
+        Ok(_) => (),
+        Err(e) => return Err(format!("Error setting models path: {}", e)),
+    };
+
     let files = read_directory(dir).await?;
 
     Ok(ModelDirectoryState {

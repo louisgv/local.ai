@@ -5,13 +5,10 @@ use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use llm::{InferenceFeedback, InferenceResponse};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
-use rand::rngs::{OsRng, StdRng};
 use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::time::Duration;
 use tokio::io::AsyncWriteExt;
-use tokio::time::sleep;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 use futures::StreamExt;
@@ -20,13 +17,11 @@ use std::sync::{
     Arc,
 };
 
-use futures::stream::{FuturesOrdered, FuturesUnordered};
-
 use llm::{load_progress_callback_stdout, InferenceRequest, Model};
 
 use std::{convert::Infallible, path::Path};
 
-static LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
+static _LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
 // Single model for now
@@ -95,11 +90,10 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     tauri::async_runtime::spawn(async move {
         while let Ok(data) = rx.recv_async().await {
             to_write.write_all(&data).await.unwrap();
-            sleep(Duration::from_millis(420)).await;
         }
     });
 
-    tauri::async_runtime::spawn(async move {
+    tauri::async_runtime::spawn_blocking(move || {
         let model_guard = Arc::clone(&LOADED_MODEL);
 
         let mut rng = rand::rngs::StdRng::from_entropy();
@@ -231,7 +225,7 @@ pub async fn stop_server<'a>(state: tauri::State<'a, InferenceServerState>) -> R
 }
 
 #[tauri::command]
-pub async fn load_model(name: &str, path: &str, model_type: &str) -> Result<(), String> {
+pub async fn load_model(path: &str, model_type: &str) -> Result<(), String> {
     let now = std::time::Instant::now();
     let model_path = Path::new(path);
 
