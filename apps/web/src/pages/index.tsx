@@ -22,14 +22,14 @@ const IndexPage: NextPage = () => (
   <BasicLayout>
     <NextSeo
       title=""
-      titleTemplate="%s – LocalAI"
-      description="LocalAI enables developers to quickly test AI models in their local machine."
+      titleTemplate="%s – local.ai"
+      description="local.ai enables developers to quickly test AI models in their local machine."
       openGraph={{
         title: "Quickly test AI models in your local machine.",
         description:
-          "LocalAI enables developers to quickly test AI models in their local machine.",
+          "local.ai enables developers to quickly test AI models in their local machine.",
         url: "https://www.localai.app",
-        siteName: "LocalAI",
+        siteName: "local.ai",
         type: "website"
       }}
     />
