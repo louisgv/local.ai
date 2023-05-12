@@ -96,8 +96,6 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     tauri::async_runtime::spawn_blocking(move || {
         let model_guard = Arc::clone(&LOADED_MODEL);
 
-        let mut rng = rand::rngs::StdRng::from_entropy();
-
         let model_reader = model_guard.read();
         let model = model_reader.as_ref().unwrap();
         let mut session = model.start_session(Default::default());
@@ -113,7 +111,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 
         let res = session.infer::<Infallible>(
             model.as_ref(),
-            &mut rng,
+            &mut rand::thread_rng(),
             &InferenceRequest {
                 prompt,
                 play_back_previous_tokens: false,
@@ -140,8 +138,8 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
             },
         );
         match res {
-            Ok(result) => tx
-                .send(get_completion_resp(
+            Ok(result) => {
+                tx.send(get_completion_resp(
                     format!(
                         "\n\n===\n\nInference stats:\n\n{}\ntime_to_first_token: {}ms",
                         result,
@@ -149,7 +147,8 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
                     )
                     .to_string(),
                 ))
-                .unwrap(),
+                .unwrap();
+            }
             Err(err) => {
                 tx.send(get_completion_resp(err.to_string())).unwrap();
             }
