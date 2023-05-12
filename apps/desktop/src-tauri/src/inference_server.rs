@@ -2,7 +2,7 @@ use actix_web::dev::ServerHandle;
 use actix_web::web::{Bytes, Json};
 
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
-use llm::{InferenceError, InferenceFeedback, InferenceResponse};
+use llm::{InferenceFeedback, InferenceResponse};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
 use rand::rngs::{OsRng, StdRng};
