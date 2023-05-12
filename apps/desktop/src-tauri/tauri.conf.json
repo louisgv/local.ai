@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "LocalAI",
+    "productName": "local.ai",
     "version": "0.0.0"
   },
   "tauri": {
@@ -73,7 +73,7 @@
         "fullscreen": false,
         "height": 720,
         "resizable": true,
-        "title": "LocalAI",
+        "title": "local.ai",
         "width": 1024
       }
     ]
