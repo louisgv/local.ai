@@ -5,7 +5,6 @@ use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use llm::{InferenceFeedback, InferenceResponse};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
-use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tokio::io::AsyncWriteExt;
