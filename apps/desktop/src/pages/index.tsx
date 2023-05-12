@@ -91,6 +91,13 @@ function IndexPage() {
         <ServerConfig />
       </div>
 
+      {models.length === 0 && (
+        <div className="h-full w-full flex justify-center items-center">
+          <p className="text-gray-9 italic pointer-events-none">
+            To start, change the models directory.
+          </p>
+        </div>
+      )}
       <div className="flex flex-col gap-6 p-8">
         {models.map((model: ModelMetadata) => (
           <div
