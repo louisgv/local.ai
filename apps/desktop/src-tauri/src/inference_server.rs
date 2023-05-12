@@ -138,17 +138,19 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
             },
         );
         match res {
-            Ok(result) => {
-                tx.send(get_completion_resp(
-                    format!(
-                        "\n\n===\n\nInference stats:\n\n{}\ntime_to_first_token: {}ms",
-                        result,
-                        time_to_first_token.as_millis()
-                    )
-                    .to_string(),
-                ))
-                .unwrap();
-            }
+            // Swap this out to debug speed
+            // Ok(result) => {
+            //     tx.send(get_completion_resp(
+            //         format!(
+            //             "\n\n===\n\nInference stats:\n\n{}\ntime_to_first_token: {}ms",
+            //             result,
+            //             time_to_first_token.as_millis()
+            //         )
+            //         .to_string(),
+            //     ))
+            //     .unwrap();
+            // }
+            Ok(_) => {}
             Err(err) => {
                 tx.send(get_completion_resp(err.to_string())).unwrap();
             }
