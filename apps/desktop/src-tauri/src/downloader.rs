@@ -8,7 +8,6 @@ use tokio::{
     fs::{File, OpenOptions},
     io::AsyncWriteExt,
     sync::mpsc,
-    task,
 };
 use tokio_stream::StreamExt;
 use url::Url;
@@ -79,7 +78,7 @@ pub async fn download_model(
 
     let (tx, mut rx) = mpsc::channel::<f64>(10);
 
-    std::thread::spawn(move || loop {
+    tauri::async_runtime::spawn_blocking(move || loop {
         if let Some(progress) = rx.blocking_recv() {
             window
                 .emit(
@@ -95,7 +94,7 @@ pub async fn download_model(
         }
     });
 
-    task::spawn(async move {
+    tauri::async_runtime::spawn(async move {
         match download_file(&download_url, &output_path, tx.clone()).await {
             Ok(_) => {
                 // Handle the success case, if needed

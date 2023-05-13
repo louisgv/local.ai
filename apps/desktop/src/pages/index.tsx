@@ -1,6 +1,7 @@
 import { cn } from "@localai/theme/utils"
 import { Button } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
+import { ReloadIcon } from "@radix-ui/react-icons"
 import { open } from "@tauri-apps/api/dialog"
 import { invoke } from "@tauri-apps/api/tauri"
 import clsx from "clsx"
@@ -14,8 +15,8 @@ import {
   type ModelMetadata,
   toGB
 } from "~core/model-file"
-import { ModelChecksum } from "~features/inference-server/model-checksum"
 import { ModelConfig } from "~features/inference-server/model-config"
+import { ModelDigest } from "~features/inference-server/model-digest"
 import { ServerConfig } from "~features/inference-server/server-config"
 import { useInit } from "~features/inference-server/use-init"
 import { useGlobal } from "~providers/global"
@@ -47,18 +48,37 @@ function IndexPage() {
     setModels(resp.files)
   })
 
+  async function updateModelsDirectory(dir: string) {
+    const resp = await invoke<ModelDirectoryState>("update_models_dir", {
+      dir
+    })
+    setModelsDirectory(resp.path)
+    setModels(resp.files)
+  }
+
   return (
     <div
       className={clsx(
         "h-full w-full flex flex-col gap-6 overflow-auto bg-gray-2"
       )}>
       <div className="flex gap-2 sticky top-0 bg-gray-1 w-full p-8 z-50">
+        {!!modelsDirectory && (
+          <button
+            title="Refresh Models Directory"
+            className="hover:text-gray-12"
+            onClick={async () => {
+              await updateModelsDirectory(modelsDirectory)
+            }}>
+            <ReloadIcon />
+          </button>
+        )}
         <Input
           className="w-full"
           value={modelsDirectory}
           readOnly
           placeholder="Models directory"
         />
+
         <Button
           className="w-24 justify-center"
           onClick={async () => {
@@ -70,18 +90,11 @@ function IndexPage() {
             if (!selected) {
               return
             }
-
-            const resp = await invoke<ModelDirectoryState>(
-              "update_models_dir",
-              {
-                dir: selected
-              }
-            )
-            setModelsDirectory(resp.path)
-            setModels(resp.files)
+            await updateModelsDirectory(selected)
           }}>
           Change
         </Button>
+
         <Input
           className="w-full"
           readOnly
@@ -117,7 +130,7 @@ function IndexPage() {
                   {`${toGB(model.size).toFixed(2)} GB`}
                 </div>
               </div>
-              <ModelChecksum model={model} />
+              <ModelDigest model={model} />
             </div>
             <ModelConfig model={model} />
           </div>

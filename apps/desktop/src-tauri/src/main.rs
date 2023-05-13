@@ -5,11 +5,11 @@
 
 use inference_server::InferenceServerState;
 
-mod checksum;
 mod config;
 mod downloader;
 mod inference_server;
 mod kv_bucket;
+mod model_integrity;
 mod model_type;
 mod models_directory;
 mod path;
@@ -21,8 +21,8 @@ fn main() {
         .plugin(tauri_plugin_persisted_scope::init())
         .invoke_handler(tauri::generate_handler![
             downloader::download_model,
-            checksum::get_hash,
-            checksum::get_cached_hash,
+            model_integrity::get_cached_integrity,
+            model_integrity::get_integrity,
             models_directory::read_directory,
             models_directory::update_models_dir,
             models_directory::initialize_models_dir,
