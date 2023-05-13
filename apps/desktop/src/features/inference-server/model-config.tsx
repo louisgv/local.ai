@@ -16,8 +16,9 @@ import { useInit } from "~features/inference-server/use-init"
 import { useGlobal } from "~providers/global"
 
 export enum ModelType {
-  GptJ = "gptj",
   Llama = "llama",
+  GptJ = "gptj",
+  Mpt = "mpt",
   NeoX = "neox",
   Bloom = "bloom",
   Gpt2 = "gpt2"

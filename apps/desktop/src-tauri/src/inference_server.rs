@@ -1,5 +1,5 @@
 use actix_web::dev::ServerHandle;
-use actix_web::web::{Bytes, Json};
+use actix_web::web::Json;
 
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use llm::{InferenceFeedback, InferenceResponse};
@@ -147,7 +147,6 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
                     time_to_first_token.as_millis()
                 );
             }
-            // Ok(_) => {}
             Err(err) => {
                 tx.send(get_completion_resp(err.to_string())).unwrap();
             }
@@ -238,7 +237,14 @@ pub async fn load_model(path: &str, model_type: &str) -> Result<(), String> {
     let model = match llm::load_dynamic(
         architecture,
         model_path,
-        Default::default(),
+        llm::ModelParameters {
+            n_context_tokens: 8470,
+            inference_parameters: llm::InferenceParameters {
+                // n_batch: 4,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
         load_progress_callback_stdout,
     ) {
         Ok(model) => model,
