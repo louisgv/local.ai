@@ -140,18 +140,14 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
         );
         match res {
             // Swap this out to debug speed
-            // Ok(result) => {
-            //     tx.send(get_completion_resp(
-            //         format!(
-            //             "\n\n===\n\nInference stats:\n\n{}\ntime_to_first_token: {}ms",
-            //             result,
-            //             time_to_first_token.as_millis()
-            //         )
-            //         .to_string(),
-            //     ))
-            //     .unwrap();
-            // }
-            Ok(_) => {}
+            Ok(result) => {
+                println!(
+                    "\n\n===\n\nInference stats:\n\n{}\ntime_to_first_token: {}ms",
+                    result,
+                    time_to_first_token.as_millis()
+                );
+            }
+            // Ok(_) => {}
             Err(err) => {
                 tx.send(get_completion_resp(err.to_string())).unwrap();
             }
@@ -169,7 +165,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     HttpResponse::Ok()
         .append_header(("Content-Type", "text/event-stream"))
         .append_header(("Cache-Control", "no-cache"))
-        .append_header(("Connection", "keep-alive"))
+        .keep_alive()
         .streaming(stream)
 }
 
