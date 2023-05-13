@@ -5,6 +5,7 @@
 
 use inference_server::InferenceServerState;
 
+mod abort_stream;
 mod config;
 mod downloader;
 mod inference_server;

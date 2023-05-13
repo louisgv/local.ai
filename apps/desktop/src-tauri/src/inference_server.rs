@@ -20,6 +20,8 @@ use llm::{load_progress_callback_stdout, InferenceRequest, Model};
 
 use std::{convert::Infallible, path::Path};
 
+use crate::abort_stream::AbortStream;
+
 static _LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
@@ -92,7 +94,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
         }
     });
 
-    tauri::async_runtime::spawn_blocking(move || {
+    let thread_handle = Arc::new(tauri::async_runtime::spawn_blocking(move || {
         let model_guard = Arc::clone(&LOADED_MODEL);
 
         let model_reader = model_guard.read();
@@ -154,12 +156,15 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
                 tx.send(get_completion_resp(err.to_string())).unwrap();
             }
         }
-    });
+    }));
 
-    let stream = FramedRead::new(to_read, BytesCodec::new()).map(|res| match res {
-        Ok(bytes) => Ok(Bytes::copy_from_slice(&bytes)),
-        Err(e) => Err(e),
-    });
+    let stream = AbortStream {
+        inner: FramedRead::new(to_read, BytesCodec::new()).map(|res| match res {
+            Ok(bytes) => Ok(bytes.freeze().into()),
+            Err(e) => Err(e.into()),
+        }),
+        handle: Arc::clone(&thread_handle),
+    };
 
     HttpResponse::Ok()
         .append_header(("Content-Type", "text/event-stream"))
