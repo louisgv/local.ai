@@ -13,6 +13,7 @@ pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
         architecture,
         model_path,
         Default::default(),
+        None,
         load_progress_callback_stdout,
     )
     .unwrap_or_else(|err| panic!("Failed to load model from {model_path:?}: {err}"));

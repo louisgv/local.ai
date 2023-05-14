@@ -1303,7 +1303,7 @@ dependencies = [
 [[package]]
 name = "ggml"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/model/mpt#0ae4c8d9d4a8d5d4fefc7622b579f6766fd191f1"
+source = "git+https://github.com/rustformers/llm?branch=main#4139e0ecc100d27b21a5a67fcc708346e146d140"
 dependencies = [
  "ggml-sys",
  "thiserror",
@@ -1312,7 +1312,7 @@ dependencies = [
 [[package]]
 name = "ggml-sys"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/model/mpt#0ae4c8d9d4a8d5d4fefc7622b579f6766fd191f1"
+source = "git+https://github.com/rustformers/llm?branch=main#4139e0ecc100d27b21a5a67fcc708346e146d140"
 dependencies = [
  "cc",
 ]
@@ -1930,14 +1930,13 @@ checksum = "ece97ea872ece730aed82664c424eb4c8291e1ff2480247ccf7409044bc6479f"
 [[package]]
 name = "llm"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/model/mpt#0ae4c8d9d4a8d5d4fefc7622b579f6766fd191f1"
+source = "git+https://github.com/rustformers/llm?branch=main#4139e0ecc100d27b21a5a67fcc708346e146d140"
 dependencies = [
  "llm-base",
  "llm-bloom",
  "llm-gpt2",
  "llm-gptj",
  "llm-llama",
- "llm-mpt",
  "llm-neox",
  "serde",
 ]
@@ -1945,7 +1944,7 @@ dependencies = [
 [[package]]
 name = "llm-base"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/model/mpt#0ae4c8d9d4a8d5d4fefc7622b579f6766fd191f1"
+source = "git+https://github.com/rustformers/llm?branch=main#4139e0ecc100d27b21a5a67fcc708346e146d140"
 dependencies = [
  "bytemuck",
  "ggml",
@@ -1961,7 +1960,7 @@ dependencies = [
 [[package]]
 name = "llm-bloom"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/model/mpt#0ae4c8d9d4a8d5d4fefc7622b579f6766fd191f1"
+source = "git+https://github.com/rustformers/llm?branch=main#4139e0ecc100d27b21a5a67fcc708346e146d140"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -1970,7 +1969,7 @@ dependencies = [
 [[package]]
 name = "llm-gpt2"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/model/mpt#0ae4c8d9d4a8d5d4fefc7622b579f6766fd191f1"
+source = "git+https://github.com/rustformers/llm?branch=main#4139e0ecc100d27b21a5a67fcc708346e146d140"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -1979,7 +1978,7 @@ dependencies = [
 [[package]]
 name = "llm-gptj"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/model/mpt#0ae4c8d9d4a8d5d4fefc7622b579f6766fd191f1"
+source = "git+https://github.com/rustformers/llm?branch=main#4139e0ecc100d27b21a5a67fcc708346e146d140"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -1988,7 +1987,7 @@ dependencies = [
 [[package]]
 name = "llm-llama"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/model/mpt#0ae4c8d9d4a8d5d4fefc7622b579f6766fd191f1"
+source = "git+https://github.com/rustformers/llm?branch=main#4139e0ecc100d27b21a5a67fcc708346e146d140"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -2001,21 +2000,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "llm-mpt"
-version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/model/mpt#0ae4c8d9d4a8d5d4fefc7622b579f6766fd191f1"
-dependencies = [
- "bytemuck",
- "llm-base",
-]
-
-[[package]]
 name = "llm-neox"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=dfo/model/mpt#0ae4c8d9d4a8d5d4fefc7622b579f6766fd191f1"
+source = "git+https://github.com/rustformers/llm?branch=main#4139e0ecc100d27b21a5a67fcc708346e146d140"
 dependencies = [
  "bytemuck",
  "llm-base",
+ "serde",
 ]
 
 [[package]]
@@ -2041,6 +2032,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "sys-info",
  "tauri",
  "tauri-build",
  "tauri-plugin-persisted-scope",
@@ -3522,6 +3514,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "sys-info"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b3a0d0aba8bf96a0e1ddfdc352fc53b3df7f39318c71854910c3c4b024ae52c"
+dependencies = [
+ "cc",
+ "libc",
 ]
 
 [[package]]

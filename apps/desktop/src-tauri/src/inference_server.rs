@@ -2,7 +2,7 @@ use actix_web::dev::ServerHandle;
 use actix_web::web::Json;
 
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
-use llm::{InferenceFeedback, InferenceResponse};
+use llm::{InferenceFeedback, InferenceParameters, InferenceResponse};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
@@ -88,17 +88,18 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 
     let (mut to_write, to_read) = tokio::io::duplex(1024 * 1024);
 
-    tauri::async_runtime::spawn(async move {
+    tokio::spawn(async move {
         while let Ok(data) = rx.recv_async().await {
             to_write.write_all(&data).await.unwrap();
         }
     });
 
-    let thread_handle = Arc::new(tauri::async_runtime::spawn_blocking(move || {
+    let thread_handle = Arc::new(tokio::task::spawn_blocking(move || {
         let model_guard = Arc::clone(&LOADED_MODEL);
 
         let model_reader = model_guard.read();
-        let model = model_reader.as_ref().unwrap();
+        let model = model_reader.as_ref().unwrap().clone();
+
         let mut session = model.start_session(Default::default());
 
         let raw_prompt = clean_prompt(payload.prompt.as_str()).clone();
@@ -116,8 +117,12 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
             &InferenceRequest {
                 prompt,
                 play_back_previous_tokens: false,
-                maximum_token_count: None,
-                ..Default::default()
+                maximum_token_count: Some(8472),
+                parameters: Some(&InferenceParameters {
+                    // n_batch: 4,
+                    // n_threads: 2,
+                    ..Default::default()
+                }),
             },
             // OutputRequest
             &mut Default::default(),
@@ -139,7 +144,6 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
             },
         );
         match res {
-            // Swap this out to debug speed
             Ok(result) => {
                 println!(
                     "\n\n===\n\nInference stats:\n\n{}\ntime_to_first_token: {}ms",
@@ -150,7 +154,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
             Err(err) => {
                 tx.send(get_completion_resp(err.to_string())).unwrap();
             }
-        }
+        };
     }));
 
     let stream = AbortStream {
@@ -164,7 +168,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     HttpResponse::Ok()
         .append_header(("Content-Type", "text/event-stream"))
         .append_header(("Cache-Control", "no-cache"))
-        .keep_alive()
+        // .keep_alive()
         .streaming(stream)
 }
 
@@ -238,13 +242,11 @@ pub async fn load_model(path: &str, model_type: &str) -> Result<(), String> {
         architecture,
         model_path,
         llm::ModelParameters {
-            n_context_tokens: 8470,
-            inference_parameters: llm::InferenceParameters {
-                // n_batch: 4,
-                ..Default::default()
-            },
+            prefer_mmap: false,
+            n_context_tokens: 8472,
             ..Default::default()
         },
+        Default::default(),
         load_progress_callback_stdout,
     ) {
         Ok(model) => model,

@@ -3,7 +3,7 @@ use futures::stream::Stream;
 use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
-use tauri::async_runtime::JoinHandle;
+use tokio::task::JoinHandle;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 pub struct AbortStream {
