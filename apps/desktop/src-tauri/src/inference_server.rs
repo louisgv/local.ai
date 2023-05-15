@@ -7,7 +7,6 @@ use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
 use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
-use std::cell::RefCell;
 use std::collections::HashMap;
 use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -90,12 +89,8 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 
     let (mut to_write, to_read) = tokio::io::duplex(1024 * 1024);
 
-    let abort_flag = RefCell::new(false);
-
-    let stream = AbortStream {
-        inner: FramedRead::new(to_read, BytesCodec::new()),
-        abort_flag: abort_flag.clone(), // handle: Arc::clone(&thread_handle),
-    };
+    let abort_flag = Arc::new(RwLock::new(false));
+    let abort_flag_clone = Arc::clone(&abort_flag);
 
     tauri::async_runtime::spawn(async move {
         while let Ok(data) = rx.recv_async().await {
@@ -103,7 +98,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
         }
     });
 
-    rayon::spawn(move || {
+    let infer_thread = std::thread::spawn(move || {
         let mut rng = rand::rngs::StdRng::from_entropy();
         let model_guard = Arc::clone(&LOADED_MODEL);
 
@@ -148,14 +143,15 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
                     //     // for each character in t, send a completion response
                     //     tx.try_send(get_completion_resp(ch.to_string())).unwrap();
                     // }
-                    Ok(if *abort_flag.borrow() {
+
+                    Ok(if *Arc::clone(&abort_flag).read() {
                         println!("CANCELED");
                         InferenceFeedback::Halt
                     } else {
                         InferenceFeedback::Continue
                     })
                 }
-                _ => Ok(if *abort_flag.borrow() {
+                _ => Ok(if *Arc::clone(&abort_flag).read() {
                     InferenceFeedback::Halt
                 } else {
                     InferenceFeedback::Continue
@@ -169,7 +165,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
                     "\n\n===\n\nInference stats:\n\n{}\ntime_to_first_token: {}ms\n{}",
                     result,
                     time_to_first_token.as_millis(),
-                    *abort_flag.borrow()
+                    *Arc::clone(&abort_flag).read()
                 );
             }
             Err(err) => {
@@ -178,6 +174,14 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
         };
     });
 
+    let stream = AbortStream {
+        inner: FramedRead::new(to_read, BytesCodec::new()).map(|res| match res {
+            Ok(bytes) => Ok(bytes.freeze().into()),
+            Err(e) => Err(e.into()),
+        }),
+        abort_flag: abort_flag_clone,
+        // handle: Arc::clone(&thread_handle),
+    };
     HttpResponse::Ok()
         .append_header(("Content-Type", "text/event-stream"))
         .append_header(("Cache-Control", "no-cache"))
@@ -190,8 +194,6 @@ pub async fn start_server<'a>(
     state: tauri::State<'a, InferenceServerState>,
     port: u16,
 ) -> Result<(), String> {
-    println!("Starting server on port {}", port);
-
     if state.running.load(Ordering::SeqCst) {
         return Err("Server is already running.".to_string());
     }
@@ -207,6 +209,7 @@ pub async fn start_server<'a>(
             // .disable_signals()
             .run();
         *server_clone.lock() = Some(server.handle());
+        println!("Server started on port {port}");
         server.await.unwrap();
     });
 

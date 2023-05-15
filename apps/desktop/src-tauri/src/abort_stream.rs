@@ -1,7 +1,8 @@
 use actix_web::web::{self, BytesMut};
 use futures::stream::Stream;
-use std::cell::RefCell;
+use parking_lot::RwLock;
 use std::pin::Pin;
+use std::sync::Arc;
 use std::task::{Context, Poll};
 
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -12,7 +13,7 @@ pub struct AbortStream {
         fn(Result<BytesMut, std::io::Error>) -> Result<web::Bytes, actix_web::Error>,
     >,
     // pub handle: Arc<JoinHandle<()>>,
-    pub abort_flag: RefCell<bool>,
+    pub abort_flag: Arc<RwLock<bool>>,
 }
 
 impl Stream for AbortStream {
@@ -28,14 +29,14 @@ impl Stream for AbortStream {
                 // Abort the blocking task
                 // self.handle.abort();
                 println!("Error: {:?}", e);
-                *self.abort_flag.borrow_mut() = true;
+                *self.abort_flag.write() = true;
                 Poll::Ready(Some(Err(e.into())))
             }
             Poll::Ready(None) => {
                 // Abort the blocking task
                 // self.handle.abort();
                 println!("Stream ended");
-                *self.abort_flag.borrow_mut() = true;
+                *self.abort_flag.write() = true;
                 Poll::Ready(None)
             }
             Poll::Pending => Poll::Pending,
