@@ -68,7 +68,7 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
         onChange={(e) => setLabel(e.target.value)}
       />
 
-      {/* <SpinnerButton
+      <SpinnerButton
         isSpinning={modelLoadState === ModelLoadState.Loading}
         disabled={modelLoadState === ModelLoadState.Loaded}
         onClick={async () => {
@@ -79,7 +79,7 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
           })
         }}>
         Test Model
-      </SpinnerButton> */}
+      </SpinnerButton>
       <div className="flex items-center justify-end w-96 gap-2">
         <Select
           value={modelType}

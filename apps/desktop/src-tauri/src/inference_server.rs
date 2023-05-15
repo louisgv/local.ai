@@ -5,7 +5,9 @@ use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use llm::{InferenceFeedback, InferenceParameters, InferenceResponse};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
+use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -88,13 +90,21 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 
     let (mut to_write, to_read) = tokio::io::duplex(1024 * 1024);
 
-    tokio::spawn(async move {
+    let abort_flag = RefCell::new(false);
+
+    let stream = AbortStream {
+        inner: FramedRead::new(to_read, BytesCodec::new()),
+        abort_flag: abort_flag.clone(), // handle: Arc::clone(&thread_handle),
+    };
+
+    tauri::async_runtime::spawn(async move {
         while let Ok(data) = rx.recv_async().await {
             to_write.write_all(&data).await.unwrap();
         }
     });
 
-    let thread_handle = Arc::new(tokio::task::spawn_blocking(move || {
+    rayon::spawn(move || {
+        let mut rng = rand::rngs::StdRng::from_entropy();
         let model_guard = Arc::clone(&LOADED_MODEL);
 
         let model_reader = model_guard.read();
@@ -113,16 +123,17 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 
         let res = session.infer::<Infallible>(
             model.as_ref(),
-            &mut rand::thread_rng(),
+            &mut rng,
             &InferenceRequest {
                 prompt,
                 play_back_previous_tokens: false,
-                maximum_token_count: Some(8472),
+                // maximum_token_count: Some(8472),
                 parameters: Some(&InferenceParameters {
                     // n_batch: 4,
                     // n_threads: 2,
                     ..Default::default()
                 }),
+                ..Default::default()
             },
             // OutputRequest
             &mut Default::default(),
@@ -132,43 +143,45 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
                         time_to_first_token = timer.elapsed();
                         clocked = true;
                     }
-                    tx.send(get_completion_resp(t)).unwrap();
+                    tx.try_send(get_completion_resp(t)).unwrap();
                     // for ch in t.chars() {
                     //     // for each character in t, send a completion response
                     //     tx.try_send(get_completion_resp(ch.to_string())).unwrap();
                     // }
-
-                    Ok(InferenceFeedback::Continue)
+                    Ok(if *abort_flag.borrow() {
+                        println!("CANCELED");
+                        InferenceFeedback::Halt
+                    } else {
+                        InferenceFeedback::Continue
+                    })
                 }
-                _ => Ok(InferenceFeedback::Continue),
+                _ => Ok(if *abort_flag.borrow() {
+                    InferenceFeedback::Halt
+                } else {
+                    InferenceFeedback::Continue
+                }),
             },
         );
+
         match res {
             Ok(result) => {
                 println!(
-                    "\n\n===\n\nInference stats:\n\n{}\ntime_to_first_token: {}ms",
+                    "\n\n===\n\nInference stats:\n\n{}\ntime_to_first_token: {}ms\n{}",
                     result,
-                    time_to_first_token.as_millis()
+                    time_to_first_token.as_millis(),
+                    *abort_flag.borrow()
                 );
             }
             Err(err) => {
-                tx.send(get_completion_resp(err.to_string())).unwrap();
+                tx.try_send(get_completion_resp(err.to_string())).unwrap();
             }
         };
-    }));
-
-    let stream = AbortStream {
-        inner: FramedRead::new(to_read, BytesCodec::new()).map(|res| match res {
-            Ok(bytes) => Ok(bytes.freeze().into()),
-            Err(e) => Err(e.into()),
-        }),
-        handle: Arc::clone(&thread_handle),
-    };
+    });
 
     HttpResponse::Ok()
         .append_header(("Content-Type", "text/event-stream"))
         .append_header(("Cache-Control", "no-cache"))
-        // .keep_alive()
+        .keep_alive()
         .streaming(stream)
 }
 
@@ -183,18 +196,17 @@ pub async fn start_server<'a>(
         return Err("Server is already running.".to_string());
     }
 
-    let server = HttpServer::new(|| App::new().service(ping).service(post_completions))
-        .bind(("127.0.0.1", port))
-        .unwrap()
-        // .disable_signals()
-        .run();
-
     state.running.store(true, Ordering::SeqCst);
-    *state.server.lock() = Some(server.handle());
+
+    let server_clone = Arc::clone(&state.server);
 
     tauri::async_runtime::spawn(async move {
-        // A loop that takes output from the async process and sends it
-        // to the webview via a Tauri Event
+        let server = HttpServer::new(|| App::new().service(ping).service(post_completions))
+            .bind(("127.0.0.1", port))
+            .unwrap()
+            // .disable_signals()
+            .run();
+        *server_clone.lock() = Some(server.handle());
         server.await.unwrap();
     });
 
@@ -242,11 +254,11 @@ pub async fn load_model(path: &str, model_type: &str) -> Result<(), String> {
         architecture,
         model_path,
         llm::ModelParameters {
-            prefer_mmap: false,
+            prefer_mmap: true,
             n_context_tokens: 8472,
             ..Default::default()
         },
-        Default::default(),
+        None,
         load_progress_callback_stdout,
     ) {
         Ok(model) => model,
