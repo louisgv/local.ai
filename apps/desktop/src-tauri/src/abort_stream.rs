@@ -1,44 +1,48 @@
-use actix_web::web::{self, BytesMut};
-use futures::stream::Stream;
+use futures::Stream;
+use hyper::body::Bytes;
+use hyper::body::Frame;
+use pin_project_lite::pin_project;
 use std::cell::RefCell;
+use std::io::Error;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use tokio_util::codec::{BytesCodec, FramedRead};
-
-pub struct AbortStream {
-    pub inner: futures::stream::Map<
-        FramedRead<tokio::io::DuplexStream, BytesCodec>,
-        fn(Result<BytesMut, std::io::Error>) -> Result<web::Bytes, actix_web::Error>,
-    >,
-    // pub handle: Arc<JoinHandle<()>>,
-    pub abort_flag: RefCell<bool>,
+pin_project! {
+    /// A body created from a `Stream`.
+    #[derive(Clone, Debug)]
+    pub struct AbortStream<S> {
+        #[pin]
+        pub stream: S,
+        // pub handle: Arc<JoinHandle<()>>,
+        pub abort_flag: RefCell<bool>,
+    }
 }
 
-impl Stream for AbortStream {
-    type Item = Result<web::Bytes, actix_web::Error>;
+impl<S> Stream for AbortStream<S>
+where
+    S: Stream<Item = String> + Unpin,
+{
+    type Item = Result<Frame<Bytes>, Error>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        match Pin::new(&mut self.inner).poll_next(cx) {
-            Poll::Ready(Some(Ok(bytes))) => {
-                // Convert BytesMut to actix_web::web::Bytes
-                Poll::Ready(Some(Ok(bytes)))
-            }
-            Poll::Ready(Some(Err(e))) => {
-                // Abort the blocking task
-                // self.handle.abort();
-                println!("Error: {:?}", e);
-                *self.abort_flag.borrow_mut() = true;
-                Poll::Ready(Some(Err(e.into())))
+        let self_proj = self.as_mut().project();
+
+        match self_proj.stream.poll_next(cx) {
+            Poll::Ready(Some(data)) => {
+                // Convert String to Frame<Bytes>
+                Poll::Ready(Some(Ok(Frame::data(Bytes::from(data)))))
             }
             Poll::Ready(None) => {
                 // Abort the blocking task
-                // self.handle.abort();
                 println!("Stream ended");
-                *self.abort_flag.borrow_mut() = true;
+                *self_proj.abort_flag.borrow_mut() = true;
                 Poll::Ready(None)
             }
             Poll::Pending => Poll::Pending,
         }
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.stream.size_hint()
     }
 }

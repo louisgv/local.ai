@@ -1,7 +1,11 @@
-use actix_web::dev::ServerHandle;
-use actix_web::web::Json;
+use bytes::Buf;
+use http_body_util::{BodyExt, StreamBody};
+use hyper::{
+    body::Incoming as IncomingBody, server::conn::http1, service::service_fn, Method, Request,
+    Response, StatusCode,
+};
 
-use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
+use futures::channel::mpsc::{self, Receiver};
 use llm::{InferenceFeedback, InferenceParameters, InferenceResponse};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
@@ -9,10 +13,9 @@ use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::HashMap;
-use tokio::io::AsyncWriteExt;
-use tokio_util::codec::{BytesCodec, FramedRead};
+use std::net::SocketAddr;
+use tokio::net::TcpListener;
 
-use futures::StreamExt;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -24,6 +27,10 @@ use std::{convert::Infallible, path::Path};
 
 use crate::abort_stream::AbortStream;
 
+type GenericError = Box<dyn std::error::Error + Send + Sync>;
+type ServerResult<T> = std::result::Result<T, GenericError>;
+type ServerBody = StreamBody<AbortStream<Receiver<String>>>;
+
 static _LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
@@ -32,20 +39,18 @@ static LOADED_MODEL: Lazy<Arc<RwLock<Option<Box<dyn Model>>>>> =
     Lazy::new(|| Arc::new(RwLock::new(None)));
 
 pub struct InferenceServerState {
-    server: Arc<Mutex<Option<ServerHandle>>>,
-    running: AtomicBool,
+    running: Arc<AtomicBool>,
 }
 
 impl Default for InferenceServerState {
     fn default() -> Self {
         Self {
-            server: Arc::new(Mutex::new(None)),
-            running: AtomicBool::new(false),
+            running: Arc::new(AtomicBool::new(false)),
         }
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug)]
 struct CompletionRequest {
     prompt: String,
     max_tokens: u32,
@@ -63,19 +68,14 @@ pub struct CompletionResponse {
     pub choices: Vec<Choice>,
 }
 
-#[get("/")]
-async fn ping() -> impl Responder {
-    HttpResponse::Ok().body("pong")
-}
-
-fn get_completion_resp(text: String) -> Vec<u8> {
+fn get_completion_resp(text: String) -> String {
     let completion_response = CompletionResponse {
         choices: vec![Choice { text }],
     };
 
     let serialized = serde_json::to_string(&completion_response).unwrap();
 
-    format!("data: {}\n\n", serialized).as_bytes().to_vec()
+    format!("data: {}\n\n", serialized)
 }
 
 fn clean_prompt(s: &str) -> String {
@@ -84,24 +84,19 @@ fn clean_prompt(s: &str) -> String {
         .replace("\n<human>: ", "\n===\nhuman: ")
 }
 
-#[post("/completions")]
-async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
-    let (tx, rx) = flume::unbounded::<Vec<u8>>();
+async fn post_completions(req: Request<IncomingBody>) -> ServerResult<Response<ServerBody>> {
+    let whole_body = req.collect().await?.aggregate();
 
-    let (mut to_write, to_read) = tokio::io::duplex(1024 * 1024);
+    let payload = serde_json::from_reader::<_, CompletionRequest>(whole_body.reader())?;
+
+    let (mut sender, receiver) = mpsc::channel::<String>(0);
 
     let abort_flag = RefCell::new(false);
 
     let stream = AbortStream {
-        inner: FramedRead::new(to_read, BytesCodec::new()),
+        stream: receiver,
         abort_flag: abort_flag.clone(), // handle: Arc::clone(&thread_handle),
     };
-
-    tauri::async_runtime::spawn(async move {
-        while let Ok(data) = rx.recv_async().await {
-            to_write.write_all(&data).await.unwrap();
-        }
-    });
 
     rayon::spawn(move || {
         let mut rng = rand::rngs::StdRng::from_entropy();
@@ -143,7 +138,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
                         time_to_first_token = timer.elapsed();
                         clocked = true;
                     }
-                    tx.try_send(get_completion_resp(t)).unwrap();
+                    sender.try_send(get_completion_resp(t)).unwrap();
                     // for ch in t.chars() {
                     //     // for each character in t, send a completion response
                     //     tx.try_send(get_completion_resp(ch.to_string())).unwrap();
@@ -173,16 +168,46 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
                 );
             }
             Err(err) => {
-                tx.try_send(get_completion_resp(err.to_string())).unwrap();
+                sender
+                    .try_send(get_completion_resp(err.to_string()))
+                    .unwrap();
             }
         };
     });
 
-    HttpResponse::Ok()
-        .append_header(("Content-Type", "text/event-stream"))
-        .append_header(("Cache-Control", "no-cache"))
-        .keep_alive()
-        .streaming(stream)
+    let resp = Response::builder()
+        .header("Content-Type", "text/event-stream")
+        .header("Cache-Control", "no-cache")
+        .header("Connection", "keep-alive")
+        .body(StreamBody::new(stream))
+        .unwrap();
+
+    Ok(resp)
+}
+
+fn full<T: Into<String>>(chunk: T) -> ServerBody {
+    let (mut sender, receiver) = mpsc::channel(0);
+    let _ = sender.try_send(chunk.into());
+    StreamBody::new(AbortStream {
+        stream: receiver,
+        abort_flag: RefCell::new(false),
+    })
+}
+
+async fn server_request_handler(req: Request<IncomingBody>) -> ServerResult<Response<ServerBody>> {
+    match (req.method(), req.uri().path()) {
+        (&Method::GET, "/") | (&Method::GET, "/index.html") => {
+            Ok(Response::new(full("HELLO WORLD")))
+        }
+        (&Method::POST, "/completions") => post_completions(req).await,
+        _ => {
+            // Return 404 not found response.
+            Ok(Response::builder()
+                .status(StatusCode::NOT_FOUND)
+                .body(full("Not Found"))
+                .unwrap())
+        }
+    }
 }
 
 #[tauri::command]
@@ -190,24 +215,42 @@ pub async fn start_server<'a>(
     state: tauri::State<'a, InferenceServerState>,
     port: u16,
 ) -> Result<(), String> {
-    println!("Starting server on port {}", port);
-
     if state.running.load(Ordering::SeqCst) {
         return Err("Server is already running.".to_string());
     }
 
     state.running.store(true, Ordering::SeqCst);
 
-    let server_clone = Arc::clone(&state.server);
+    let running_clone = Arc::clone(&state.running);
 
     tauri::async_runtime::spawn(async move {
-        let server = HttpServer::new(|| App::new().service(ping).service(post_completions))
-            .bind(("127.0.0.1", port))
-            .unwrap()
-            // .disable_signals()
-            .run();
-        *server_clone.lock() = Some(server.handle());
-        server.await.unwrap();
+        let addr = SocketAddr::from(([127, 0, 0, 1], port));
+
+        let listener = match TcpListener::bind(addr).await {
+            Ok(listener) => listener,
+            Err(err) => {
+                println!("Failed to bind to port: {}", err);
+                return;
+            }
+        };
+        println!("Starting server on port {}", port);
+
+        while running_clone.load(Ordering::SeqCst) {
+            let (stream, _) = listener.accept().await.unwrap();
+
+            tokio::task::spawn(async move {
+                let service = service_fn(move |req| server_request_handler(req));
+
+                if let Err(err) = http1::Builder::new()
+                    .serve_connection(stream, service)
+                    .await
+                {
+                    println!("Error serving connection: {:?}", err);
+                }
+            });
+        }
+
+        println!("Server stopped.");
     });
 
     Ok(())
@@ -221,21 +264,7 @@ pub async fn stop_server<'a>(state: tauri::State<'a, InferenceServerState>) -> R
         return Err("Server is not running.".to_string());
     }
 
-    let server_stop = {
-        let mut server_opt = state.server.lock();
-        if let Some(server) = server_opt.take() {
-            state.running.store(false, Ordering::SeqCst);
-            Some(server.stop(true))
-        } else {
-            None
-        }
-    };
-
-    if let Some(server_stop) = server_stop {
-        server_stop.await;
-    } else {
-        return Err("Server is not running.".to_string());
-    }
+    state.running.store(false, Ordering::SeqCst);
 
     Ok(())
 }
