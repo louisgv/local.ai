@@ -105,7 +105,7 @@ pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
             model.as_ref(),
             &mut rand::thread_rng(),
             &InferenceRequest {
-                prompt: "What are 10 interesting stars in the milky way?",
+                prompt: "What are 10 interesting insects?",
                 ..Default::default()
             },
             // OutputRequest
@@ -119,6 +119,19 @@ pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
             &mut rand::thread_rng(),
             &InferenceRequest {
                 prompt: "Give me 10 different ways animal survived.",
+                ..Default::default()
+            },
+            // OutputRequest
+            &mut Default::default(),
+            handle_inference_response,
+        ));
+
+        let mut session6 = model.start_session(Default::default());
+        handle_inference_result(session6.infer::<Infallible>(
+            model.as_ref(),
+            &mut rand::thread_rng(),
+            &InferenceRequest {
+                prompt: "Who built the Pentagon?",
                 ..Default::default()
             },
             // OutputRequest

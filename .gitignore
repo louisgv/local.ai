@@ -37,3 +37,5 @@ yarn-error.log*
 
 # Mac policies
 *.mobileconfig
+
+benchmark
