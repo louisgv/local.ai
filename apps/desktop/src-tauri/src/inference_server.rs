@@ -5,10 +5,7 @@ use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
-use tokio::io::AsyncWriteExt;
-use tokio_util::codec::{BytesCodec, FramedRead};
 
-use futures::StreamExt;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -49,32 +46,16 @@ async fn ping() -> impl Responder {
 
 #[post("/completions")]
 async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
-    let (tx_token, rx) = flume::unbounded::<Bytes>();
-
-    let (mut to_write, to_read) = tokio::io::duplex(1024);
+    let (token_sender, receiver) = flume::unbounded::<Bytes>();
 
     let abort_flag = Arc::new(RwLock::new(false));
 
-    tauri::async_runtime::spawn(async move {
-        while let Ok(data) = rx.recv_async().await {
-            to_write.write_all(&data).await.unwrap();
-        }
-    });
-
-    let stream = AbortStream {
-        inner: FramedRead::new(to_read, BytesCodec::new()).map(|res| match res {
-            Ok(bytes) => Ok(bytes.into()),
-            Err(e) => Err(e.into()),
-        }),
-        abort_flag: Arc::clone(&abort_flag),
-    };
-
-    let model_guard = Arc::clone(&LOADED_MODEL);
+    let stream = AbortStream::new(receiver, Arc::clone(&abort_flag));
 
     spawn_inference_thread(InferenceThreadRequest {
-        model_guard,
-        tx_token,
-        abort_token: abort_flag,
+        model_guard: Arc::clone(&LOADED_MODEL),
+        token_sender,
+        abort_flag,
         completion_request: payload.0,
     });
 

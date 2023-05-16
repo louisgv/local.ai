@@ -18,8 +18,8 @@ pub struct CompletionRequest {
 pub type ModelGuard = Arc<RwLock<Option<Box<(dyn Model)>>>>;
 
 pub struct InferenceThreadRequest {
-    pub tx_token: Sender<Bytes>,
-    pub abort_token: Arc<RwLock<bool>>,
+    pub token_sender: Sender<Bytes>,
+    pub abort_flag: Arc<RwLock<bool>>,
 
     pub model_guard: ModelGuard,
     pub completion_request: CompletionRequest,
@@ -52,7 +52,7 @@ fn clean_prompt(s: &str) -> String {
 }
 
 pub fn spawn_inference_thread(req: InferenceThreadRequest) {
-    rayon::spawn(move || {
+    std::thread::spawn(move || {
         let guard = req.model_guard.read();
 
         let model = match &*guard {
@@ -68,7 +68,7 @@ pub fn spawn_inference_thread(req: InferenceThreadRequest) {
 
         let raw_prompt = clean_prompt(req.completion_request.prompt.as_str()).clone();
         let prompt = &raw_prompt;
-        let tx_token = req.tx_token.clone();
+        let sender = req.token_sender.clone();
 
         // Run inference
         let res = session.infer::<Infallible>(
@@ -89,19 +89,19 @@ pub fn spawn_inference_thread(req: InferenceThreadRequest) {
             &mut Default::default(),
             |r| match r {
                 InferenceResponse::InferredToken(t) => {
-                    tx_token.try_send(get_completion_resp(t)).unwrap();
+                    sender.try_send(get_completion_resp(t)).unwrap();
                     // for ch in t.chars() {
                     //     // for each character in t, send a completion response
                     //     tx.try_send(get_completion_resp(ch.to_string())).unwrap();
                     // }
 
-                    Ok(if *Arc::clone(&req.abort_token).read() {
+                    Ok(if *Arc::clone(&req.abort_flag).read() {
                         InferenceFeedback::Halt
                     } else {
                         InferenceFeedback::Continue
                     })
                 }
-                _ => Ok(if *Arc::clone(&req.abort_token).read() {
+                _ => Ok(if *Arc::clone(&req.abort_flag).read() {
                     InferenceFeedback::Halt
                 } else {
                     InferenceFeedback::Continue
@@ -114,14 +114,14 @@ pub fn spawn_inference_thread(req: InferenceThreadRequest) {
                 println!(
                     "\n\n===\n\nInference stats:\n\n{}\naborted: {}\n",
                     result,
-                    *Arc::clone(&req.abort_token).read()
+                    *Arc::clone(&req.abort_flag).read()
                 );
             }
             Err(err) => {
-                tx_token
+                sender
                     .try_send(get_completion_resp(err.to_string()))
                     .unwrap();
             }
         }
-    })
+    });
 }
