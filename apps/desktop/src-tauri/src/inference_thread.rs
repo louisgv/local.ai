@@ -122,6 +122,6 @@ pub fn spawn_inference_thread(req: InferenceThreadRequest) {
                     .try_send(get_completion_resp(err.to_string()))
                     .unwrap();
             }
-        }
+        };
     });
 }

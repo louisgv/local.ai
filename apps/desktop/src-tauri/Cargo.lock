@@ -1303,7 +1303,7 @@ dependencies = [
 [[package]]
 name = "ggml"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=deps/ggml/update#b91309b86b02105cb88d681a482e1c1ff153095b"
+source = "git+https://github.com/rustformers/llm?branch=main#7468ee915f8dfafdf2a0c8edee5178c875e49785"
 dependencies = [
  "ggml-sys",
  "thiserror",
@@ -1312,7 +1312,7 @@ dependencies = [
 [[package]]
 name = "ggml-sys"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=deps/ggml/update#b91309b86b02105cb88d681a482e1c1ff153095b"
+source = "git+https://github.com/rustformers/llm?branch=main#7468ee915f8dfafdf2a0c8edee5178c875e49785"
 dependencies = [
  "cc",
 ]
@@ -1930,21 +1930,21 @@ checksum = "ece97ea872ece730aed82664c424eb4c8291e1ff2480247ccf7409044bc6479f"
 [[package]]
 name = "llm"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=deps/ggml/update#b91309b86b02105cb88d681a482e1c1ff153095b"
+source = "git+https://github.com/rustformers/llm?branch=main#7468ee915f8dfafdf2a0c8edee5178c875e49785"
 dependencies = [
  "llm-base",
  "llm-bloom",
  "llm-gpt2",
  "llm-gptj",
+ "llm-gptneox",
  "llm-llama",
- "llm-neox",
  "serde",
 ]
 
 [[package]]
 name = "llm-base"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=deps/ggml/update#b91309b86b02105cb88d681a482e1c1ff153095b"
+source = "git+https://github.com/rustformers/llm?branch=main#7468ee915f8dfafdf2a0c8edee5178c875e49785"
 dependencies = [
  "bytemuck",
  "ggml",
@@ -1960,7 +1960,7 @@ dependencies = [
 [[package]]
 name = "llm-bloom"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=deps/ggml/update#b91309b86b02105cb88d681a482e1c1ff153095b"
+source = "git+https://github.com/rustformers/llm?branch=main#7468ee915f8dfafdf2a0c8edee5178c875e49785"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -1969,7 +1969,7 @@ dependencies = [
 [[package]]
 name = "llm-gpt2"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=deps/ggml/update#b91309b86b02105cb88d681a482e1c1ff153095b"
+source = "git+https://github.com/rustformers/llm?branch=main#7468ee915f8dfafdf2a0c8edee5178c875e49785"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -1978,16 +1978,26 @@ dependencies = [
 [[package]]
 name = "llm-gptj"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=deps/ggml/update#b91309b86b02105cb88d681a482e1c1ff153095b"
+source = "git+https://github.com/rustformers/llm?branch=main#7468ee915f8dfafdf2a0c8edee5178c875e49785"
 dependencies = [
  "bytemuck",
  "llm-base",
 ]
 
 [[package]]
+name = "llm-gptneox"
+version = "0.1.1"
+source = "git+https://github.com/rustformers/llm?branch=main#7468ee915f8dfafdf2a0c8edee5178c875e49785"
+dependencies = [
+ "bytemuck",
+ "llm-base",
+ "serde",
+]
+
+[[package]]
 name = "llm-llama"
 version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=deps/ggml/update#b91309b86b02105cb88d681a482e1c1ff153095b"
+source = "git+https://github.com/rustformers/llm?branch=main#7468ee915f8dfafdf2a0c8edee5178c875e49785"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -1997,16 +2007,6 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
-]
-
-[[package]]
-name = "llm-neox"
-version = "0.1.1"
-source = "git+https://github.com/danforbes/llama-rs.git?branch=deps/ggml/update#b91309b86b02105cb88d681a482e1c1ff153095b"
-dependencies = [
- "bytemuck",
- "llm-base",
- "serde",
 ]
 
 [[package]]
