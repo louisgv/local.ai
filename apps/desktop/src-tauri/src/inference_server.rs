@@ -2,12 +2,8 @@ use actix_web::dev::ServerHandle;
 use actix_web::web::{Bytes, Json};
 
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
-use flume::Sender;
-use llm::{InferenceFeedback, InferenceParameters, InferenceResponse};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
-use rand::SeedableRng;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tokio::io::AsyncWriteExt;
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -18,20 +14,19 @@ use std::sync::{
     Arc,
 };
 
-use llm::{load_progress_callback_stdout, InferenceRequest, Model};
+use llm::{load_progress_callback_stdout, Model};
 
-use std::{convert::Infallible, path::Path};
+use std::path::Path;
 
 use crate::abort_stream::AbortStream;
 use crate::inference_thread::{
-    initialize_inference_thread, CompletionRequest, InferenceThreadRequest,
+    spawn_inference_thread, CompletionRequest, InferenceThreadRequest, ModelGuard,
 };
+
+static LOADED_MODEL: Lazy<ModelGuard> = Lazy::new(|| Arc::new(RwLock::new(None)));
 
 static _LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
-
-static INFERENCE_THREAD_TX: Lazy<Arc<RwLock<Option<Sender<InferenceThreadRequest>>>>> =
-    Lazy::new(|| Arc::new(RwLock::new(None)));
 
 pub struct InferenceServerState {
     server: Arc<Mutex<Option<ServerHandle>>>,
@@ -54,12 +49,11 @@ async fn ping() -> impl Responder {
 
 #[post("/completions")]
 async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
-    let (tx, rx) = flume::unbounded::<Bytes>();
+    let (tx_token, rx) = flume::unbounded::<Bytes>();
 
-    let (mut to_write, to_read) = tokio::io::duplex(1024 * 1024);
+    let (mut to_write, to_read) = tokio::io::duplex(1024);
 
     let abort_flag = Arc::new(RwLock::new(false));
-    let abort_flag_clone = Arc::clone(&abort_flag);
 
     tauri::async_runtime::spawn(async move {
         while let Ok(data) = rx.recv_async().await {
@@ -72,28 +66,23 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
             Ok(bytes) => Ok(bytes.into()),
             Err(e) => Err(e.into()),
         }),
-        abort_flag: abort_flag_clone,
+        abort_flag: Arc::clone(&abort_flag),
     };
 
-    let guard = INFERENCE_THREAD_TX.read();
-    let sender = guard.as_ref().unwrap().clone();
+    let model_guard = Arc::clone(&LOADED_MODEL);
 
-    match sender.send(InferenceThreadRequest {
-        tx_token: tx,
+    spawn_inference_thread(InferenceThreadRequest {
+        model_guard,
+        tx_token,
         abort_token: abort_flag,
         completion_request: payload.0,
-    }) {
-        Ok(_) => {
-            return HttpResponse::Ok()
-                .append_header(("Content-Type", "text/event-stream"))
-                .append_header(("Cache-Control", "no-cache"))
-                .keep_alive()
-                .streaming(stream)
-        }
-        Err(_) => {
-            return HttpResponse::InternalServerError().body("Failed to send request to thread.")
-        }
-    };
+    });
+
+    HttpResponse::Ok()
+        .append_header(("Content-Type", "text/event-stream"))
+        .append_header(("Cache-Control", "no-cache"))
+        .keep_alive()
+        .streaming(stream)
 }
 
 #[tauri::command]
@@ -180,12 +169,7 @@ pub async fn load_model<'a>(path: &str, model_type: &str) -> Result<(), String> 
         now.elapsed().as_millis()
     );
 
-    INFERENCE_THREAD_TX
-        .write()
-        .replace(initialize_inference_thread(model));
-
-    // let mut model_opt = LOADED_MODEL.write();
-    // *model_opt = Some(model);
+    *LOADED_MODEL.write() = Some(model);
 
     // let mut modelmap = LOADED_MODELMAP.lock();
     // modelmap.insert(name.to_string(), model);

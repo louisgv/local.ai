@@ -19,7 +19,7 @@ pub async fn get_app_dir_path_buf(
     Ok(ns_dir)
 }
 
-pub async fn get_app_dir_path(app_handle: &tauri::AppHandle, namespace: String) -> String {
+pub async fn _get_app_dir_path(app_handle: &tauri::AppHandle, namespace: String) -> String {
     get_app_dir_path_buf(app_handle, namespace)
         .await
         .unwrap()
@@ -27,7 +27,7 @@ pub async fn get_app_dir_path(app_handle: &tauri::AppHandle, namespace: String) 
         .to_string()
 }
 
-pub async fn get_app_file_path(
+pub async fn _get_app_file_path(
     app_handle: &tauri::AppHandle,
     namespace: String,
     name: String,
