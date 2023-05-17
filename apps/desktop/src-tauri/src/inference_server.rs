@@ -17,7 +17,7 @@ use std::path::Path;
 
 use crate::abort_stream::AbortStream;
 use crate::inference_thread::{
-    spawn_inference_thread, CompletionRequest, InferenceThreadRequest, ModelGuard,
+    start_inference, CompletionRequest, InferenceThreadRequest, ModelGuard,
 };
 
 static LOADED_MODEL: Lazy<ModelGuard> = Lazy::new(|| Arc::new(RwLock::new(None)));
@@ -46,23 +46,36 @@ async fn ping() -> impl Responder {
 
 #[post("/completions")]
 async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
+    println!("Received completion request: {:?}", payload.0);
+
+    if !LOADED_MODEL.read().is_some() {
+        println!("No model loaded.");
+        return HttpResponse::InternalServerError().finish();
+    }
+
     let (token_sender, receiver) = flume::unbounded::<Bytes>();
 
     let abort_flag = Arc::new(RwLock::new(false));
 
-    let stream = AbortStream::new(receiver, Arc::clone(&abort_flag));
-
-    spawn_inference_thread(InferenceThreadRequest {
+    let inference_thread = match start_inference(InferenceThreadRequest {
         model_guard: Arc::clone(&LOADED_MODEL),
+        abort_flag: Arc::clone(&abort_flag),
         token_sender,
-        abort_flag,
         completion_request: payload.0,
-    });
+    }) {
+        Some(thread) => thread,
+        None => {
+            println!("Failed to spawn inference thread.");
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let stream = AbortStream::new(receiver, Arc::clone(&abort_flag), inference_thread);
 
     HttpResponse::Ok()
         .append_header(("Content-Type", "text/event-stream"))
         .append_header(("Cache-Control", "no-cache"))
-        .keep_alive()
+        // .keep_alive()
         .streaming(stream)
 }
 
