@@ -34,8 +34,8 @@ pub fn with_model<T, F: FnOnce(&Box<(dyn Model)>) -> T>(
 }
 
 pub struct InferenceThreadRequest {
-    pub tx_token: Sender<Bytes>,
-    pub abort_token: Arc<RwLock<bool>>,
+    pub token_sender: Sender<Bytes>,
+    pub abort_flag: Arc<RwLock<bool>>,
 
     pub model_guard: ModelGuard,
     pub completion_request: CompletionRequest,
@@ -78,7 +78,6 @@ pub fn spawn_inference_thread(req: InferenceThreadRequest) {
 
         let raw_prompt = clean_prompt(req.completion_request.prompt.as_str());
         let prompt = &raw_prompt;
-        let tx_token = req.tx_token.clone();
         let mut output_request = OutputRequest::default();
 
         let inference_params = &InferenceParameters {
@@ -122,7 +121,7 @@ pub fn spawn_inference_thread(req: InferenceThreadRequest) {
         let mut token_utf8_buf = TokenUtf8Buffer::new();
 
         while tokens_processed < maximum_token_count {
-            if *Arc::clone(&req.abort_token).read() {
+            if *Arc::clone(&req.abort_flag).read() {
                 break;
             }
             let mut end_of_text = false;
@@ -148,7 +147,9 @@ pub fn spawn_inference_thread(req: InferenceThreadRequest) {
                 // Buffer the token until it's valid UTF-8, then call the callback.
                 if !end_of_text {
                     if let Some(tokens) = token_utf8_buf.push(token) {
-                        tx_token.try_send(get_completion_resp(tokens)).unwrap();
+                        req.token_sender
+                            .try_send(get_completion_resp(tokens))
+                            .unwrap();
                     }
                 }
             })
