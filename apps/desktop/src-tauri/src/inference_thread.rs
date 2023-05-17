@@ -11,6 +11,7 @@ use rand::prelude::*;
 
 use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
+use tokio::task::JoinHandle;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CompletionRequest {
@@ -20,18 +21,7 @@ pub struct CompletionRequest {
     stream: bool,
 }
 
-pub type ModelGuard = Arc<RwLock<Option<Box<(dyn Model)>>>>;
-
-pub fn with_model<T, F: FnOnce(&Box<(dyn Model)>) -> T>(
-    model_guard: &ModelGuard,
-    f: F,
-) -> Result<T, &'static str> {
-    let guard = model_guard.read();
-    guard
-        .as_ref()
-        .map(|m| f(m))
-        .ok_or("Model locked, cannot be loaded")
-}
+pub type ModelGuard = Arc<RwLock<Option<Box<dyn Model>>>>;
 
 pub struct InferenceThreadRequest {
     pub token_sender: Sender<Bytes>,
@@ -67,93 +57,125 @@ fn clean_prompt(s: &str) -> String {
         .replace("\n<human>: ", "\n===\nhuman: ")
 }
 
-pub fn spawn_inference_thread(req: InferenceThreadRequest) {
-    rayon::spawn(move || {
-        let mut session = with_model(&req.model_guard, |model| {
-            model.start_session(Default::default())
-        })
-        .unwrap();
+// Perhaps might be better to clone the model for each thread...
+pub fn start_inference(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
+    println!("Starting inference ...");
 
+    // Need to clone it to have its own arc
+    let guard_clone = Arc::clone(&req.model_guard);
+    let guard = guard_clone.read();
+    let model = match &*guard {
+        Some(m) => m,
+        None => {
+            println!("Model locked, cannot be loaded");
+            return None;
+        }
+    };
+
+    let mut session = model.start_session(Default::default());
+
+    let raw_prompt = clean_prompt(req.completion_request.prompt.as_str());
+    let prompt = &raw_prompt;
+    let mut output_request = OutputRequest::default();
+
+    let inference_params = InferenceParameters {
+        // n_batch: 4,
+        // n_threads: 2,
+        ..Default::default()
+    };
+
+    // Manual tokenization if needed
+    // let vocab = model.vocabulary();
+    // let prompt_tokens: Vec<i32> = vocab
+    //     .tokenize(prompt, true)
+    //     .into_par_iter() // Flatten to create a parallel iterator over the tuples
+    //     .flatten() // Flatten the nested vectors
+    //     .map(|(_, tok)| tok)
+    //     .collect();
+
+    // for batch in prompt_tokens.chunks(inference_params.n_batch) {
+    //     model.evaluate(&mut session, inference_params, batch, &mut output_request);
+    //     for &tk in batch {
+    //         // Update the tokens for this session
+    //         session.tokens.push(tk);
+    //     }
+    // }
+
+    match session.feed_prompt::<Infallible>(
+        model.as_ref(),
+        &inference_params,
+        prompt,
+        &mut output_request,
+        |_| Ok(InferenceFeedback::Continue),
+    ) {
+        Ok(_) => {}
+        Err(e) => {
+            println!("Error while feeding prompt: {:?}", e);
+            return None;
+        }
+    }
+
+    let handle = spawn_inference_thread(req, inference_params, session, output_request);
+    Some(handle)
+}
+
+fn spawn_inference_thread(
+    req: InferenceThreadRequest,
+    inference_params: InferenceParameters,
+    mut session: llm::InferenceSession,
+    mut output_request: OutputRequest,
+) -> JoinHandle<()> {
+    println!("Spawning inference thread...");
+    let handle = actix_web::rt::task::spawn_blocking(move || {
         let mut rng = ChaCha8Rng::seed_from_u64(42);
-
-        let raw_prompt = clean_prompt(req.completion_request.prompt.as_str());
-        let prompt = &raw_prompt;
-        let mut output_request = OutputRequest::default();
-
-        let inference_params = &InferenceParameters {
-            // n_batch: 4,
-            // n_threads: 2,
-            ..Default::default()
-        };
-
-        // Manual tokenization if needed
-        // let vocab = model.vocabulary();
-        // let prompt_tokens: Vec<i32> = vocab
-        //     .tokenize(prompt, true)
-        //     .into_par_iter() // Flatten to create a parallel iterator over the tuples
-        //     .flatten() // Flatten the nested vectors
-        //     .map(|(_, tok)| tok)
-        //     .collect();
-
-        // for batch in prompt_tokens.chunks(inference_params.n_batch) {
-        //     model.evaluate(&mut session, inference_params, batch, &mut output_request);
-        //     for &tk in batch {
-        //         // Update the tokens for this session
-        //         session.tokens.push(tk);
-        //     }
-        // }
-
-        with_model(&req.model_guard, |model| {
-            session.feed_prompt::<Infallible>(
-                model.as_ref(),
-                &inference_params,
-                prompt,
-                &mut output_request,
-                |_| Ok(InferenceFeedback::Continue),
-            )
-        })
-        .unwrap()
-        .unwrap();
-
         let mut tokens_processed = 0;
         let maximum_token_count = usize::MAX;
-
         let mut token_utf8_buf = TokenUtf8Buffer::new();
+        let guard = req.model_guard.read();
+        let model = match &*guard {
+            Some(m) => m,
+            None => {
+                println!("Model locked, cannot be loaded");
+                return;
+            }
+        };
 
         while tokens_processed < maximum_token_count {
             if *Arc::clone(&req.abort_flag).read() {
                 break;
             }
-            let mut end_of_text = false;
-            with_model(&req.model_guard, |model| {
-                let token = match session.infer_next_token(
-                    model.as_ref(),
-                    &inference_params,
-                    &mut output_request,
-                    &mut rng,
-                ) {
-                    Ok(t) => t,
-                    Err(InferenceError::EndOfText) => {
-                        end_of_text = true;
-                        &[0]
-                    }
-                    Err(e) => {
-                        println!("{}", e.to_string());
-                        end_of_text = true;
-                        &[0]
-                    }
-                };
 
-                // Buffer the token until it's valid UTF-8, then call the callback.
-                if !end_of_text {
-                    if let Some(tokens) = token_utf8_buf.push(token) {
-                        req.token_sender
-                            .try_send(get_completion_resp(tokens))
-                            .unwrap();
+            let mut end_of_text = false;
+            let token = match session.infer_next_token(
+                model.as_ref(),
+                &inference_params,
+                &mut output_request,
+                &mut rng,
+            ) {
+                Ok(t) => t,
+                Err(InferenceError::EndOfText) => {
+                    end_of_text = true;
+                    &[0]
+                }
+                Err(e) => {
+                    println!("{}", e.to_string());
+                    end_of_text = true;
+                    &[0]
+                }
+            };
+
+            // Buffer the token until it's valid UTF-8, then call the callback.
+            if !end_of_text {
+                if let Some(tokens) = token_utf8_buf.push(token) {
+                    match req.token_sender.send(get_completion_resp(tokens)) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            println!("Error while sending token: {:?}", e);
+                            break;
+                        }
                     }
                 }
-            })
-            .unwrap();
+            }
 
             if end_of_text {
                 break;
@@ -161,7 +183,6 @@ pub fn spawn_inference_thread(req: InferenceThreadRequest) {
 
             tokens_processed += 1;
         }
-
         // Run inference
         // let res = session.infer::<Infallible>(
         //     model.as_ref(),
@@ -215,5 +236,6 @@ pub fn spawn_inference_thread(req: InferenceThreadRequest) {
         //             .unwrap();
         //     }
         // }
-    })
+    });
+    handle
 }
