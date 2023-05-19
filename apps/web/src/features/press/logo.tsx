@@ -1,11 +1,11 @@
-import { Jalias } from "@localai/ui/icons/jalias"
+import { LocalAI } from "@localai/ui/icons/localai"
 import { QuickLink } from "@localai/ui/link"
 
 export const Logo = () => (
   <QuickLink
-    className="flex items-center gap-2 font-bold text-lg text-mauve-12"
+    className="flex items-center justify-center gap-2 font-bold text-lg text-mauve-12"
     href="/">
-    <Jalias className="w-8 h-8 fill-mauve-12 text-mauve-3" />
-    LocalAI
+    <LocalAI className="w-8 h-8 fill-mauve-12 text-mauve-3" />
+    local.ai
   </QuickLink>
 )

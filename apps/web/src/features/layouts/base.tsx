@@ -1,7 +1,13 @@
+import { Button } from "@localai/ui/button"
+import { QuickLink } from "@localai/ui/link"
+import { GitHubLogoIcon } from "@radix-ui/react-icons"
 import clsx from "clsx"
 import type { ReactNode } from "react"
 
-import { DemoButton } from "~features/press/demo-button"
+import {
+  MacDownloadButton,
+  MiniDownloadButtonGroup
+} from "~features/press/download-buttons"
 import { Logo } from "~features/press/logo"
 
 const defaultNavItems = [
@@ -23,7 +29,7 @@ export const BasicLayout = ({
   children = null as ReactNode
 }) => {
   return (
-    <div className="bg-mauve-1 text-mauve-11 h-screen">
+    <div className="bg-mauve-1 text-mauve-11 h-screen overflow-auto">
       {/* <!-- Header --> */}
       <header className="sticky top-0 p-4 backdrop-blur-md backdrop-saturate-100 bg-transparent text-mauve-11 before:bg-mauve-3 ">
         <div className="container mx-auto flex justify-between items-center gap-12">
@@ -43,21 +49,31 @@ export const BasicLayout = ({
             </li> */}
             </ul>
           </nav>
-          <DemoButton />
+          <MiniDownloadButtonGroup />
         </div>
       </header>
 
       {children}
 
-      <footer className={clsx("bg-mauve-3 text-mauve-11", "px-4 py-12")}>
+      <footer className={clsx("bg-mauve-2 text-mauve-11", "px-8 py-12")}>
         <div
           className={clsx(
-            "container mx-auto",
-            "flex flex-col md:flex-row gap-12 items-start justify-between"
+            "flex flex-col md:flex-row gap-12 items-center justify-center"
           )}>
           {/* <!-- Company Information --> */}
-          <Logo />
-          <div>All Right Reserved, Plasmo © 2023</div>
+          <div className="text-mauve-10">
+            All Right Reserved,{" "}
+            <QuickLink className="text-violet-9" href="https://plasmo.com/">
+              Plasmo
+            </QuickLink>{" "}
+            © 2023
+          </div>
+
+          <QuickLink href="https://github.com/louisgv/local.ai">
+            <Button>
+              <GitHubLogoIcon />
+            </Button>
+          </QuickLink>
           {/* <!-- Contact Details --> */}
           {/* <div>
           <h3 className="font-bold text-xl mb-2" id="contact-us">
