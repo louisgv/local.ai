@@ -4,10 +4,6 @@ import { Input } from "@localai/ui/input"
 import { ReloadIcon } from "@radix-ui/react-icons"
 import { open } from "@tauri-apps/api/dialog"
 import { invoke } from "@tauri-apps/api/tauri"
-import clsx from "clsx"
-
-import "iconoir-react"
-
 import { useState } from "react"
 
 import {
@@ -58,7 +54,7 @@ function IndexPage() {
 
   return (
     <div
-      className={clsx(
+      className={cn(
         "h-full w-full flex flex-col gap-6 overflow-auto bg-gray-2"
       )}>
       <div className="flex gap-2 sticky top-0 bg-gray-1 w-full p-8 z-50">
