@@ -55,7 +55,9 @@ pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
             model.as_ref(),
             &mut rand::thread_rng(),
             &InferenceRequest {
-                prompt: "Who were the president of the USA in 1980, 1960, and 1999?",
+                prompt: llm::Prompt::Text(
+                    "Who were the president of the USA in 1980, 1960, and 1999?",
+                ),
                 ..Default::default()
             },
             // OutputRequest
@@ -69,7 +71,7 @@ pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
             model.as_ref(),
             &mut rand::thread_rng(),
             &InferenceRequest {
-                prompt: "
+                prompt: llm::Prompt::Text("
                 You: Who built the statue of liberty?
                 
                 AI: The Statue of Liberty was designed by Gustave Eiffel and constructed between 1875-1884 under the supervision of Richard Morris Hunt, an American architect who also served as the first Superintendent of the National Park Service.
@@ -79,7 +81,7 @@ pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
                 AI: Yes, Gustave Eiffeel is known for designing many famous structures including the Eiffel Tower in Paris, France.
                 
                 You: Did he work on the Eiffel tower with his father?
-                ",
+                "),
                 ..Default::default()
             },
             // OutputRequest
@@ -92,7 +94,7 @@ pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
             model.as_ref(),
             &mut rand::thread_rng(),
             &InferenceRequest {
-                prompt: "Give me 10 fruits that are bitter:",
+                prompt: llm::Prompt::Text("Give me 10 fruits that are bitter:"),
                 ..Default::default()
             },
             // OutputRequest
@@ -105,7 +107,7 @@ pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
             model.as_ref(),
             &mut rand::thread_rng(),
             &InferenceRequest {
-                prompt: "What are 10 interesting insects?",
+                prompt: llm::Prompt::Text("What are 10 interesting insects?"),
                 ..Default::default()
             },
             // OutputRequest
@@ -118,7 +120,7 @@ pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
             model.as_ref(),
             &mut rand::thread_rng(),
             &InferenceRequest {
-                prompt: "Give me 10 different ways animal survived.",
+                prompt: llm::Prompt::Text("Give me 10 different ways animal survived."),
                 ..Default::default()
             },
             // OutputRequest
@@ -131,7 +133,7 @@ pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
             model.as_ref(),
             &mut rand::thread_rng(),
             &InferenceRequest {
-                prompt: "Who built the Pentagon?",
+                prompt: llm::Prompt::Text("Who built the Pentagon?"),
                 ..Default::default()
             },
             // OutputRequest

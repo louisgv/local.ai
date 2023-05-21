@@ -148,7 +148,7 @@ pub async fn load_model<'a>(path: &str, model_type: &str) -> Result<(), String> 
         model_path,
         llm::ModelParameters {
             prefer_mmap: true,
-            n_context_tokens: 8472,
+            context_size: 8472,
             ..Default::default()
         },
         None,

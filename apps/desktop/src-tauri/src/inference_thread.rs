@@ -3,7 +3,8 @@ use std::{convert::Infallible, sync::Arc};
 use actix_web::web::Bytes;
 use flume::Sender;
 use llm::{
-    InferenceError, InferenceFeedback, InferenceParameters, Model, OutputRequest, TokenUtf8Buffer,
+    InferenceError, InferenceFeedback, InferenceParameters, Model, OutputRequest, Prompt,
+    TokenUtf8Buffer,
 };
 use parking_lot::RwLock;
 
@@ -101,10 +102,10 @@ pub fn start_inference(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
     //     }
     // }
 
-    match session.feed_prompt::<Infallible>(
+    match session.feed_prompt::<Infallible, Prompt>(
         model.as_ref(),
         &inference_params,
-        prompt,
+        prompt.into(),
         &mut output_request,
         |_| Ok(InferenceFeedback::Continue),
     ) {
