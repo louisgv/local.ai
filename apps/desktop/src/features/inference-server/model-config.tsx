@@ -19,7 +19,7 @@ export enum ModelType {
   Llama = "llama",
   GptJ = "gptj",
   Mpt = "mpt",
-  NeoX = "neox",
+  NeoX = "gptneox",
   RedPajama = "redpajama",
   Bloom = "bloom",
   Gpt2 = "gpt2"

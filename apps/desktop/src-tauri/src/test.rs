@@ -4,22 +4,13 @@ use llm::{
     InferenceResponse, InferenceStats,
 };
 use md5::Md5;
-use once_cell::sync::Lazy;
-use serde::{Deserialize, Serialize};
 use sha2::Sha256;
-use std::io::Read;
 use tokio::{
     fs::File,
     io::{self, AsyncReadExt},
 };
 
-use rayon::prelude::*;
-
-use std::{
-    convert::Infallible,
-    io::{BufReader, Seek, SeekFrom, Write},
-    path::Path,
-};
+use std::{convert::Infallible, io::Write, path::Path};
 
 fn handle_inference_response(r: InferenceResponse) -> Result<InferenceFeedback, Infallible> {
     match r {

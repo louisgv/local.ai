@@ -1,5 +1,6 @@
+import { cn } from "@localai/theme/utils"
 import { Button, SpinnerButton } from "@localai/ui/button"
-import { ReloadIcon } from "@radix-ui/react-icons"
+import { CrossCircledIcon, ReloadIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
 import { useEffect, useRef, useState } from "react"
 
@@ -12,13 +13,15 @@ type ModelDigest = {
   blake3: string
 }
 
-const HashDisplay = ({ hashType = "", hashValue = "" }) => {
+const HashDisplay = ({ hashType = "", hashValue = "", truncated = false }) => {
   return (
     <div className="flex justify-between gap-4">
       <label className="font-bold">{hashType}</label>
-      <p>
-        {hashValue.slice(0, 4)}...{hashValue.slice(-7)}
-      </p>
+      <code>
+        {truncated
+          ? `${hashValue.slice(0, 4)}...${hashValue.slice(-7)}`
+          : hashValue}
+      </code>
     </div>
   )
 }
@@ -26,7 +29,7 @@ const HashDisplay = ({ hashType = "", hashValue = "" }) => {
 export function ModelDigest({ model }: { model: ModelMetadata }) {
   const [digestHash, setDigestHash] = useState<ModelDigest>(null)
   const [isCalculating, setIsCalculating] = useState(false)
-
+  const [showDetail, setShowDetail] = useState(false)
   const { initState } = useInit(async () => {
     const resp = await invoke<ModelDigest>("get_cached_integrity", {
       path: model.path
@@ -53,32 +56,52 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
   return (
     <div
       // title="🚨 WARNING 🚨: hash computation is an intensive task, a 4GB model can take up to 5 minutes."
-      className="flex justify-end text-gray-10 w-64">
+      className="flex justify-end text-gray-10 w-64 relative">
       {digestHash ? (
-        <div className="flex items-center gap-4 bg-gray-3 rounded-lg pl-4">
-          <button className="hover:text-gray-12" onClick={computeDigest}>
-            <ReloadIcon />
-          </button>
-          <button
-            className="text-xs hover:bg-gray-4 p-2 rounded-md"
-            onClick={() => {
-              alert(`
-              MD5:\n${digestHash.md5}
-              ===
-              SHA256:\n${digestHash.sha256}
-              ===
-              BLAKE3:\n${digestHash.blake3}
-            `)
-            }}>
-            {["md5", "sha256"].map((hashType) => (
-              <HashDisplay
-                key={hashType}
-                hashType={hashType.toUpperCase()}
-                hashValue={digestHash[hashType]}
-              />
-            ))}
-          </button>
-        </div>
+        <>
+          <div
+            className={cn(
+              "absolute right-0 top-0",
+              "transition-opacity",
+              showDetail
+                ? "z-10 opacity-100 pointer-events-auto"
+                : "z-0 opacity-0 pointer-events-none"
+            )}>
+            <div className="bg-gray-4 relative px-5 py-4 rounded-lg">
+              <button
+                className="absolute right-1 top-1"
+                onClick={() => setShowDetail(false)}>
+                <CrossCircledIcon />
+              </button>
+              {["blake3", "sha256"].map((hashType) => (
+                <HashDisplay
+                  key={hashType}
+                  hashType={hashType.toUpperCase()}
+                  hashValue={digestHash[hashType]}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-4 bg-gray-3 rounded-lg pl-4">
+            <button className="hover:text-gray-12" onClick={computeDigest}>
+              <ReloadIcon />
+            </button>
+            <button
+              className="text-xs hover:bg-gray-4 p-2 rounded-md"
+              onClick={() => {
+                setShowDetail(true)
+              }}>
+              {["blake3", "sha256"].map((hashType) => (
+                <HashDisplay
+                  key={hashType}
+                  truncated
+                  hashType={hashType.toUpperCase()}
+                  hashValue={digestHash[hashType]}
+                />
+              ))}
+            </button>
+          </div>
+        </>
       ) : (
         <SpinnerButton
           isSpinning={isCalculating || initState === InitState.Initializing}
