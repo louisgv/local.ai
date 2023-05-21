@@ -44,6 +44,8 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
     ModelLoadState.Default
   )
 
+  const [isTesting, setIsTesting] = useState(false)
+
   useInit(async () => {
     const resp = await invoke<string>("get_cached_model_type", {
       path: model.path
@@ -69,14 +71,16 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
       />
 
       <SpinnerButton
-        isSpinning={modelLoadState === ModelLoadState.Loading}
+        isSpinning={modelLoadState === ModelLoadState.Loading || isTesting}
         disabled={modelLoadState === ModelLoadState.Loaded}
         onClick={async () => {
+          setIsTesting(true)
           await invoke("test_model", {
             ...model,
             modelType,
             label
           })
+          setIsTesting(false)
         }}>
         Test Model
       </SpinnerButton>
