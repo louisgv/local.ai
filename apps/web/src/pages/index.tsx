@@ -1,28 +1,10 @@
 import { QuickLink } from "@localai/ui/link"
-import {
-  CardStackPlusIcon,
-  FileIcon,
-  FilePlusIcon,
-  StackIcon
-} from "@radix-ui/react-icons"
 import { clsx } from "clsx"
 import {
-  AddDatabaseScript,
-  Barcode,
-  CloudDownload,
-  DataTransferCheck,
-  HistoricShield,
   ListSelect,
-  SecurityPass,
-  Server,
   ServerConnection,
-  ShieldAlert,
-  ShieldCheck,
-  ShieldSearch,
   ShoppingCodeCheck,
-  Tools,
-  TriangleFlag,
-  WarningWindow
+  TriangleFlag
 } from "iconoir-react"
 import type { NextPage } from "next"
 import { NextSeo } from "next-seo"

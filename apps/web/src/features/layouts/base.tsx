@@ -63,9 +63,7 @@ export const BasicLayout = ({
           {/* <!-- Company Information --> */}
           <div className="text-mauve-10">
             All Right Reserved,{" "}
-            <QuickLink className="text-violet-9" href="https://plasmo.com/">
-              Plasmo
-            </QuickLink>{" "}
+            <QuickLink href="https://github.com/louisgv/">L ❤️ ☮ ✋</QuickLink>{" "}
             © 2023
           </div>
 
