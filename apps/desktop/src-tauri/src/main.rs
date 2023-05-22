@@ -12,6 +12,7 @@ mod inference_server;
 mod inference_thread;
 mod kv_bucket;
 mod model_integrity;
+mod model_pool;
 mod model_type;
 mod models_directory;
 mod path;

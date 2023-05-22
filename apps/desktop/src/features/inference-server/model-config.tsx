@@ -36,7 +36,8 @@ export enum ModelLoadState {
 export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
   const [label, setLabel] = useState("")
   const {
-    activeModelState: [activeModel, setActiveModel]
+    activeModelState: [activeModel, setActiveModel],
+    concurrencyState: [concurrency]
   } = useGlobal()
   // TODO: Cache the model type in a kv later
   const [modelType, setModelType] = useState<ModelType>(ModelType.GptJ)
@@ -115,7 +116,8 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
               await invoke("load_model", {
                 ...model,
                 modelType,
-                label
+                label,
+                concurrency
               })
               setActiveModel(model)
               setModelLoadState(ModelLoadState.Loaded)

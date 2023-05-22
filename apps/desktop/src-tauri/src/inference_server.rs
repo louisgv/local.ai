@@ -11,16 +11,13 @@ use std::sync::{
     Arc,
 };
 
-use llm::{load_progress_callback_stdout, Model};
-
-use std::path::Path;
+use llm::Model;
 
 use crate::abort_stream::AbortStream;
 use crate::inference_thread::{
     start_inference, CompletionRequest, InferenceThreadRequest, ModelGuard,
 };
-
-static LOADED_MODEL: Lazy<ModelGuard> = Lazy::new(|| Arc::new(RwLock::new(None)));
+use crate::model_pool::{self, spawn_pool};
 
 static _LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
@@ -48,8 +45,8 @@ async fn ping() -> impl Responder {
 async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     println!("Received completion request: {:?}", payload.0);
 
-    if !LOADED_MODEL.read().is_some() {
-        println!("No model loaded.");
+    if model_pool::is_empty() {
+        println!("No model loaded or available in the pool.");
         return HttpResponse::InternalServerError().finish();
     }
 
@@ -57,8 +54,16 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 
     let abort_flag = Arc::new(RwLock::new(false));
 
+    let model_guard = match model_pool::get_model() {
+        Some(guard) => guard,
+        None => {
+            println!("No model available.");
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
     let inference_thread = match start_inference(InferenceThreadRequest {
-        model_guard: Arc::clone(&LOADED_MODEL),
+        model_guard: Arc::clone(&model_guard),
         abort_flag: Arc::clone(&abort_flag),
         token_sender,
         completion_request: payload.0,
@@ -134,39 +139,10 @@ pub async fn stop_server<'a>(state: tauri::State<'a, InferenceServerState>) -> R
 }
 
 #[tauri::command]
-pub async fn load_model<'a>(path: &str, model_type: &str) -> Result<(), String> {
-    let now = std::time::Instant::now();
-    let model_path = Path::new(path);
-
-    let architecture = match model_type.parse() {
-        Ok(architecture) => architecture,
-        Err(_) => return Err(format!("Invalid model type: {model_type}")),
-    };
-
-    let model = match llm::load_dynamic(
-        architecture,
-        model_path,
-        llm::ModelParameters {
-            prefer_mmap: true,
-            context_size: 8472,
-            ..Default::default()
-        },
-        None,
-        load_progress_callback_stdout,
-    ) {
-        Ok(model) => model,
-        Err(err) => return Err(format!("Error loading model: {}", err)),
-    };
-
-    println!(
-        "Model fully loaded! Elapsed: {}ms",
-        now.elapsed().as_millis()
-    );
-
-    *LOADED_MODEL.write() = Some(model);
-
-    // let mut modelmap = LOADED_MODELMAP.lock();
-    // modelmap.insert(name.to_string(), model);
-
-    Ok(())
+pub async fn load_model<'a>(
+    path: &str,
+    model_type: &str,
+    concurrency: usize,
+) -> Result<(), String> {
+    spawn_pool(path, model_type, concurrency)
 }

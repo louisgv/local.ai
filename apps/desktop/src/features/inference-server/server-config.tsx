@@ -4,8 +4,14 @@ import { Input } from "@localai/ui/input"
 import { invoke } from "@tauri-apps/api/tauri"
 import { useState } from "react"
 
+import { useGlobal } from "~providers/global"
+
 export const ServerConfig = () => {
   const [port, setPort] = useState(8000)
+  const {
+    concurrencyState: [concurrency, setConcurrency]
+  } = useGlobal()
+
   const [isStarted, setIsStarted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   return (
@@ -16,6 +22,13 @@ export const ServerConfig = () => {
         placeholder="Port"
         value={port}
         onChange={(e) => setPort(e.target.valueAsNumber || 0)}
+      />
+      <Input
+        className="w-24"
+        disabled={isStarted}
+        placeholder="Concurrency"
+        value={concurrency}
+        onChange={(e) => setConcurrency(e.target.valueAsNumber || 0)}
       />
       <SpinnerButton
         isSpinning={isLoading}

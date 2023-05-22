@@ -5,9 +5,11 @@ import { type ModelMetadata } from "~core/model-file"
 
 const useGlobalProvider = () => {
   const activeModelState = useState<ModelMetadata>(null)
+  const concurrencyState = useState(4)
 
   return {
-    activeModelState
+    activeModelState,
+    concurrencyState
   }
 }
 

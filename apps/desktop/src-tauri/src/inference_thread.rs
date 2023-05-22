@@ -6,13 +6,15 @@ use llm::{
     InferenceError, InferenceFeedback, InferenceParameters, Model, OutputRequest, Prompt,
     TokenUtf8Buffer,
 };
-use parking_lot::RwLock;
+use parking_lot::{Mutex, RwLock};
 
 use rand::prelude::*;
 
 use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use tokio::task::JoinHandle;
+
+use crate::model_pool;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CompletionRequest {
@@ -22,7 +24,7 @@ pub struct CompletionRequest {
     stream: bool,
 }
 
-pub type ModelGuard = Arc<RwLock<Option<Box<dyn Model>>>>;
+pub type ModelGuard = Arc<Mutex<Option<Box<dyn Model>>>>;
 
 pub struct InferenceThreadRequest {
     pub token_sender: Sender<Bytes>,
@@ -64,7 +66,7 @@ pub fn start_inference(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
 
     // Need to clone it to have its own arc
     let guard_clone = Arc::clone(&req.model_guard);
-    let guard = guard_clone.read();
+    let guard = guard_clone.lock();
     let model = match &*guard {
         Some(m) => m,
         None => {
@@ -74,6 +76,7 @@ pub fn start_inference(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
     };
 
     let mut session = model.start_session(Default::default());
+    println!("Session created ...");
 
     let raw_prompt = clean_prompt(req.completion_request.prompt.as_str());
     let prompt = &raw_prompt;
@@ -102,6 +105,7 @@ pub fn start_inference(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
     //     }
     // }
 
+    println!("Feeding prompt ...");
     match session.feed_prompt::<Infallible, Prompt>(
         model.as_ref(),
         &inference_params,
@@ -132,7 +136,7 @@ fn spawn_inference_thread(
         let mut tokens_processed = 0;
         let maximum_token_count = usize::MAX;
         let mut token_utf8_buf = TokenUtf8Buffer::new();
-        let guard = req.model_guard.read();
+        let guard = req.model_guard.lock();
         let model = match &*guard {
             Some(m) => m,
             None => {
@@ -184,6 +188,10 @@ fn spawn_inference_thread(
 
             tokens_processed += 1;
         }
+        // TODO: Might make this into a callback later, for now we just abuse the singleton
+
+        model_pool::return_model(Some(Arc::clone(&req.model_guard)));
+
         // Run inference
         // let res = session.infer::<Infallible>(
         //     model.as_ref(),
