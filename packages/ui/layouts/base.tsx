@@ -1,14 +1,9 @@
-import { Button } from "@localai/ui/button"
-import { QuickLink } from "@localai/ui/link"
 import { GitHubLogoIcon } from "@radix-ui/react-icons"
 import clsx from "clsx"
 import type { ReactNode } from "react"
 
-import {
-  MacDownloadButton,
-  MiniDownloadButtonGroup
-} from "~features/press/download-buttons"
-import { Logo } from "~features/press/logo"
+import { Button } from "../button"
+import { QuickLink } from "../link"
 
 const defaultNavItems = [
   {
@@ -26,14 +21,16 @@ export type NavItems = (typeof defaultNavItems)[number]
  */
 export const BasicLayout = ({
   nav = defaultNavItems as NavItems[],
-  children = null as ReactNode
+  children = null as ReactNode,
+  logo = null as ReactNode,
+  rightNav = null as ReactNode
 }) => {
   return (
     <div className="bg-mauve-1 text-mauve-11 h-screen overflow-auto">
       {/* <!-- Header --> */}
       <header className="sticky top-0 p-4 backdrop-blur-md backdrop-saturate-100 bg-transparent text-mauve-11 before:bg-mauve-3 ">
         <div className="container mx-auto flex justify-between items-center gap-12">
-          <Logo />
+          {logo}
           <nav className="hidden md:flex flex-1">
             <ul className="flex space-x-4">
               {nav.map((navi) => (
@@ -49,7 +46,7 @@ export const BasicLayout = ({
             </li> */}
             </ul>
           </nav>
-          <MiniDownloadButtonGroup />
+          {rightNav}
         </div>
       </header>
 

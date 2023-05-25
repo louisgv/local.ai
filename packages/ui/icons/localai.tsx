@@ -10,6 +10,7 @@ const LocalAISvg = (
     height={824}
     fill="none"
     viewBox="0 0 824 824"
+    ref={ref}
     {...props}>
     <rect width={824} height={824} fill="url(#a)" rx={180} />
     <g filter="url(#b)">

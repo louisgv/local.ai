@@ -1,3 +1,4 @@
+import { BasicLayout } from "@localai/ui/layouts/base"
 import { QuickLink } from "@localai/ui/link"
 import { clsx } from "clsx"
 import {
@@ -11,12 +12,13 @@ import { NextSeo } from "next-seo"
 import type { ReactNode } from "react"
 import Balancer from "react-wrap-balancer"
 
-import { BasicLayout } from "~features/layouts/base"
 import {
   MacDownloadButton,
+  MiniDownloadButtonGroup,
   UbuntuDownloadButton,
   WindowsDownloadButton
 } from "~features/press/download-buttons"
+import { Logo } from "~features/press/logo"
 
 const FeatureCard = ({
   Icon = TriangleFlag,
@@ -35,7 +37,7 @@ const FeatureCard = ({
 )
 
 const IndexPage: NextPage = () => (
-  <BasicLayout>
+  <BasicLayout logo={<Logo />} rightNav={<MiniDownloadButtonGroup />}>
     <NextSeo
       title="local.ai"
       titleTemplate="%s – local.ai"

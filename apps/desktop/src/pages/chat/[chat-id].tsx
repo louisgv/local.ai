@@ -1,9 +1,8 @@
+import { AppLayout } from "@localai/ui/layouts/app"
 import { clsx } from "clsx"
 import { AddCircle, TriangleFlag } from "iconoir-react"
 import type { NextPage } from "next"
 import { useState } from "react"
-
-import { AppLayout } from "~features/layouts/app"
 
 function Nav() {
   const [activeCase, setActiveCase] = useState(0)
