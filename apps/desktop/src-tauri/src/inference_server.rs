@@ -5,19 +5,18 @@ use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
 use std::collections::HashMap;
+use tauri::AppHandle;
 
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
 };
 
-use llm::Model;
-
 use crate::abort_stream::AbortStream;
-use crate::inference_thread::{
-    start_inference, CompletionRequest, InferenceThreadRequest, ModelGuard,
-};
+use crate::inference_thread::{start_inference, CompletionRequest, InferenceThreadRequest};
 use crate::model_pool::{self, spawn_pool};
+use crate::path::get_app_dir_path_buf;
+use llm::Model;
 
 static _LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
@@ -47,20 +46,20 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 
     if model_pool::is_empty() {
         println!("No model loaded or available in the pool.");
-        return HttpResponse::InternalServerError().finish();
+        return HttpResponse::ServiceUnavailable().finish();
     }
 
     let (token_sender, receiver) = flume::unbounded::<Bytes>();
-
-    let abort_flag = Arc::new(RwLock::new(false));
 
     let model_guard = match model_pool::get_model() {
         Some(guard) => guard,
         None => {
             println!("No model available.");
-            return HttpResponse::InternalServerError().finish();
+            return HttpResponse::ServiceUnavailable().finish();
         }
     };
+
+    let abort_flag = Arc::new(RwLock::new(false));
 
     let inference_thread = match start_inference(InferenceThreadRequest {
         model_guard: Arc::clone(&model_guard),
@@ -140,9 +139,14 @@ pub async fn stop_server<'a>(state: tauri::State<'a, InferenceServerState>) -> R
 
 #[tauri::command]
 pub async fn load_model<'a>(
+    app_handle: AppHandle,
     path: &str,
     model_type: &str,
     concurrency: usize,
 ) -> Result<(), String> {
-    spawn_pool(path, model_type, concurrency)
+    let cache_dir = get_app_dir_path_buf(&app_handle, String::from("inference_cache"))
+        .await
+        .unwrap();
+
+    spawn_pool(path, model_type, concurrency, &cache_dir).await
 }

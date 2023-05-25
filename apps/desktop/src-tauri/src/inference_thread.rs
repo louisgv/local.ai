@@ -14,7 +14,7 @@ use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use tokio::task::JoinHandle;
 
-use crate::model_pool;
+use crate::model_pool::{self, get_inference_params, THREAD_PER_INSTANCE};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CompletionRequest {
@@ -82,11 +82,7 @@ pub fn start_inference(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
     let prompt = &raw_prompt;
     let mut output_request = OutputRequest::default();
 
-    let inference_params = InferenceParameters {
-        // n_batch: 4,
-        // n_threads: 2,
-        ..Default::default()
-    };
+    let inference_params = get_inference_params();
 
     // Manual tokenization if needed
     // let vocab = model.vocabulary();

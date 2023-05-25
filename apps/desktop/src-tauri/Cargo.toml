@@ -17,6 +17,7 @@ llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "
 
 # llm = { git = "https://github.com/danforbes/llama-rs.git", branch = "deps/ggml/update", package = "llm" }
 sys-info = "0.9.1"
+num_cpus = "1.15.0"
 tauri-plugin-persisted-scope = { version = "0.1.0" }
 reqwest = { version = "0.11.17", features = ["json", "stream"] }
 tokio = { version = "1.28.1", features = ["full"] }

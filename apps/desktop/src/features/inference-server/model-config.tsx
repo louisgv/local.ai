@@ -33,6 +33,32 @@ export enum ModelLoadState {
   Loaded
 }
 
+const TestModelButton = ({
+  model,
+  modelType
+}: {
+  model: ModelMetadata
+  modelType: ModelType
+}) => {
+  const [isTesting, setIsTesting] = useState(false)
+
+  return (
+    <SpinnerButton
+      className="text-yellow-9"
+      isSpinning={isTesting}
+      onClick={async () => {
+        setIsTesting(true)
+        await invoke("test_model", {
+          ...model,
+          modelType
+        })
+        setIsTesting(false)
+      }}>
+      Test Model
+    </SpinnerButton>
+  )
+}
+
 export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
   const [label, setLabel] = useState("")
   const {
@@ -44,8 +70,6 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
   const [modelLoadState, setModelLoadState] = useState<ModelLoadState>(
     ModelLoadState.Default
   )
-
-  const [isTesting, setIsTesting] = useState(false)
 
   useInit(async () => {
     const resp = await invoke<string>("get_cached_model_type", {
@@ -71,21 +95,8 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
         onChange={(e) => setLabel(e.target.value)}
       />
 
-      <SpinnerButton
-        isSpinning={modelLoadState === ModelLoadState.Loading || isTesting}
-        disabled={modelLoadState === ModelLoadState.Loaded}
-        onClick={async () => {
-          setIsTesting(true)
-          await invoke("test_model", {
-            ...model,
-            modelType,
-            label
-          })
-          setIsTesting(false)
-        }}>
-        Test Model
-      </SpinnerButton>
       <div className="flex items-center justify-end w-96 gap-2">
+        {/* <TestModelButton model={model} modelType={modelType} /> */}
         <Select
           value={modelType}
           onValueChange={(s: ModelType) => {
