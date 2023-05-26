@@ -1,0 +1,100 @@
+name: Tauri
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-20.04, windows-latest]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - name: Install dependencies (ubuntu only)
+      if: matrix.platform == 'ubuntu-20.04'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev librsvg2-dev
+
+    - name: install node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: pnpm i
+      run: pnpm i
+
+    - name: to tauri path
+      run: |
+          cd apps
+          cd desktop
+
+    - name: Build the app
+      id: tauri_action
+      uses: tauri-apps/tauri-action@dev
+
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tagName: ${{ github.ref_name }} # This only works if your workflow triggers on new tags.
+        releaseName: 'v__VERSION__' # tauri-action replaces \_\_VERSION\_\_ with the app version.
+        releaseBody: 'See the assets to download and install this version.'
+        releaseDraft: false
+        prerelease: false
+
+    - name: Upload exe file
+      uses: actions/upload-artifact@v3
+      with:
+        name: Local AI
+        path: |
+          apps\desktop\src-tauri\target\release\*.exe
+          apps\desktop\src-tauri\target\release\Local AI
+
+    - name: Upload release assets windows
+      if: matrix.platform == 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.tauri_action.outputs.releaseUploadUrl }}
+        asset_path: apps\desktop\src-tauri\target\release\Local AI.exe
+        asset_name: Local AI.exe
+        asset_content_type: application/vnd.microsoft.portable-executable
+
+    - name: Upload release assets linux
+      if: matrix.platform == 'ubuntu-20.04'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.tauri_action.outputs.releaseUploadUrl }}
+        asset_path: apps/desktop/src-tauri/target/release/local-ai
+        asset_name: local_ai_ubuntu
+        asset_content_type: application/octet-stream
+
+    - name: Upload release assets mac
+      if: matrix.platform == 'macos-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.tauri_action.outputs.releaseUploadUrl }}
+        asset_path: apps/desktop/src-tauri/target/release/Local AI
+        asset_name: local_ai_mac
+        asset_content_type: application/octet-stream
