@@ -1,11 +1,26 @@
 {
   "extends": "@plasmo/config/ts/nextjs.json",
-  "include": ["next-env.d.ts", "index.d.ts", "./src/**/*.ts", "./src/**/*.tsx"],
-  "exclude": ["node_modules"],
+  "include": [
+    "next-env.d.ts",
+    "index.d.ts",
+    "./src/**/*.ts",
+    "./src/**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
   "compilerOptions": {
     "paths": {
-      "~*": ["./src/*"]
+      "~*": [
+        "./src/*"
+      ]
     },
-    "baseUrl": "."
+    "baseUrl": ".",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   }
 }

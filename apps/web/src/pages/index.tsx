@@ -1,5 +1,6 @@
 import { BasicLayout } from "@localai/ui/layouts/base"
 import { QuickLink } from "@localai/ui/link"
+import { Logo } from "@localai/ui/logo"
 import { clsx } from "clsx"
 import {
   ListSelect,
@@ -18,7 +19,6 @@ import {
   UbuntuDownloadButton,
   WindowsDownloadButton
 } from "~features/press/download-buttons"
-import { Logo } from "~features/press/logo"
 
 const FeatureCard = ({
   Icon = TriangleFlag,

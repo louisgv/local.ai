@@ -1,5 +1,5 @@
-import { LocalAI } from "@localai/ui/icons/localai"
-import { QuickLink } from "@localai/ui/link"
+import { LocalAI } from "./icons/localai"
+import { QuickLink } from "./link"
 
 export const Logo = () => (
   <QuickLink

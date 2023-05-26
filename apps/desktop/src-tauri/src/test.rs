@@ -1,3 +1,4 @@
+#![allow(warnings, unused)]
 use digest::Digest;
 use llm::{
     load_progress_callback_stdout, InferenceError, InferenceFeedback, InferenceRequest,

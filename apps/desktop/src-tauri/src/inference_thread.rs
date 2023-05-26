@@ -14,7 +14,7 @@ use rand_chacha::ChaCha8Rng;
 use serde::{Deserialize, Serialize};
 use tokio::task::JoinHandle;
 
-use crate::model_pool::{self, get_inference_params, THREAD_PER_INSTANCE};
+use crate::model_pool::{self, get_inference_params};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CompletionRequest {

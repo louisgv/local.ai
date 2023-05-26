@@ -27,7 +27,7 @@ import { useGlobal } from "~providers/global"
 
 // A button to "spawn" an inference server for the selected model
 
-function IndexPage() {
+export function ModelManagerView() {
   const {
     activeModelState: [activeModel]
   } = useGlobal()
@@ -135,5 +135,3 @@ function IndexPage() {
     </div>
   )
 }
-
-export default IndexPage

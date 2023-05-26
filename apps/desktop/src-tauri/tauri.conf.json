@@ -27,6 +27,12 @@
         "all": false,
         "open": true,
         "message": true
+      },
+      "window": {
+        "all": false,
+        "show": true,
+        "maximize": true,
+        "center": true
       }
     },
     "bundle": {
@@ -70,11 +76,12 @@
     },
     "windows": [
       {
-        "fullscreen": false,
-        "height": 720,
-        "resizable": true,
         "title": "local.ai",
-        "width": 1024
+        "resizable": true,
+        "visible": false,
+        "center": true,
+        "width": 1042,
+        "height": 740
       }
     ]
   }
