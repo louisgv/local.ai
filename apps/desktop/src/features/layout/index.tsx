@@ -10,14 +10,11 @@ import { useGlobal } from "~providers/global"
 
 export const Layout = ({ children = null as ReactNode }) => {
   const {
-    activeModelState: [activeModel]
+    serverStartedState: [isStarted]
   } = useGlobal()
 
   return (
-    <AppLayout
-      showSidebar={!!activeModel}
-      nav={<Nav />}
-      sidebar={<ChatSideBar />}>
+    <AppLayout showSidebar={isStarted} nav={<Nav />} sidebar={<ChatSideBar />}>
       {children}
     </AppLayout>
   )

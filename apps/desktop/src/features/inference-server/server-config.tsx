@@ -9,10 +9,10 @@ import { useGlobal } from "~providers/global"
 export const ServerConfig = () => {
   const [port, setPort] = useState(8000)
   const {
-    concurrencyState: [concurrency, setConcurrency]
+    concurrencyState: [concurrency, setConcurrency],
+    serverStartedState: [isStarted, setIsStarted]
   } = useGlobal()
 
-  const [isStarted, setIsStarted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   return (
     <div className="flex items-center justify-end w-full gap-2">
@@ -21,6 +21,7 @@ export const ServerConfig = () => {
         disabled={isStarted}
         placeholder="Port"
         value={port}
+        type="number"
         onChange={(e) => setPort(e.target.valueAsNumber || 0)}
       />
       <Input
@@ -28,6 +29,7 @@ export const ServerConfig = () => {
         disabled={isStarted}
         placeholder="Concurrency"
         value={concurrency}
+        type="number"
         onChange={(e) => setConcurrency(e.target.valueAsNumber || 0)}
       />
       <SpinnerButton

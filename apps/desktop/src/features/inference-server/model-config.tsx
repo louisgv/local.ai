@@ -89,12 +89,12 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
 
   return (
     <div className="flex items-center justify-between w-full gap-2">
-      <Input
+      {/* <Input
         placeholder="Label"
         value={label}
         onChange={(e) => setLabel(e.target.value)}
-      />
-
+      /> */}
+      <div />
       <div className="flex items-center justify-end w-96 gap-2">
         {/* <TestModelButton model={model} modelType={modelType} /> */}
         <Select

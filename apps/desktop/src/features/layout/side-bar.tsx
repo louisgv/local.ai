@@ -1,6 +1,5 @@
-import { cn } from "@localai/theme/utils"
-
-import { useGlobal } from "~providers/global"
+import { NavButton } from "~features/layout/nav-button"
+import { Route, useGlobal } from "~providers/global"
 
 export function ChatSideBar() {
   const {
@@ -14,17 +13,12 @@ export function ChatSideBar() {
       className="flex flex-1 flex-col gap-y-4 overflow-auto px-4 border-b border-gray-3 py-4 pr-2">
       {chatList.map((item) => (
         <li key={item.name}>
-          <button
-            onClick={() => {
+          <NavButton
+            route={Route.Chat}
+            isActive={item.id === activeChat}
+            onPressed={async () => {
               setActiveChat(item.id)
-            }}
-            className={cn(
-              item.id === activeChat
-                ? "bg-gray-3 text-gray-12"
-                : "text-gray-11 hover:text-gray-12 hover:bg-gray-3",
-              "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold",
-              "w-full"
-            )}>
+            }}>
             <item.icon className="h-6 w-6 shrink-0" aria-hidden="true" />
             {item.name}
             {item.count ? (
@@ -34,7 +28,7 @@ export function ChatSideBar() {
                 {item.count}
               </span>
             ) : null}
-          </button>
+          </NavButton>
         </li>
       ))}
     </ul>

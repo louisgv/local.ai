@@ -7,6 +7,7 @@ use inference_server::InferenceServerState;
 
 mod abort_stream;
 mod config;
+mod db;
 mod downloader;
 mod inference_server;
 mod inference_thread;
@@ -17,6 +18,7 @@ mod model_type;
 mod models_directory;
 mod path;
 mod test;
+
 fn main() {
     tauri::Builder::default()
         .manage(InferenceServerState::default())

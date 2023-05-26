@@ -1,20 +1,24 @@
 import { MarkdownContainer } from "@localai/ui/markdown-container"
 import type { NextPage } from "next"
 
-export const ChatView: NextPage = () => (
-  <div className="flex flex-col gap-6 p-8">
-    <MarkdownContainer>
-      {`
-## Demo chat
+import { useGlobal } from "~providers/global"
 
-This is a demo case.
-
-| Action | Description |
-| :--- | :--- |
-| Delete Email | Delete the email address from the database. |
-| Block IP | Block the IP address from accessing the site. |
-
-`}
-    </MarkdownContainer>
-  </div>
-)
+export const ChatView: NextPage = () => {
+  const {
+    activeChatState: [activeChat]
+  } = useGlobal()
+  return (
+    <div className="flex flex-col gap-6 p-8">
+      <MarkdownContainer>
+        {`
+    ## Chat ${activeChat}
+    
+    This is a demo chat.
+    
+    - [x] This is a task
+    
+    `}
+      </MarkdownContainer>
+    </div>
+  )
+}

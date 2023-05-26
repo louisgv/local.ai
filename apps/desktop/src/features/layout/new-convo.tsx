@@ -12,14 +12,13 @@ export const NewConvoButton = ({ className = "" }) => {
   return (
     <Button
       className={className}
-      onClick={() => {
-        const caseId = (chatList[0]?.id || 0) + 1
-        setActiveChat(caseId)
+      onClick={async () => {
+        const chatId = (chatList[0]?.id || 0) + 1
+        setActiveChat(chatId)
         setChatList((cc) => [
           {
-            id: caseId,
-            name: `Convo ${caseId}`,
-            href: `/chat/${caseId}`,
+            id: chatId,
+            name: `Convo ${chatId}`,
             icon: TriangleFlag,
             count: 12
           },

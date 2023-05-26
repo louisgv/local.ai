@@ -94,7 +94,7 @@ export function ModelManagerView() {
         <Input
           className="w-full"
           readOnly
-          value={activeModel?.name}
+          value={activeModel?.name || ""}
           placeholder="Active Model"
         />
         <ServerConfig />

@@ -9,7 +9,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className={cn("relative flex h-10", className)}>
         <label
           className={cn(
-            "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-50",
+            "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-50 text-ellipsis whitespace-nowrap",
             props.value || props.defaultValue ? "opacity-100" : "opacity-0"
           )}>
           {props.placeholder}
