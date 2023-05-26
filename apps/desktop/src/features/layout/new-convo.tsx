@@ -1,5 +1,5 @@
 import { Button } from "@localai/ui/button"
-import { AddCircle, TriangleFlag } from "iconoir-react"
+import { AddCircle } from "iconoir-react"
 
 import { useGlobal } from "~providers/global"
 
@@ -19,7 +19,7 @@ export const NewConvoButton = ({ className = "" }) => {
           {
             id: chatId,
             name: `Convo ${chatId}`,
-            icon: TriangleFlag,
+            type: "chat",
             count: 12
           },
           ...cc

@@ -1,5 +1,21 @@
+import { MessageText, PeopleTag } from "iconoir-react"
+import { useMemo } from "react"
+
 import { NavButton } from "~features/layout/nav-button"
 import { Route, useGlobal } from "~providers/global"
+
+const iconMap = {
+  chat: MessageText,
+  agent: PeopleTag
+} as const
+
+export type ChatType = keyof typeof iconMap
+
+function ChatIcon({ type = undefined as ChatType }) {
+  const Icon = useMemo(() => iconMap[type], [type])
+
+  return <Icon className="h-6 w-6 shrink-0" aria-hidden="true" />
+}
 
 export function ChatSideBar() {
   const {
@@ -19,7 +35,7 @@ export function ChatSideBar() {
             onPressed={async () => {
               setActiveChat(item.id)
             }}>
-            <item.icon className="h-6 w-6 shrink-0" aria-hidden="true" />
+            <ChatIcon type={item.type} />
             {item.name}
             {item.count ? (
               <span

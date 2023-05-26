@@ -8,15 +8,14 @@ export const ChatView: NextPage = () => {
     activeChatState: [activeChat]
   } = useGlobal()
   return (
-    <div className="flex flex-col gap-6 p-8">
+    <div className="flex flex-col gap-6 p-8 bg-gray-2">
       <MarkdownContainer>
         {`
-    ## Chat ${activeChat}
+## Chat ${activeChat}
     
-    This is a demo chat.
-    
-    - [x] This is a task
-    
+This is a demo chat.
+
+- [x] This is a task
     `}
       </MarkdownContainer>
     </div>
