@@ -18,6 +18,7 @@ export const NavButton = ({
     <Button
       className={cn(
         "w-full transition-all",
+        "border",
         currentRoute === route && (isActive === undefined ? true : isActive)
           ? "bg-gray-5 text-gray-12 border-gray-12 pointer-events-none"
           : "border-gray-1"

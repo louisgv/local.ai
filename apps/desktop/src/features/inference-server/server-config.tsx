@@ -35,7 +35,7 @@ export const ServerConfig = () => {
       <SpinnerButton
         isSpinning={isLoading}
         className={cn(
-          "w-32 justify-center",
+          "w-32 justify-center border",
           isStarted
             ? "border-red-7 hover:border-red-8 text-red-11 hover:text-red-12"
             : "border-green-9 hover:border-green-10 text-green-11 hover:text-green-12"

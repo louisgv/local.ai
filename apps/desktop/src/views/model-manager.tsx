@@ -15,6 +15,7 @@ import { ModelConfig } from "~features/inference-server/model-config"
 import { ModelDigest } from "~features/inference-server/model-digest"
 import { ServerConfig } from "~features/inference-server/server-config"
 import { useInit } from "~features/inference-server/use-init"
+import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
 import { useGlobal } from "~providers/global"
 
 // Flow: Pick a models directory
@@ -53,11 +54,8 @@ export function ModelManagerView() {
   }
 
   return (
-    <div
-      className={cn(
-        "h-full w-full flex flex-col gap-6 overflow-auto bg-gray-2"
-      )}>
-      <div className="flex gap-2 sticky top-0 bg-gray-1 w-full p-8 z-50">
+    <ViewContainer>
+      <ViewHeader>
         {!!modelsDirectory && (
           <button
             title="Refresh Models Directory"
@@ -91,47 +89,50 @@ export function ModelManagerView() {
           Change
         </Button>
 
-        <Input
-          className="w-full"
-          readOnly
-          value={activeModel?.name || ""}
-          placeholder="Active Model"
-        />
         <ServerConfig />
-      </div>
-
-      {models.length === 0 && (
-        <div className="h-full w-full flex justify-center items-center">
-          <p className="text-gray-9 italic pointer-events-none">
-            To start, change the models directory.
-          </p>
-        </div>
-      )}
-      <div className="flex flex-col gap-6 p-8">
-        {models.map((model: ModelMetadata) => (
-          <div
-            className={cn(
-              "flex flex-col gap-4 rounded-md p-4",
-              "text-gray-11 hover:text-gray-12",
-              "transition-colors",
-              activeModel?.path === model.path
-                ? "ring ring-green-7 hover:ring-green-8"
-                : "ring ring-gray-7 hover:ring-gray-8"
-            )}
-            key={model.name}>
-            <div className="flex items-center justify-between w-full">
-              <div className="flex flex-col justify-between w-full">
-                <div className={"text-md"}>{model.name}</div>
-                <div className="text-xs text-gray-10">
-                  {`${toGB(model.size).toFixed(2)} GB`}
-                </div>
-              </div>
-              <ModelDigest model={model} />
-            </div>
-            <ModelConfig model={model} />
+      </ViewHeader>
+      <ViewBody>
+        {models.length === 0 && (
+          <div className="h-full w-full flex flex-col justify-center items-center">
+            <p className="text-gray-9 italic pointer-events-none">
+              To start, download a model or change the models directory.
+            </p>
           </div>
-        ))}
-      </div>
-    </div>
+        )}
+        <div className="flex flex-col gap-6 p-8">
+          {models
+            .sort((a: ModelMetadata, b: ModelMetadata) =>
+              activeModel?.path === a.path
+                ? -1
+                : activeModel?.path === b.path
+                ? 1
+                : 0
+            )
+            .map((model: ModelMetadata) => (
+              <div
+                className={cn(
+                  "flex flex-col gap-4 rounded-md p-4",
+                  "text-gray-11 hover:text-gray-12",
+                  "transition-colors",
+                  activeModel?.path === model.path
+                    ? "ring ring-green-7 hover:ring-green-8"
+                    : "ring ring-gray-7 hover:ring-gray-8"
+                )}
+                key={model.name}>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex flex-col justify-between w-full">
+                    <div className={"text-md"}>{model.name}</div>
+                    <div className="text-xs text-gray-10">
+                      {`${toGB(model.size).toFixed(2)} GB`}
+                    </div>
+                  </div>
+                  <ModelDigest model={model} />
+                </div>
+                <ModelConfig model={model} />
+              </div>
+            ))}
+        </div>
+      </ViewBody>
+    </ViewContainer>
   )
 }

@@ -1,12 +1,13 @@
 import { Button } from "@localai/ui/button"
 import { AddCircle } from "iconoir-react"
 
-import { useGlobal } from "~providers/global"
+import { Route, useGlobal } from "~providers/global"
 
-export const NewConvoButton = ({ className = "" }) => {
+export const NewThreadButton = ({ className = "" }) => {
   const {
     activeChatState: [_, setActiveChat],
-    chatListState: [chatList, setChatList]
+    chatListState: [chatList, setChatList],
+    routeState: [__, setCurrentRoute]
   } = useGlobal()
 
   return (
@@ -18,14 +19,15 @@ export const NewConvoButton = ({ className = "" }) => {
         setChatList((cc) => [
           {
             id: chatId,
-            name: `Convo ${chatId}`,
+            name: `Thread ${chatId}`,
             type: "chat",
             count: 12
           },
           ...cc
         ])
+        setCurrentRoute(Route.Chat)
       }}>
-      <AddCircle /> New Conversation
+      <AddCircle /> New Thread
     </Button>
   )
 }

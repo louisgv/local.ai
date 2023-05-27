@@ -1,6 +1,7 @@
-import { MarkdownContainer } from "@localai/ui/markdown-container"
 import type { NextPage } from "next"
 
+import { ViewContainer, ViewHeader } from "~features/layout/view"
+import { MessageBlock } from "~features/thread/message-block"
 import { useGlobal } from "~providers/global"
 
 export const ChatView: NextPage = () => {
@@ -8,16 +9,22 @@ export const ChatView: NextPage = () => {
     activeChatState: [activeChat]
   } = useGlobal()
   return (
-    <div className="flex flex-col gap-6 p-8 bg-gray-2">
-      <MarkdownContainer>
+    <ViewContainer>
+      <ViewHeader>Thread {activeChat}</ViewHeader>
+      <MessageBlock>
         {`
-## Chat ${activeChat}
-    
-This is a demo chat.
+# h1
+## h2     
 
-- [x] This is a task
+Est quis cupidatat consequat pariatur nostrud consectetur velit minim duis magna velit consequat tempor occaecat. Labore Lorem ut eu adipisicing qui nulla sunt voluptate voluptate id ad consequat tempor. Exercitation veniam labore Lorem velit ullamco. Et dolore aliquip quis incididunt dolor deserunt eu laborum eu. Ex est anim laborum nostrud aute nulla.
+
+### h3
+
+Enim ad laboris sunt deserunt id nostrud aliquip. Tempor do anim pariatur esse pariatur velit. Esse sint pariatur elit ad adipisicing officia. Occaecat aliquip aliqua sunt aute consequat non non amet velit.
+
+
     `}
-      </MarkdownContainer>
-    </div>
+      </MessageBlock>
+    </ViewContainer>
   )
 }

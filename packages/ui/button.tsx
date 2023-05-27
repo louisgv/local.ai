@@ -13,9 +13,9 @@ export const Button = ({ className, ...props }: ButtonProps) => (
   <button
     {...props}
     className={cn(
-      `bg-gray-3 hover:bg-gray-4 py-2 px-4 text-sm flex flex-row items-center gap-2 border rounded-md transition`,
-      "disabled:border-gray-9 disabled:text-gray-9",
-      "text-gray-11 hover:text-gray-12 border-gray-11 hover:border-gray-12",
+      `bg-gray-3 hover:bg-gray-4 py-2 px-4 text-sm flex flex-row items-center gap-2 rounded-md transition`,
+      "disabled:text-gray-9",
+      "text-gray-11 hover:text-gray-12",
       className
     )}
   />

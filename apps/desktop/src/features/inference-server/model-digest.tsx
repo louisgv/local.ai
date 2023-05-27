@@ -54,9 +54,7 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
   }
 
   return (
-    <div
-      // title="🚨 WARNING 🚨: hash computation is an intensive task, a 4GB model can take up to 5 minutes."
-      className="flex justify-end text-gray-10 w-64 relative">
+    <div className="flex justify-end text-gray-10 w-64 relative">
       {digestHash ? (
         <>
           <div
@@ -67,7 +65,7 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
                 ? "z-10 opacity-100 pointer-events-auto"
                 : "z-0 opacity-0 pointer-events-none"
             )}>
-            <div className="bg-gray-4 relative px-5 py-4 rounded-lg">
+            <div className="bg-gray-4 relative px-5 py-4 rounded-lg border border-gray-6">
               <button
                 className="absolute right-1 top-1"
                 onClick={() => setShowDetail(false)}>

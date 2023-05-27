@@ -2,12 +2,14 @@ import { cn } from "@localai/theme/utils"
 import type { ReactNode } from "react"
 
 /**
- * - {nav}      | {children}
- * - {sidebar}  |
+ * {top}      | {children}
+ * {sidebar}  |
+ * {bottom}   |
  */
 export const AppLayout = ({
-  nav = null as ReactNode,
+  top = null as ReactNode,
   sidebar = null as ReactNode,
+  bottom = null as ReactNode,
   children = null as ReactNode,
   showSidebar = false
 }) => {
@@ -15,16 +17,15 @@ export const AppLayout = ({
     <div className="h-screen w-screen bg-gray-1 text-gray-11 flex">
       <div
         className={cn(
-          "transition-all",
-          "hidden flex-col sm:flex",
+          "transition-all border-r border-r-gray-6",
+          "hidden sm:flex flex-col",
           showSidebar ? "w-full sm:w-72 opacity-100" : "w-0 opacity-0"
         )}>
-        <nav className="flex w-full shrink-0 items-center sticky top-0">
-          {nav}
-        </nav>
-        <div className="flex flex-1 flex-col overflow-auto w-full">
+        <div className="flex w-full items-center">{top}</div>
+        <div className="flex flex-1 shrink-0 flex-col overflow-auto w-full h-full">
           {sidebar}
         </div>
+        <div className="flex flex-col overflow-auto w-full">{bottom}</div>
       </div>
 
       <div
