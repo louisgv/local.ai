@@ -16,9 +16,10 @@ const useGlobalProvider = () => {
 
   const activeModelState = useState<ModelMetadata>(null)
   const concurrencyState = useState(1)
-
   const activeChatState = useState(0)
   const chatListState = useState([])
+
+  const portState = useState(8000)
 
   const serverStartedState = useState(false)
 
@@ -33,6 +34,7 @@ const useGlobalProvider = () => {
   })
 
   return {
+    portState,
     routeState,
     activeChatState,
     chatListState,

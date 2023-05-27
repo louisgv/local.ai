@@ -7,10 +7,10 @@ import { useState } from "react"
 import { useGlobal } from "~providers/global"
 
 export const ServerConfig = () => {
-  const [port, setPort] = useState(8000)
   const {
     concurrencyState: [concurrency, setConcurrency],
-    serverStartedState: [isStarted, setIsStarted]
+    serverStartedState: [isStarted, setIsStarted],
+    portState: [port, setPort]
   } = useGlobal()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -51,7 +51,7 @@ export const ServerConfig = () => {
           }
           setIsLoading(false)
         }}>
-        {isStarted ? "Stop Server" : "Start Server"}
+        {isLoading ? "..." : isStarted ? "Stop Server" : "Start Server"}
       </SpinnerButton>
     </div>
   )
