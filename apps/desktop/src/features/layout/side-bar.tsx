@@ -1,3 +1,5 @@
+import { Button } from "@localai/ui/button"
+import { TrashIcon } from "@radix-ui/react-icons"
 import { MessageText, PeopleTag } from "iconoir-react"
 import { useMemo } from "react"
 
@@ -21,7 +23,7 @@ function ChatIcon({ type = undefined as ChatType }) {
 export function ChatSideBar() {
   const {
     activeChatState: [activeChat, setActiveChat],
-    chatListState: [chatList]
+    chatListState: [chatList, setChatList]
   } = useGlobal()
 
   return (
@@ -38,14 +40,34 @@ export function ChatSideBar() {
                 setActiveChat(item.id)
               }}>
               <ChatIcon type={item.type} />
-              {item.name}
-              {item.count ? (
-                <span
-                  className="ml-auto w-9 min-w-max whitespace-nowrap rounded-full py-0.5 px-2.5 text-center text-xs font-medium leading-5 ring-1 ring-inset ring-gray-6"
-                  aria-hidden="true">
-                  {item.count}
-                </span>
-              ) : null}
+              <div className="w-full flex">{item.name}</div>
+              <button
+                className="flex items-center justify-center w-6 h-6 rounded-full text-gray-11 hover:text-gray-12 group-hover:opacity-100 opacity-0 transition-opacity"
+                onClick={() => {
+                  const removeIndex = chatList.findIndex(
+                    (chat) => chat.id === item.id
+                  )
+
+                  if (removeIndex !== -1) {
+                    // check if item is found
+                    // creating a new array by removing the item
+                    const newChatList = [
+                      ...chatList.slice(0, removeIndex),
+                      ...chatList.slice(removeIndex + 1)
+                    ]
+
+                    let newActiveChat = newChatList[removeIndex - 1]?.id
+                    if (removeIndex === 0 && newChatList.length > 0) {
+                      // if the removed item was the first in the list, select the new first item
+                      newActiveChat = newChatList[0]?.id
+                    }
+
+                    setChatList(newChatList)
+                    setActiveChat(newActiveChat)
+                  }
+                }}>
+                <TrashIcon />
+              </button>
             </NavButton>
           </li>
         ))}

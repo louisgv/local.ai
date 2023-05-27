@@ -17,10 +17,11 @@ export const NavButton = ({
   return (
     <Button
       className={cn(
+        "group",
         "w-full transition-all",
         "border",
         currentRoute === route && (isActive === undefined ? true : isActive)
-          ? "bg-gray-5 text-gray-12 border-gray-12 pointer-events-none"
+          ? "bg-gray-5 text-gray-12 border-gray-12"
           : "border-gray-1"
       )}
       onClick={async () => {
