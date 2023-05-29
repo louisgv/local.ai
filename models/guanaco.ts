@@ -8,7 +8,8 @@ export const guanacoModelMap: ModelMap = {
   "Guanaco 7B": {
     description: "A model fine-tuned using the QLoRA technique",
     modelType: ModelType.Llama,
-    downloadUrl: "https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin",
+    downloadUrl:
+      "https://huggingface.co/TheBloke/guanaco-7B-GGML/resolve/main/guanaco-7B.ggmlv3.q5_1.bin",
     sha256: "",
     blake3: "sss",
     licenses: [LicenseType.Academic, LicenseType.NonCommercial],
