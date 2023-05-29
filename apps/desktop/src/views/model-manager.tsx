@@ -1,5 +1,5 @@
 import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
+import { Button, SpinnerButton } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
 import { ReloadIcon } from "@radix-ui/react-icons"
 import { open } from "@tauri-apps/api/dialog"
@@ -16,6 +16,7 @@ import { ModelDigest } from "~features/inference-server/model-digest"
 import { ServerConfig } from "~features/inference-server/server-config"
 import { useInit } from "~features/inference-server/use-init"
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
+import { ModelSelector } from "~features/model-downloader/model-selector"
 import { useGlobal } from "~providers/global"
 
 // Flow: Pick a models directory
@@ -34,6 +35,7 @@ export function ModelManagerView() {
   } = useGlobal()
   const [modelsDirectory, setModelsDirectory] = useState("")
   const [models, setModels] = useState<ModelMetadata[]>([])
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   useInit(async () => {
     // get the models directory saved in config
@@ -46,25 +48,27 @@ export function ModelManagerView() {
   })
 
   async function updateModelsDirectory(dir: string) {
+    setIsRefreshing(true)
     const resp = await invoke<ModelDirectoryState>("update_models_dir", {
       dir
     })
     setModelsDirectory(resp.path)
     setModels(resp.files)
+    setIsRefreshing(false)
   }
 
   return (
     <ViewContainer>
       <ViewHeader>
         {!!modelsDirectory && (
-          <button
+          <SpinnerButton
+            Icon={ReloadIcon}
+            isSpinning={isRefreshing}
             title="Refresh Models Directory"
-            className="hover:text-gray-12"
             onClick={async () => {
               await updateModelsDirectory(modelsDirectory)
-            }}>
-            <ReloadIcon />
-          </button>
+            }}
+          />
         )}
         <Input
           className="w-full"
@@ -91,47 +95,45 @@ export function ModelManagerView() {
 
         <ServerConfig />
       </ViewHeader>
-      <ViewBody>
+      <ViewBody className="flex flex-col p-8 gap-6">
+        <ModelSelector />
         {models.length === 0 && (
-          <div className="h-full w-full flex flex-col justify-center items-center">
-            <p className="text-gray-9 italic pointer-events-none">
-              To start, download a model or change the models directory.
-            </p>
-          </div>
+          <p className="text-gray-9 italic pointer-events-none text-center">
+            To start, download a model or change the models directory.
+          </p>
         )}
-        <div className="flex flex-col gap-6 p-8">
-          {models
-            .sort((a: ModelMetadata, b: ModelMetadata) =>
-              activeModel?.path === a.path
-                ? -1
-                : activeModel?.path === b.path
-                ? 1
-                : 0
-            )
-            .map((model: ModelMetadata) => (
-              <div
-                className={cn(
-                  "flex flex-col gap-4 rounded-md p-4",
-                  "text-gray-11 hover:text-gray-12",
-                  "transition-colors",
-                  activeModel?.path === model.path
-                    ? "ring ring-green-7 hover:ring-green-8"
-                    : "ring ring-gray-7 hover:ring-gray-8"
-                )}
-                key={model.name}>
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex flex-col justify-between w-full">
-                    <div className={"text-md"}>{model.name}</div>
-                    <div className="text-xs text-gray-10">
-                      {`${toGB(model.size).toFixed(2)} GB`}
-                    </div>
+
+        {models
+          .sort((a: ModelMetadata, b: ModelMetadata) =>
+            activeModel?.path === a.path
+              ? -1
+              : activeModel?.path === b.path
+              ? 1
+              : 0
+          )
+          .map((model: ModelMetadata) => (
+            <div
+              className={cn(
+                "flex flex-col gap-4 rounded-md p-4",
+                "text-gray-11 hover:text-gray-12",
+                "transition-colors group",
+                activeModel?.path === model.path
+                  ? "ring ring-green-7 hover:ring-green-8"
+                  : "ring ring-gray-7 hover:ring-gray-8"
+              )}
+              key={model.name}>
+              <div className="flex items-center justify-between w-full">
+                <div className="flex flex-col justify-between w-full">
+                  <div className={"text-md"}>{model.name}</div>
+                  <div className="text-xs text-gray-10">
+                    {`${toGB(model.size).toFixed(2)} GB`}
                   </div>
-                  <ModelDigest model={model} />
                 </div>
-                <ModelConfig model={model} />
+                <ModelDigest model={model} />
               </div>
-            ))}
-        </div>
+              <ModelConfig model={model} />
+            </div>
+          ))}
       </ViewBody>
     </ViewContainer>
   )

@@ -1,6 +1,5 @@
 import { cn } from "@localai/theme/utils"
-import { SpinnerButton } from "@localai/ui/button"
-import { Input } from "@localai/ui/input"
+import { Button, SpinnerButton } from "@localai/ui/button"
 import {
   Select,
   SelectContent,
@@ -8,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@localai/ui/select"
+import { TrashIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
 import { useEffect, useState } from "react"
 
@@ -84,17 +84,25 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
   useEffect(() => {
     if (activeModel?.path !== model.path) {
       setModelLoadState(ModelLoadState.Default)
+    } else {
+      setModelLoadState(ModelLoadState.Loaded)
     }
   }, [activeModel, model])
 
   return (
-    <div className="flex items-center justify-between w-full gap-2">
+    <div className="flex items-center justify-between w-full gap-2 group">
       {/* <Input
         placeholder="Label"
         value={label}
         onChange={(e) => setLabel(e.target.value)}
       /> */}
-      <div />
+      <div>
+        <Button
+          disabled={modelLoadState === ModelLoadState.Loaded}
+          className="group-hover:opacity-100 opacity-0 transition-opacity">
+          <TrashIcon />
+        </Button>
+      </div>
       <div className="flex items-center justify-end w-96 gap-2">
         {/* <TestModelButton model={model} modelType={modelType} /> */}
         <Select
@@ -127,7 +135,6 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
               await invoke("load_model", {
                 ...model,
                 modelType,
-                label,
                 concurrency
               })
               setActiveModel(model)

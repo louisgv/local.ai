@@ -13,15 +13,14 @@ type ModelDigest = {
   blake3: string
 }
 
+export const getTruncatedHash = (hashValue: string) =>
+  `${hashValue.slice(0, 4)}...${hashValue.slice(-7)}`
+
 const HashDisplay = ({ hashType = "", hashValue = "", truncated = false }) => {
   return (
     <div className="flex justify-between gap-4">
       <label className="font-bold">{hashType}</label>
-      <code>
-        {truncated
-          ? `${hashValue.slice(0, 4)}...${hashValue.slice(-7)}`
-          : hashValue}
-      </code>
+      <code>{truncated ? getTruncatedHash(hashValue) : hashValue}</code>
     </div>
   )
 }
@@ -80,10 +79,12 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-4 bg-gray-3 rounded-lg pl-4">
-            <button className="hover:text-gray-12" onClick={computeDigest}>
-              <ReloadIcon />
-            </button>
+          <div className="flex items-center gap-2 pl-2 bg-gray-3 rounded-lg">
+            <SpinnerButton
+              isSpinning={isCalculating}
+              Icon={ReloadIcon}
+              onClick={computeDigest}
+            />
             <button
               className="text-xs hover:bg-gray-4 p-2 rounded-md"
               onClick={() => {

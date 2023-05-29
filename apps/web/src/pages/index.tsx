@@ -1,27 +1,20 @@
 import { BasicLayout } from "@localai/ui/layouts/base"
 import { QuickLink } from "@localai/ui/link"
 import { Logo } from "@localai/ui/logo"
+import { LayersIcon, LightningBoltIcon, MixIcon } from "@radix-ui/react-icons"
 import { clsx } from "clsx"
-import {
-  ListSelect,
-  ServerConnection,
-  ShoppingCodeCheck,
-  TriangleFlag
-} from "iconoir-react"
 import type { NextPage } from "next"
 import { NextSeo } from "next-seo"
 import type { ReactNode } from "react"
 import Balancer from "react-wrap-balancer"
 
 import {
-  MacDownloadButton,
   MiniDownloadButtonGroup,
-  UbuntuDownloadButton,
-  WindowsDownloadButton
+  ReleaseDownloadButton
 } from "~features/press/download-buttons"
 
 const FeatureCard = ({
-  Icon = TriangleFlag,
+  Icon = LayersIcon,
   title = "loremipsum",
   children = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut suscipit consequuntur nam distinctio blanditiis. Reprehenderit unde incidunt eaque alias nam aut. Beatae magni reiciendis sapiente illum quisquam fugiat tempore neque?` as ReactNode
 }) => (
@@ -97,9 +90,10 @@ const IndexPage: NextPage = () => (
     </section>
 
     <section className="w-full px-8 flex flex-col md:flex-row gap-4 items-center justify-center">
-      <MacDownloadButton />
+      <ReleaseDownloadButton />
+      {/* <MacDownloadButton />
       <WindowsDownloadButton />
-      <UbuntuDownloadButton />
+      <UbuntuDownloadButton /> */}
     </section>
 
     {/* <!-- Features Section --> */}
@@ -109,7 +103,7 @@ const IndexPage: NextPage = () => (
           "container mx-auto",
           "flex flex-col md:flex-row md:flex-wrap md:justify-center"
         )}>
-        <FeatureCard Icon={ListSelect} title="Model Management">
+        <FeatureCard Icon={LayersIcon} title="Model Management">
           <div className="flex flex-col gap-2">
             <p className="h-24">
               Keep track of your AI models in one centralized location. Pick any
@@ -125,7 +119,7 @@ const IndexPage: NextPage = () => (
           </div>
         </FeatureCard>
 
-        <FeatureCard Icon={ShoppingCodeCheck} title="Digest Verification">
+        <FeatureCard Icon={MixIcon} title="Digest Verification">
           <div className="flex flex-col gap-2">
             <p className="h-24">
               {`Ensure the integrity of downloaded models with a robust MD5, SHA256, and Blake3 digest
@@ -141,7 +135,7 @@ const IndexPage: NextPage = () => (
           </div>
         </FeatureCard>
 
-        <FeatureCard Icon={ServerConnection} title="Inferencing Server">
+        <FeatureCard Icon={LightningBoltIcon} title="Inferencing Server">
           <div className="flex flex-col gap-2">
             <p className="h-24">
               Start a local streaming server for AI inferencing in 3 clicks:

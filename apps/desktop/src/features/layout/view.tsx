@@ -11,9 +11,11 @@ export const ViewContainer = ({ children = null as ReactNode }) => (
   <div className="h-full w-full flex flex-col bg-gray-2">{children}</div>
 )
 
-export const ViewBody = ({ children = null as ReactNode }) => (
+export const ViewBody = ({ children = null as ReactNode, className = "" }) => (
   <div className="h-full w-full relative overflow-hidden">
-    <div className="h-full w-full overflow-auto">{children}</div>
+    <div className={cn("h-full w-full overflow-auto", className)}>
+      {children}
+    </div>
     <div
       className={cn(
         "absolute top-0 w-full h-6",

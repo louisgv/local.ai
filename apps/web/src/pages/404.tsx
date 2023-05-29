@@ -1,4 +1,4 @@
-import { LeftRoundArrow } from "iconoir-react"
+import { ArrowLeftIcon } from "@radix-ui/react-icons"
 import type { NextPage } from "next"
 import Link from "next/link"
 
@@ -19,7 +19,7 @@ const NotFound404Page: NextPage = () => {
         </p>
       </blockquote>
       <Link href={"/"} className="flex items-center gap-2">
-        <LeftRoundArrow />
+        <ArrowLeftIcon />
         Back to Base
       </Link>
     </article>

@@ -9,45 +9,67 @@ import {
 } from "@localai/ui/select"
 import { DownloadIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Balancer from "react-wrap-balancer"
 
 import { modelList, modelMap } from "~core/model-download-list"
+import { getTruncatedHash } from "~features/inference-server/model-digest"
 
 export const ModelSelector = () => {
   const [selectedModelHash, setSelectedModelHash] = useState<string>()
+
+  const selectedModel = useMemo(
+    () => modelMap[selectedModelHash],
+    [selectedModelHash]
+  )
 
   return (
     <div className="flex gap-2 w-full">
       <Select value={selectedModelHash} onValueChange={setSelectedModelHash}>
         <SelectTrigger
           className={cn(
-            "w-4/5",
+            "w-full",
             selectedModelHash ? "text-gray-12" : "text-gray-11"
           )}>
-          <SelectValue aria-label={modelMap[selectedModelHash].md5Hash}>
-            {modelMap[selectedModelHash]?.downloadUrl.split("/").pop() ||
-              "Select a Model to download"}
+          <SelectValue aria-label={selectedModel?.md5Hash}>
+            {selectedModel ? (
+              <div className="flex gap-2 items-center">
+                <span>{selectedModel.downloadUrl.split("/").pop()}</span>
+                <span
+                  className="text-sm text-ellipsis text-gray-10"
+                  style={{
+                    fontFamily: "monospace"
+                  }}>
+                  ({selectedModel.md5Hash})
+                </span>
+              </div>
+            ) : (
+              <span>Select a Model to download</span>
+            )}
           </SelectValue>
         </SelectTrigger>
         <SelectContent className="flex h-48 w-full">
           {modelList.map((model) => (
             <SelectItem key={model.downloadUrl} value={model.md5Hash}>
-              <div className="text-md w-full">
+              <div className="flex flex-col gap-2 text-md w-full">
                 <div className="flex items-center justify-between w-full">
-                  <div
+                  <span
                     className={cn(
-                      "w-full",
+                      "w-full text-lg",
                       selectedModelHash === model.md5Hash
                         ? "text-gray-12"
                         : "text-gray-11"
                     )}>
                     {model.downloadUrl.split("/").pop()}
-                  </div>
+                  </span>
 
-                  <div className="text-xs text-gray-10 w-24">
-                    {model.md5Hash}
-                  </div>
+                  <span
+                    className="text-xs text-ellipsis text-gray-10"
+                    style={{
+                      fontFamily: "monospace"
+                    }}>
+                    {getTruncatedHash(model.md5Hash)}
+                  </span>
                 </div>
                 <p className="text-xs">
                   <Balancer>{model.description}</Balancer>
@@ -58,7 +80,6 @@ export const ModelSelector = () => {
         </SelectContent>
       </Select>
       <SpinnerButton
-        className="w-1/5"
         Icon={DownloadIcon}
         disabled={!selectedModelHash}
         // isSpinning

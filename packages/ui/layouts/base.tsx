@@ -64,11 +64,6 @@ export const BasicLayout = ({
             © 2023
           </div>
 
-          <QuickLink href="https://github.com/louisgv/local.ai">
-            <Button>
-              <GitHubLogoIcon />
-            </Button>
-          </QuickLink>
           {/* <!-- Contact Details --> */}
           {/* <div>
           <h3 className="font-bold text-xl mb-2" id="contact-us">

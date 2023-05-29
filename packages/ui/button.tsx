@@ -1,5 +1,5 @@
 import { cn } from "@localai/theme/utils"
-import { KeyAlt } from "iconoir-react"
+import { ReloadIcon } from "@radix-ui/react-icons"
 import type { ButtonHTMLAttributes, DetailedHTMLProps } from "react"
 
 import { Spinner } from "./spinner"
@@ -27,7 +27,7 @@ export const SpinnerButton = ({
   isSpinning = false,
   ...props
 }: ButtonProps & {
-  Icon?: typeof KeyAlt
+  Icon?: typeof ReloadIcon
   isSpinning?: boolean
 }) => (
   <Button {...props} disabled={isSpinning || props.disabled}>

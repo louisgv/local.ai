@@ -1,5 +1,5 @@
-import cn from "clsx"
-import { NavArrowDown } from "iconoir-react"
+import { cn } from "@localai/theme/utils"
+import { ChevronDownIcon } from "@radix-ui/react-icons"
 import type { ReactNode } from "react"
 import { useState } from "react"
 
@@ -26,11 +26,11 @@ export const Accordion = ({
               type="button"
               className="flex flex-shrink-0 items-center p-5 font-medium text-gray-9"
               aria-expanded="false">
-              <NavArrowDown
-                className={[
+              <ChevronDownIcon
+                className={cn(
                   "transition-transform",
                   isOpen ? "-rotate-180" : "rotate-0"
-                ].join(" ")}
+                )}
               />
             </button>
           )}
