@@ -3,7 +3,9 @@ use parking_lot::Mutex;
 
 use std::{path::PathBuf, sync::Arc};
 
-use llm::{load_progress_callback_stdout, InferenceParameters, ModelArchitecture};
+use llm::{
+    load_progress_callback_stdout, InferenceParameters, ModelArchitecture, VocabularySource,
+};
 
 use std::path::Path;
 
@@ -82,12 +84,11 @@ pub async fn spawn_pool(
             let model = match llm::load_dynamic(
                 architecture,
                 cache_path.as_path(),
+                VocabularySource::HuggingFaceRemote(String::from("JosephusCheung/Guanaco")),
                 llm::ModelParameters {
                     prefer_mmap: true,
                     context_size: 8472,
-                    inference_parameters: llm::InferenceParameters {
-                        ..Default::default()
-                    },
+
                     ..Default::default()
                 },
                 None,

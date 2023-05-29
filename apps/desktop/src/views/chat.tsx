@@ -1,10 +1,8 @@
-import type { NextPage } from "next"
-
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
 import { MessageBlock } from "~features/thread/message-block"
 import { useGlobal } from "~providers/global"
 
-export const ChatView: NextPage = () => {
+export const ChatView = () => {
   const {
     activeChatState: [activeChat]
   } = useGlobal()

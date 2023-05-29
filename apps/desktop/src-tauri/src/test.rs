@@ -31,124 +31,125 @@ fn handle_inference_result(result: Result<InferenceStats, InferenceError>) {
     }
 }
 
-async fn test_inference(path: &str, model_type: &str) {
-    let path = path.to_string();
-    let model_type = model_type.to_string();
+// Need to update the params to use vocab
+// async fn test_inference(path: &str, model_type: &str) {
+//     let path = path.to_string();
+//     let model_type = model_type.to_string();
 
-    tokio::task::spawn_blocking(move || {
-        let now = std::time::Instant::now();
-        let model_path = Path::new(&path);
+//     tokio::task::spawn_blocking(move || {
+//         let now = std::time::Instant::now();
+//         let model_path = Path::new(&path);
 
-        let architecture = model_type.parse().unwrap_or_else(|e| panic!("{e}"));
+//         let architecture = model_type.parse().unwrap_or_else(|e| panic!("{e}"));
 
-        let model = llm::load_dynamic(
-            architecture,
-            model_path,
-            Default::default(),
-            None,
-            load_progress_callback_stdout,
-        )
-        .unwrap_or_else(|err| panic!("Failed to load model from {model_path:?}: {err}"));
+//         let model = llm::load_dynamic(
+//             architecture,
+//             model_path,
+//             Default::default(),
+//             None,
+//             load_progress_callback_stdout,
+//         )
+//         .unwrap_or_else(|err| panic!("Failed to load model from {model_path:?}: {err}"));
 
-        println!(
-            "Model fully loaded! Elapsed: {}ms",
-            now.elapsed().as_millis()
-        );
+//         println!(
+//             "Model fully loaded! Elapsed: {}ms",
+//             now.elapsed().as_millis()
+//         );
 
-        // use the model to generate text from a prompt
-        let mut session1 = model.start_session(Default::default());
+//         // use the model to generate text from a prompt
+//         let mut session1 = model.start_session(Default::default());
 
-        handle_inference_result(session1.infer::<Infallible>(
-            model.as_ref(),
-            &mut rand::thread_rng(),
-            &InferenceRequest {
-                prompt: llm::Prompt::Text(
-                    "Who were the president of the USA in 1980, 1960, and 1999?",
-                ),
-                ..Default::default()
-            },
-            // OutputRequest
-            &mut Default::default(),
-            handle_inference_response,
-        ));
+//         handle_inference_result(session1.infer::<Infallible>(
+//             model.as_ref(),
+//             &mut rand::thread_rng(),
+//             &InferenceRequest {
+//                 prompt: llm::Prompt::Text(
+//                     "Who were the president of the USA in 1980, 1960, and 1999?",
+//                 ),
+//                 ..Default::default()
+//             },
+//             // OutputRequest
+//             &mut Default::default(),
+//             handle_inference_response,
+//         ));
 
-        let mut session2 = model.start_session(Default::default());
+//         let mut session2 = model.start_session(Default::default());
 
-        handle_inference_result(session2.infer::<Infallible>(
-            model.as_ref(),
-            &mut rand::thread_rng(),
-            &InferenceRequest {
-                prompt: llm::Prompt::Text("
-                You: Who built the statue of liberty?
-                
-                AI: The Statue of Liberty was designed by Gustave Eiffel and constructed between 1875-1884 under the supervision of Richard Morris Hunt, an American architect who also served as the first Superintendent of the National Park Service.
-                
-                You: Is this the same Eiffel who created the Eiffel tower?
-                
-                AI: Yes, Gustave Eiffeel is known for designing many famous structures including the Eiffel Tower in Paris, France.
-                
-                You: Did he work on the Eiffel tower with his father?
-                "),
-                ..Default::default()
-            },
-            // OutputRequest
-            &mut Default::default(),
-            handle_inference_response,
-        ));
+//         handle_inference_result(session2.infer::<Infallible>(
+//             model.as_ref(),
+//             &mut rand::thread_rng(),
+//             &InferenceRequest {
+//                 prompt: llm::Prompt::Text("
+//                 You: Who built the statue of liberty?
 
-        let mut session3 = model.start_session(Default::default());
-        handle_inference_result(session3.infer::<Infallible>(
-            model.as_ref(),
-            &mut rand::thread_rng(),
-            &InferenceRequest {
-                prompt: llm::Prompt::Text("Give me 10 fruits that are bitter:"),
-                ..Default::default()
-            },
-            // OutputRequest
-            &mut Default::default(),
-            handle_inference_response,
-        ));
+//                 AI: The Statue of Liberty was designed by Gustave Eiffel and constructed between 1875-1884 under the supervision of Richard Morris Hunt, an American architect who also served as the first Superintendent of the National Park Service.
 
-        let mut session4 = model.start_session(Default::default());
-        handle_inference_result(session4.infer::<Infallible>(
-            model.as_ref(),
-            &mut rand::thread_rng(),
-            &InferenceRequest {
-                prompt: llm::Prompt::Text("What are 10 interesting insects?"),
-                ..Default::default()
-            },
-            // OutputRequest
-            &mut Default::default(),
-            handle_inference_response,
-        ));
+//                 You: Is this the same Eiffel who created the Eiffel tower?
 
-        let mut session5 = model.start_session(Default::default());
-        handle_inference_result(session5.infer::<Infallible>(
-            model.as_ref(),
-            &mut rand::thread_rng(),
-            &InferenceRequest {
-                prompt: llm::Prompt::Text("Give me 10 different ways animal survived."),
-                ..Default::default()
-            },
-            // OutputRequest
-            &mut Default::default(),
-            handle_inference_response,
-        ));
+//                 AI: Yes, Gustave Eiffeel is known for designing many famous structures including the Eiffel Tower in Paris, France.
 
-        let mut session6 = model.start_session(Default::default());
-        handle_inference_result(session6.infer::<Infallible>(
-            model.as_ref(),
-            &mut rand::thread_rng(),
-            &InferenceRequest {
-                prompt: llm::Prompt::Text("Who built the Pentagon?"),
-                ..Default::default()
-            },
-            // OutputRequest
-            &mut Default::default(),
-            handle_inference_response,
-        ));
-    });
-}
+//                 You: Did he work on the Eiffel tower with his father?
+//                 "),
+//                 ..Default::default()
+//             },
+//             // OutputRequest
+//             &mut Default::default(),
+//             handle_inference_response,
+//         ));
+
+//         let mut session3 = model.start_session(Default::default());
+//         handle_inference_result(session3.infer::<Infallible>(
+//             model.as_ref(),
+//             &mut rand::thread_rng(),
+//             &InferenceRequest {
+//                 prompt: llm::Prompt::Text("Give me 10 fruits that are bitter:"),
+//                 ..Default::default()
+//             },
+//             // OutputRequest
+//             &mut Default::default(),
+//             handle_inference_response,
+//         ));
+
+//         let mut session4 = model.start_session(Default::default());
+//         handle_inference_result(session4.infer::<Infallible>(
+//             model.as_ref(),
+//             &mut rand::thread_rng(),
+//             &InferenceRequest {
+//                 prompt: llm::Prompt::Text("What are 10 interesting insects?"),
+//                 ..Default::default()
+//             },
+//             // OutputRequest
+//             &mut Default::default(),
+//             handle_inference_response,
+//         ));
+
+//         let mut session5 = model.start_session(Default::default());
+//         handle_inference_result(session5.infer::<Infallible>(
+//             model.as_ref(),
+//             &mut rand::thread_rng(),
+//             &InferenceRequest {
+//                 prompt: llm::Prompt::Text("Give me 10 different ways animal survived."),
+//                 ..Default::default()
+//             },
+//             // OutputRequest
+//             &mut Default::default(),
+//             handle_inference_response,
+//         ));
+
+//         let mut session6 = model.start_session(Default::default());
+//         handle_inference_result(session6.infer::<Infallible>(
+//             model.as_ref(),
+//             &mut rand::thread_rng(),
+//             &InferenceRequest {
+//                 prompt: llm::Prompt::Text("Who built the Pentagon?"),
+//                 ..Default::default()
+//             },
+//             // OutputRequest
+//             &mut Default::default(),
+//             handle_inference_response,
+//         ));
+//     });
+// }
 
 const BUFFER_SIZE: usize = 42 * 1024 * 1024; // 42 MiB buffer
 

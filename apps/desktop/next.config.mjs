@@ -10,10 +10,7 @@ const baseConfig = {
     "@plasmo/constants"
   ],
   output: "export",
-  swcMinify: true,
-  compiler: {
-    emotion: true
-  }
+  swcMinify: true
 }
 
 export default baseConfig

@@ -34,7 +34,7 @@ export const ModelSelector = () => {
             "w-full",
             selectedModelHash ? "text-gray-12" : "text-gray-11"
           )}>
-          <SelectValue aria-label={selectedModel?.md5Hash}>
+          <SelectValue aria-label={selectedModel?.blake3}>
             {selectedModel ? (
               <div className="flex gap-2 items-center">
                 <span>{selectedModel.downloadUrl.split("/").pop()}</span>
@@ -43,7 +43,7 @@ export const ModelSelector = () => {
                   style={{
                     fontFamily: "monospace"
                   }}>
-                  ({selectedModel.md5Hash})
+                  ({selectedModel.blake3})
                 </span>
               </div>
             ) : (
@@ -53,13 +53,13 @@ export const ModelSelector = () => {
         </SelectTrigger>
         <SelectContent className="flex h-48 w-full">
           {modelList.map((model) => (
-            <SelectItem key={model.downloadUrl} value={model.md5Hash}>
+            <SelectItem key={model.downloadUrl} value={model.blake3}>
               <div className="flex flex-col gap-2 text-md w-full">
                 <div className="flex items-center justify-between w-full">
                   <span
                     className={cn(
                       "w-full text-lg",
-                      selectedModelHash === model.md5Hash
+                      selectedModelHash === model.blake3
                         ? "text-gray-12"
                         : "text-gray-11"
                     )}>
@@ -71,7 +71,7 @@ export const ModelSelector = () => {
                     style={{
                       fontFamily: "monospace"
                     }}>
-                    {getTruncatedHash(model.md5Hash)}
+                    {getTruncatedHash(model.blake3)}
                   </span>
                 </div>
                 <p className="text-xs">

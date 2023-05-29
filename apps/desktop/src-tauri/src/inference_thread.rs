@@ -146,7 +146,6 @@ fn spawn_inference_thread(
                 break;
             }
 
-            let mut end_of_text = false;
             let token = match session.infer_next_token(
                 model.as_ref(),
                 &inference_params,
@@ -155,31 +154,23 @@ fn spawn_inference_thread(
             ) {
                 Ok(t) => t,
                 Err(InferenceError::EndOfText) => {
-                    end_of_text = true;
-                    &[0]
+                    break;
                 }
                 Err(e) => {
                     println!("{}", e.to_string());
-                    end_of_text = true;
-                    &[0]
+                    break;
                 }
             };
 
             // Buffer the token until it's valid UTF-8, then call the callback.
-            if !end_of_text {
-                if let Some(tokens) = token_utf8_buf.push(token) {
-                    match req.token_sender.send(get_completion_resp(tokens)) {
-                        Ok(_) => {}
-                        Err(e) => {
-                            println!("Error while sending token: {:?}", e);
-                            break;
-                        }
+            if let Some(tokens) = token_utf8_buf.push(&token) {
+                match req.token_sender.send(get_completion_resp(tokens)) {
+                    Ok(_) => {}
+                    Err(e) => {
+                        println!("Error while sending token: {:?}", e);
+                        break;
                     }
                 }
-            }
-
-            if end_of_text {
-                break;
             }
 
             tokens_processed += 1;

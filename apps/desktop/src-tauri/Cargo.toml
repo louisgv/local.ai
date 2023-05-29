@@ -13,9 +13,9 @@ edition = "2021"
 tauri-build = { version = "1.3.0", features = [] }
 
 [dependencies]
-llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm" }
+# llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm" }
 
-# llm = { git = "https://github.com/danforbes/llama-rs.git", branch = "deps/ggml/update", package = "llm" }
+llm = { git = "https://github.com/RedBoxing/llm.git", branch = "hf-tokenizer", package = "llm" }
 sys-info = "0.9.1"
 num_cpus = "1.15.0"
 tauri-plugin-persisted-scope = { version = "0.1.0" }
@@ -56,8 +56,8 @@ blake3 = "1.3.3"
 cocoa = "0.24.1"
 objc = "0.2.7"
 
-# [target."cfg(target_os = \"linux\")".dependencies]
-# webkit2gtk = "0.18.2"
+[target."cfg(target_os = \"linux\")".dependencies]
+webkit2gtk = "0.18.2"
 
 [target."cfg(target_os = \"windows\")".dependencies]
 webview2-com = "0.19.1"

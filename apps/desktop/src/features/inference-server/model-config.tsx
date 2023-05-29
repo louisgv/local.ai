@@ -12,20 +12,12 @@ import { invoke } from "@tauri-apps/api/tauri"
 import { useEffect, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
-import type { ModelMetadata } from "~features/model-downloader/model-file"
+import {
+  type ModelMetadata,
+  ModelType,
+  modelTypeList
+} from "~features/model-downloader/model-file"
 import { useGlobal } from "~providers/global"
-
-export enum ModelType {
-  Llama = "llama",
-  GptJ = "gptj",
-  Mpt = "mpt",
-  NeoX = "gptneox",
-  RedPajama = "redpajama",
-  Bloom = "bloom",
-  Gpt2 = "gpt2"
-}
-
-const modelTypeList = Object.values(ModelType)
 
 export enum ModelLoadState {
   Default,

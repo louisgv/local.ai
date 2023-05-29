@@ -72,13 +72,18 @@
       "csp": null
     },
     "updater": {
-      "active": false
+      "active": false,
+      "endpoints": [
+        "https://localai.app/update/{{target}}/{{arch}}/{{current_version}}"
+      ],
+      "dialog": true,
+      "pubkey": ""
     },
     "windows": [
       {
-        "title": "local.ai",
+        "title": "🎒 local.ai",
         "resizable": true,
-        "visible": false,
+        "visible": true,
         "center": true,
         "width": 1042,
         "height": 740
