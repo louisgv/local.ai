@@ -6,16 +6,16 @@ import { open } from "@tauri-apps/api/dialog"
 import { invoke } from "@tauri-apps/api/tauri"
 import { useState } from "react"
 
-import {
-  type ModelDirectoryState,
-  type ModelMetadata,
-  toGB
-} from "~core/model-file"
 import { ModelConfig } from "~features/inference-server/model-config"
 import { ModelDigest } from "~features/inference-server/model-digest"
 import { ServerConfig } from "~features/inference-server/server-config"
 import { useInit } from "~features/inference-server/use-init"
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
+import {
+  type ModelDirectoryState,
+  type ModelMetadata,
+  toGB
+} from "~features/model-downloader/model-file"
 import { ModelSelector } from "~features/model-downloader/model-selector"
 import { useGlobal } from "~providers/global"
 

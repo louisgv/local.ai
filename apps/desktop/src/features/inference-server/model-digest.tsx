@@ -1,11 +1,11 @@
 import { cn } from "@localai/theme/utils"
-import { Button, SpinnerButton } from "@localai/ui/button"
+import { SpinnerButton } from "@localai/ui/button"
 import { CrossCircledIcon, ReloadIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 
-import type { ModelMetadata } from "~core/model-file"
 import { InitState, useInit } from "~features/inference-server/use-init"
+import type { ModelMetadata } from "~features/model-downloader/model-file"
 
 type ModelDigest = {
   md5: string

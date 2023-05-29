@@ -12,8 +12,11 @@ import { invoke } from "@tauri-apps/api/tauri"
 import { useMemo, useState } from "react"
 import Balancer from "react-wrap-balancer"
 
-import { modelList, modelMap } from "~core/model-download-list"
 import { getTruncatedHash } from "~features/inference-server/model-digest"
+import {
+  modelList,
+  modelMap
+} from "~features/model-downloader/model-download-list"
 
 export const ModelSelector = () => {
   const [selectedModelHash, setSelectedModelHash] = useState<string>()

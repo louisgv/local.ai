@@ -11,8 +11,8 @@ import { TrashIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
 import { useEffect, useState } from "react"
 
-import type { ModelMetadata } from "~core/model-file"
 import { useInit } from "~features/inference-server/use-init"
+import type { ModelMetadata } from "~features/model-downloader/model-file"
 import { useGlobal } from "~providers/global"
 
 export enum ModelType {

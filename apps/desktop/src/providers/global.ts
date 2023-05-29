@@ -3,8 +3,8 @@
 import { createProvider } from "puro"
 import { useContext, useState } from "react"
 
-import { type ModelMetadata } from "~core/model-file"
 import { useInit } from "~features/inference-server/use-init"
+import { type ModelMetadata } from "~features/model-downloader/model-file"
 
 export enum Route {
   ModelManager = "model-manager",
