@@ -5,7 +5,7 @@ import { useContext, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
 import { useModelsDirectory } from "~features/inference-server/use-models-directory"
-import { type ModelMetadata } from "~features/model-downloader/model-file"
+import type { ModelMetadata } from "~features/model-downloader/model-file"
 
 export enum Route {
   ModelManager = "model-manager",

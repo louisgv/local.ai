@@ -1,8 +1,4 @@
-import {
-  LicenseType,
-  type ModelMap,
-  ModelType
-} from "~features/model-downloader/model-file"
+import { LicenseType, type ModelMap, ModelType } from "./_shared"
 
 export const mptModelMap: ModelMap = {
   "MPT-7B": {

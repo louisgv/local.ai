@@ -9,9 +9,4 @@ export const modelList: ModelDownloadInfo[] = [
   ...toList(gpt4AllModelMap)
 ]
 
-export const modelMap = modelList.reduce((acc, model) => {
-  acc[model.blake3] = {
-    ...model
-  }
-  return acc
-}, {}) as Record<string, ModelDownloadInfo>
+export * from "@models/_shared"

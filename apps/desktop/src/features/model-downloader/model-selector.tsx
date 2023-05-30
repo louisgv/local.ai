@@ -37,13 +37,13 @@ export const ModelSelector = () => {
           <SelectValue aria-label={selectedModel?.blake3}>
             {selectedModel ? (
               <div className="flex gap-2 items-center">
-                <span>{selectedModel.downloadUrl.split("/").pop()}</span>
+                <span>{selectedModel.name}</span>
                 <span
                   className="text-sm text-ellipsis text-gray-10"
                   style={{
                     fontFamily: "monospace"
                   }}>
-                  ({selectedModel.blake3})
+                  ({getTruncatedHash(selectedModel.blake3)})
                 </span>
               </div>
             ) : (
@@ -51,32 +51,40 @@ export const ModelSelector = () => {
             )}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="flex h-48 w-full">
+        <SelectContent className="flex h-96 w-full">
           {modelList.map((model) => (
             <SelectItem key={model.downloadUrl} value={model.blake3}>
-              <div className="flex flex-col gap-2 text-md w-full">
+              <div className={cn("flex flex-col gap-2 text-md w-full text-xs")}>
                 <div className="flex items-center justify-between w-full">
                   <span
                     className={cn(
                       "w-full text-lg",
-                      selectedModelHash === model.blake3
-                        ? "text-gray-12"
-                        : "text-gray-11"
+                      selectedModelHash === model.blake3 ? "text-gray-12" : null
                     )}>
-                    {model.downloadUrl.split("/").pop()}
+                    {model.name}
                   </span>
 
                   <span
-                    className="text-xs text-ellipsis text-gray-10"
+                    className="text-ellipsis text-gray-10"
                     style={{
                       fontFamily: "monospace"
                     }}>
                     {getTruncatedHash(model.blake3)}
                   </span>
                 </div>
-                <p className="text-xs">
+                <p>
                   <Balancer>{model.description}</Balancer>
                 </p>
+                <div className="flex flex-wrap gap-2">
+                  {model.licenses.map((license) => (
+                    <span
+                      key={license}
+                      className="px-2 py-1 rounded-lg bg-gray-6">
+                      {license}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-gray-10">{model.downloadUrl}</p>
               </div>
             </SelectItem>
           ))}

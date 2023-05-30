@@ -7,7 +7,6 @@ use tauri::{AppHandle, Window};
 use tokio::{
     fs::{File, OpenOptions},
     io::AsyncWriteExt,
-    sync::mpsc,
 };
 use tokio_stream::StreamExt;
 use url::Url;
@@ -18,8 +17,9 @@ use url::Url;
 // Study this perhaps: https://github.com/rfdonnelly/tauri-async-example/blob/main/src-tauri/src/main.rs
 
 #[derive(Clone, Serialize)]
-struct Payload {
-    md5_hash: String,
+struct ProgressData {
+    path: String,
+    digest: String,
     progress: f64,
 }
 
@@ -48,12 +48,12 @@ pub async fn download_model(
     app_handle: AppHandle,
     name: String,
     download_url: String,
-    blake3: String,
-) -> Result<bool, String> {
+    digest: String,
+) -> Result<(), String> {
     println!("download_model: {}", download_url);
-    println!("blake3: {}", blake3);
+    println!("digest: {}", digest);
 
-    if blake3.is_empty() {
+    if digest.is_empty() {
         // Might remove this in the future for arbitrary download
         return Err(format!("blake3 required for integrity check"));
     }
@@ -72,32 +72,34 @@ pub async fn download_model(
 
     let value = Json(ModelMetadata {
         path: output_path.clone(),
-        hash: blake3.clone(),
+        hash: digest.clone(),
         download_url: download_url.clone(),
     });
 
     model_bucket.set(&output_path, &value).ok();
 
-    let (tx, mut rx) = mpsc::channel::<f64>(10);
+    let (sender, receiver) = flume::unbounded::<f64>();
 
-    tauri::async_runtime::spawn_blocking(move || loop {
-        if let Some(progress) = rx.blocking_recv() {
-            window
-                .emit(
-                    "download-progress",
-                    Payload {
-                        md5_hash: blake3.clone(),
-                        progress,
-                    },
-                )
-                .unwrap();
-        } else {
-            break;
-        }
+    let op_clone = output_path.clone();
+    tauri::async_runtime::spawn(async move {
+        match receiver.recv_async().await {
+            Ok(progress) => {
+                let payload = ProgressData {
+                    path: op_clone,
+                    digest: digest.clone(),
+                    progress,
+                };
+                window.emit("download_progress", payload).unwrap();
+            }
+            Err(e) => {
+                eprintln!("Error receiving progress: {}", e);
+            }
+        };
     });
 
+    let op_clone = output_path.clone();
     tauri::async_runtime::spawn(async move {
-        match download_file(&download_url, &output_path, tx.clone()).await {
+        match download_file(&download_url, &op_clone, sender.clone()).await {
             Ok(_) => {
                 // Handle the success case, if needed
             }
@@ -108,13 +110,13 @@ pub async fn download_model(
         }
     });
 
-    Ok(true)
+    Ok(())
 }
 
 async fn download_file(
     url: &str,
     output_path: &str,
-    progress_tx: mpsc::Sender<f64>,
+    progress_sender: flume::Sender<f64>,
 ) -> Result<(), Box<dyn Error>> {
     let client = reqwest::Client::new();
 
@@ -154,9 +156,8 @@ async fn download_file(
             .context("Failed to write chunk")?;
         downloaded += chunk.len() as u64;
         let progress = downloaded as f64 / total_length as f64 * 100.0;
-        progress_tx
+        progress_sender
             .send(progress)
-            .await
             .context("Failed to send progress")?;
     }
 

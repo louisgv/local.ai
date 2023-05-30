@@ -103,10 +103,15 @@ pub async fn update_models_dir(
 
 #[tauri::command]
 pub async fn delete_model_file(app_handle: AppHandle, path: &str) -> Result<(), String> {
-    std::fs::remove_file(path).map_err(|e| format!("{}", e))?;
-    // TODO: Maybe parallelize these
-    remove_model_integrity(&app_handle, path);
-    remove_model_type(&app_handle, path);
+    tokio::try_join!(
+        async {
+            tokio::fs::remove_file(&path)
+                .await
+                .map_err(|e| format!("{}", e))
+        },
+        remove_model_integrity(&app_handle, &path),
+        remove_model_type(&app_handle, &path)
+    )?;
 
     Ok(())
 }

@@ -1,5 +1,5 @@
 import { cn } from "@localai/theme/utils"
-import { Button, SpinnerButton } from "@localai/ui/button"
+import { SpinnerButton } from "@localai/ui/button"
 import {
   Select,
   SelectContent,
@@ -7,16 +7,13 @@ import {
   SelectTrigger,
   SelectValue
 } from "@localai/ui/select"
+import { ModelType, modelTypeList } from "@models/index"
 import { TrashIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
 import { useEffect, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
-import {
-  type ModelMetadata,
-  ModelType,
-  modelTypeList
-} from "~features/model-downloader/model-file"
+import type { ModelMetadata } from "~features/model-downloader/model-file"
 import { useGlobal } from "~providers/global"
 
 export enum ModelLoadState {
