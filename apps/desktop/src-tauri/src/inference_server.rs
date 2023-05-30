@@ -4,6 +4,7 @@ use actix_web::web::{Bytes, Json};
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
+use serde::Serialize;
 use std::collections::HashMap;
 use tauri::AppHandle;
 
@@ -38,6 +39,18 @@ impl Default for InferenceServerState {
 #[get("/")]
 async fn ping() -> impl Responder {
     HttpResponse::Ok().body("pong")
+}
+
+#[derive(Serialize)]
+struct ModelInfo {
+    id: String,
+}
+
+#[post("/model")]
+async fn post_model() -> impl Responder {
+    HttpResponse::Ok().json(ModelInfo {
+        id: String::from("local.ai"),
+    })
 }
 
 #[post("/completions")]
@@ -97,11 +110,16 @@ pub async fn start_server<'a>(
     let server_clone = Arc::clone(&state.server);
 
     tauri::async_runtime::spawn(async move {
-        let server = HttpServer::new(|| App::new().service(ping).service(post_completions))
-            .bind(("127.0.0.1", port))
-            .unwrap()
-            // .disable_signals()
-            .run();
+        let server = HttpServer::new(|| {
+            App::new()
+                .service(ping)
+                .service(post_model)
+                .service(post_completions)
+        })
+        .bind(("127.0.0.1", port))
+        .unwrap()
+        // .disable_signals()
+        .run();
         *server_clone.lock() = Some(server.handle());
         println!("Server started on port {port}");
         server.await.unwrap();

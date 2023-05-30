@@ -50,27 +50,26 @@ pub async fn read_directory(dir: &str) -> Result<Vec<FileInfo>, String> {
     Ok(file_infos)
 }
 
-pub async fn get_default_models_path_buf(app_handle: &AppHandle) -> PathBuf {
+pub async fn get_default_models_path_buf(app_handle: &AppHandle) -> Result<PathBuf, String> {
     get_app_dir_path_buf(&app_handle, String::from("models"))
         .await
-        .unwrap()
+        .map_err(|e| format!("{}", e))
+}
+
+pub async fn get_current_models_path(app_handle: &AppHandle) -> Result<String, String> {
+    let default_models_path_buf = get_default_models_path_buf(&app_handle).await?;
+
+    Ok(get_models_path(&app_handle).unwrap_or(default_models_path_buf.display().to_string()))
 }
 
 #[tauri::command]
 pub async fn initialize_models_dir(app_handle: AppHandle) -> Result<ModelDirectoryState, String> {
-    let default_directory = get_default_models_path_buf(&app_handle)
-        .await
-        .display()
-        .to_string();
+    let models_path = get_current_models_path(&app_handle).await?;
 
-    let model_path = get_models_path(&app_handle).unwrap_or(default_directory);
-
-    println!("model_path: {}", model_path);
-
-    let files = read_directory(model_path.as_str()).await?;
+    let files = read_directory(models_path.as_str()).await?;
 
     Ok(ModelDirectoryState {
-        path: model_path,
+        path: models_path,
         files,
     })
 }
@@ -80,10 +79,8 @@ pub async fn update_models_dir(
     app_handle: AppHandle,
     dir: &str,
 ) -> Result<ModelDirectoryState, String> {
-    match set_models_path(&app_handle, dir.to_string()) {
-        Ok(_) => (),
-        Err(e) => return Err(format!("Error setting models path: {}", e)),
-    };
+    set_models_path(&app_handle, dir.to_string())
+        .map_err(|e| format!("Error setting models path: {}", e))?;
 
     let files = read_directory(dir).await?;
 
@@ -91,4 +88,11 @@ pub async fn update_models_dir(
         path: String::from(dir),
         files,
     })
+}
+
+#[tauri::command]
+pub async fn delete_model_file(app_handle: AppHandle, file_path: &str) -> Result<(), String> {
+    let models_path = get_current_models_path(&app_handle).await?;
+
+    Ok(())
 }

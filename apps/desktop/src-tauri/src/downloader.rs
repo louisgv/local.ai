@@ -1,8 +1,8 @@
-use crate::{kv_bucket, models_directory::get_default_models_path_buf};
+use crate::{kv_bucket, models_directory::get_current_models_path};
 use anyhow::{Context, Result};
 use kv::*;
 use serde::{Deserialize, Serialize};
-use std::error::Error;
+use std::{error::Error, path::Path};
 use tauri::{AppHandle, Window};
 use tokio::{
     fs::{File, OpenOptions},
@@ -46,22 +46,24 @@ pub fn get_model_metadata_bucket(
 pub async fn download_model(
     window: Window,
     app_handle: AppHandle,
+    name: String,
     download_url: String,
-    md5_hash: String,
+    blake3: String,
 ) -> Result<bool, String> {
     println!("download_model: {}", download_url);
-    println!("md5_hash: {}", md5_hash);
+    println!("blake3: {}", blake3);
 
-    if md5_hash.is_empty() {
-        return Ok(false);
+    if blake3.is_empty() {
+        // Might remove this in the future for arbitrary download
+        return Err(format!("blake3 required for integrity check"));
     }
 
     let model_bucket = get_model_metadata_bucket(&app_handle);
 
-    let file_name = extract_file_name(&download_url).unwrap();
+    let file_name = name;
+    let models_path = get_current_models_path(&app_handle).await?;
 
-    let output_path = get_default_models_path_buf(&app_handle)
-        .await
+    let output_path = Path::new(&models_path)
         .join(&file_name)
         .display()
         .to_string();
@@ -70,7 +72,7 @@ pub async fn download_model(
 
     let value = Json(ModelMetadata {
         path: output_path.clone(),
-        hash: md5_hash.clone(),
+        hash: blake3.clone(),
         download_url: download_url.clone(),
     });
 
@@ -84,7 +86,7 @@ pub async fn download_model(
                 .emit(
                     "download-progress",
                     Payload {
-                        md5_hash: md5_hash.clone(),
+                        md5_hash: blake3.clone(),
                         progress,
                     },
                 )

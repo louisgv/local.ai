@@ -24,5 +24,5 @@ pub fn get_models_path(app_handle: &AppHandle) -> Result<String, String> {
     get_config_bucket(app_handle)
         .get(&String::from(CONFIG_KEY_MODELS_DIRECTORY))
         .map_err(|e| format!("Error getting models path: {}", e))
-        .and_then(|opt| opt.ok_or_else(|| "Error getting models path".to_string()))
+        .and_then(|opt| opt.ok_or_else(|| format!("Error getting models path")))
 }

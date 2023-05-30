@@ -47,6 +47,7 @@ export type ModelDownloadInfo = {
   description: string
   licenses: (LicenseType | string)[]
   modelType: ModelType
+  vocabulary?: string[]
   tags?: string[]
   citation?: string[]
 }
