@@ -10,6 +10,7 @@ function IndexPage() {
   const {
     routeState: [currentRoute]
   } = useGlobal()
+
   return useMemo(() => {
     switch (currentRoute) {
       case Route.Chat:
