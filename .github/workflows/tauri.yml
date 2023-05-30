@@ -1,9 +1,8 @@
 name: Tauri
 
 on:
-  push:
-    tags:
-      - "v*"
+  release:
+    types: [published]
 
 env:
   CARGO_TERM_COLOR: always
@@ -55,50 +54,9 @@ jobs:
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
 
         with:
-          tagName: ${{ github.ref_name }} # This only works if your workflow triggers on new tags.
           releaseName: "v__VERSION__" # tauri-action replaces \_\_VERSION\_\_ with the app version.
           releaseBody: "See the assets to download and install this version."
           releaseDraft: false
           prerelease: false
-
-      - name: Upload exe file
-        uses: actions/upload-artifact@v3
-        with:
-          name: Local AI
-          path: |
-            apps\desktop\src-tauri\target\release\*.exe
-            apps\desktop\src-tauri\target\release\Local AI
-
-      - name: Upload release assets windows
-        if: matrix.platform == 'windows-latest'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-        with:
-          upload_url: ${{ steps.tauri_action.outputs.releaseUploadUrl }}
-          asset_path: apps\desktop\src-tauri\target\release\Local AI.exe
-          asset_name: Local AI.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
-
-      - name: Upload release assets linux
-        if: matrix.platform == 'ubuntu-20.04'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.tauri_action.outputs.releaseUploadUrl }}
-          asset_path: apps/desktop/src-tauri/target/release/local-ai
-          asset_name: local_ai_ubuntu
-          asset_content_type: application/octet-stream
-
-      - name: Upload release assets mac
-        if: matrix.platform == 'macos-latest'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.tauri_action.outputs.releaseUploadUrl }}
-          asset_path: apps/desktop/src-tauri/target/release/Local AI
-          asset_name: local_ai_mac
-          asset_content_type: application/octet-stream
+          releaseId: ${{ github.event.release.id }}
+          tagName: ${{ github.event.release.tag_name }}
