@@ -1,4 +1,4 @@
-use crate::kv_bucket;
+use crate::kv_bucket::{self, BucketResult};
 use digest::Digest;
 use kv::Json;
 use once_cell::sync::Lazy;
@@ -21,13 +21,13 @@ pub struct ModelIntegrity {
 // Key is absolute file path in the file system
 pub fn get_model_integrity_bucket(
     app_handle: &AppHandle,
-) -> kv::Bucket<'_, String, Json<ModelIntegrity>> {
+) -> BucketResult<'_, Json<ModelIntegrity>> {
     kv_bucket::get_kv_bucket(
         app_handle,
         String::from("model_integrity"),
         String::from("v1"),
     )
-    .unwrap()
+    .map_err(|e| format!("Error getting model integrity bucket: {}", e))
 }
 
 const BUFFER_SIZE: usize = 42 * 1024 * 1024; // 42 MiB buffer
@@ -63,7 +63,7 @@ pub async fn get_cached_integrity(
     path: &str,
 ) -> Result<ModelIntegrity, String> {
     let _guard = BUCKET_LOCK.lock().unwrap();
-    let model_checksum_bucket = get_model_integrity_bucket(&app_handle);
+    let model_checksum_bucket = get_model_integrity_bucket(&app_handle)?;
 
     let file_path = String::from(path);
 
@@ -80,7 +80,7 @@ pub async fn get_integrity(app_handle: AppHandle, path: &str) -> Result<ModelInt
 
     let _guard = BUCKET_LOCK.lock().unwrap();
 
-    let model_checksum_bucket = get_model_integrity_bucket(&app_handle);
+    let model_checksum_bucket = get_model_integrity_bucket(&app_handle)?;
 
     let file_path = String::from(path);
 
@@ -88,4 +88,18 @@ pub async fn get_integrity(app_handle: AppHandle, path: &str) -> Result<ModelInt
         Ok(_) => Ok(integrity),
         Err(e) => return Err(format!("Error caching hash for {}: {}", path, e)),
     }
+}
+
+pub async fn remove_model_integrity(app_handle: &AppHandle, path: &str) -> Result<(), String> {
+    let _guard = BUCKET_LOCK.lock().unwrap();
+
+    let model_checksum_bucket = get_model_integrity_bucket(&app_handle)?;
+
+    let file_path = String::from(path);
+
+    model_checksum_bucket
+        .remove(&file_path)
+        .map_err(|e| format!("{}", e))?;
+
+    Ok(())
 }

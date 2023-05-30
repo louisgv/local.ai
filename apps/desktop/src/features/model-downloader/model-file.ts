@@ -21,10 +21,9 @@ export function toGB(size: number) {
 
 export enum ModelType {
   Llama = "llama",
-  GptJ = "gptj",
   Mpt = "mpt",
+  GptJ = "gptj",
   NeoX = "gptneox",
-  RedPajama = "redpajama",
   Bloom = "bloom",
   Gpt2 = "gpt2"
 }

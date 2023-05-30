@@ -52,10 +52,10 @@ const TestModelButton = ({
 }
 
 export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
-  const [label, setLabel] = useState("")
   const {
     activeModelState: [activeModel, setActiveModel],
-    concurrencyState: [concurrency]
+    concurrencyState: [concurrency],
+    modelsDirectoryState: { updateModelsDirectory }
   } = useGlobal()
   // TODO: Cache the model type in a kv later
   const [modelType, setModelType] = useState<ModelType>(ModelType.GptJ)
@@ -89,11 +89,18 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
         onChange={(e) => setLabel(e.target.value)}
       /> */}
       <div>
-        <Button
+        <SpinnerButton
+          Icon={TrashIcon}
+          onClick={async () => {
+            await invoke("delete_model_file", {
+              path: model.path
+            })
+
+            await updateModelsDirectory()
+          }}
           disabled={modelLoadState === ModelLoadState.Loaded}
-          className="group-hover:opacity-100 opacity-0 transition-opacity">
-          <TrashIcon />
-        </Button>
+          className="group-hover:opacity-100 opacity-0 transition-opacity"
+        />
       </div>
       <div className="flex items-center justify-end w-96 gap-2">
         {/* <TestModelButton model={model} modelType={modelType} /> */}
@@ -127,6 +134,7 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
               await invoke("load_model", {
                 ...model,
                 modelType,
+                modelVocabulary: {},
                 concurrency
               })
               setActiveModel(model)

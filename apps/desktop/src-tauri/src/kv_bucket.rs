@@ -12,3 +12,5 @@ pub fn get_kv_bucket<T: Value>(
 
     store.bucket::<String, T>(Some(&name))
 }
+
+pub type BucketResult<'a, T> = Result<kv::Bucket<'a, String, T>, String>;

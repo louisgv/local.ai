@@ -4,6 +4,7 @@ import { createProvider } from "puro"
 import { useContext, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
+import { useModelsDirectory } from "~features/inference-server/use-models-directory"
 import { type ModelMetadata } from "~features/model-downloader/model-file"
 
 export enum Route {
@@ -23,6 +24,8 @@ const useGlobalProvider = () => {
 
   const serverStartedState = useState(false)
 
+  const modelsDirectoryState = useModelsDirectory()
+
   useInit(async () => {
     const { getCurrent } = await import("@tauri-apps/api/window")
     const currentWindow = getCurrent()
@@ -40,7 +43,8 @@ const useGlobalProvider = () => {
     chatListState,
     activeModelState,
     concurrencyState,
-    serverStartedState
+    serverStartedState,
+    modelsDirectoryState
   }
 }
 

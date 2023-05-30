@@ -43,6 +43,7 @@ pub fn get_inference_params() -> InferenceParameters {
 pub async fn spawn_pool(
     path: &str,
     model_type: &str,
+    vocabulary_source: &VocabularySource,
     concurrency: usize,
     cache_dir: &PathBuf,
 ) -> Result<(), String> {
@@ -64,7 +65,7 @@ pub async fn spawn_pool(
         let cache_file_path = cache_dir.join(cache_name);
         let original_model_path = original_model_path.clone();
         let architecture = architecture.clone();
-
+        let vocabulary_source = vocabulary_source.to_owned();
         let task = tokio::task::spawn_blocking(move || {
             if !skip_copy {
                 fs::copy(&original_model_path, &cache_file_path)
@@ -80,7 +81,7 @@ pub async fn spawn_pool(
             match llm::load_dynamic(
                 architecture,
                 cache_path.as_path(),
-                VocabularySource::HuggingFaceRemote(String::from("JosephusCheung/Guanaco")),
+                vocabulary_source.clone(),
                 llm::ModelParameters {
                     prefer_mmap: true,
                     context_size: 8472,

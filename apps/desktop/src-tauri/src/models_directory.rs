@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, time::SystemTime};
 
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -7,6 +7,8 @@ use walkdir::WalkDir;
 
 use crate::{
     config::{get_models_path, set_models_path},
+    model_integrity::remove_model_integrity,
+    model_type::remove_model_type,
     path::get_app_dir_path_buf,
 };
 
@@ -15,6 +17,7 @@ pub struct FileInfo {
     size: u64,
     path: String,
     name: String,
+    modified: SystemTime,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -40,12 +43,20 @@ pub async fn read_directory(dir: &str) -> Result<Vec<FileInfo>, String> {
                 .to_str()
                 .unwrap()
                 .to_string();
-            let size = entry.metadata().unwrap().len();
-            FileInfo { path, size, name }
+            let metadata = entry.metadata().unwrap();
+            let size = metadata.len();
+            let modified = metadata.modified().unwrap();
+
+            FileInfo {
+                path,
+                size,
+                name,
+                modified,
+            }
         })
         .collect();
 
-    file_infos.sort_by(|a, b| a.name.cmp(&b.name));
+    file_infos.sort_by(|a, b| b.modified.cmp(&a.modified));
 
     Ok(file_infos)
 }
@@ -91,8 +102,11 @@ pub async fn update_models_dir(
 }
 
 #[tauri::command]
-pub async fn delete_model_file(app_handle: AppHandle, file_path: &str) -> Result<(), String> {
-    let models_path = get_current_models_path(&app_handle).await?;
+pub async fn delete_model_file(app_handle: AppHandle, path: &str) -> Result<(), String> {
+    std::fs::remove_file(path).map_err(|e| format!("{}", e))?;
+    // TODO: Maybe parallelize these
+    remove_model_integrity(&app_handle, path);
+    remove_model_type(&app_handle, path);
 
     Ok(())
 }

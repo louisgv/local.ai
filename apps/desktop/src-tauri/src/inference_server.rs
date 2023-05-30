@@ -4,8 +4,9 @@ use actix_web::web::{Bytes, Json};
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::path::PathBuf;
 use tauri::AppHandle;
 
 use std::sync::{
@@ -17,7 +18,7 @@ use crate::abort_stream::AbortStream;
 use crate::inference_thread::{start_inference, CompletionRequest, InferenceThreadRequest};
 use crate::model_pool::{self, spawn_pool};
 use crate::path::get_app_dir_path_buf;
-use llm::Model;
+use llm::{Model, VocabularySource};
 
 static _LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
@@ -155,16 +156,43 @@ pub async fn stop_server<'a>(state: tauri::State<'a, InferenceServerState>) -> R
     Ok(())
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct ModelVocabulary {
+    /// Local path to vocabulary
+    pub vocabulary_path: Option<PathBuf>,
+
+    /// Remote HuggingFace repository containing vocabulary
+    pub vocabulary_repository: Option<String>,
+}
+impl ModelVocabulary {
+    pub fn to_source(&self) -> VocabularySource {
+        match (&self.vocabulary_path, &self.vocabulary_repository) {
+            (Some(_), Some(_)) => VocabularySource::Model,
+            (Some(path), None) => VocabularySource::HuggingFaceTokenizerFile(path.to_owned()),
+            (None, Some(repo)) => VocabularySource::HuggingFaceRemote(repo.to_owned()),
+            (None, None) => VocabularySource::Model,
+        }
+    }
+}
+
 #[tauri::command]
 pub async fn load_model<'a>(
     app_handle: AppHandle,
     path: &str,
     model_type: &str,
+    model_vocabulary: ModelVocabulary,
     concurrency: usize,
 ) -> Result<(), String> {
     let cache_dir = get_app_dir_path_buf(&app_handle, String::from("inference_cache"))
         .await
         .unwrap();
 
-    spawn_pool(path, model_type, concurrency, &cache_dir).await
+    spawn_pool(
+        path,
+        model_type,
+        &model_vocabulary.to_source(),
+        concurrency,
+        &cache_dir,
+    )
+    .await
 }

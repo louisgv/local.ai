@@ -18,6 +18,7 @@ mod model_type;
 mod models_directory;
 mod path;
 mod test;
+mod utils;
 
 fn main() {
     tauri::Builder::default()
@@ -30,12 +31,14 @@ fn main() {
             models_directory::read_directory,
             models_directory::update_models_dir,
             models_directory::initialize_models_dir,
+            models_directory::delete_model_file,
             inference_server::start_server,
             inference_server::stop_server,
             inference_server::load_model,
             model_type::get_cached_model_type,
             model_type::set_model_type,
             test::test_model,
+            utils::fs::open_directory,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

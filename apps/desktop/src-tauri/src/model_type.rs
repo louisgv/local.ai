@@ -1,4 +1,4 @@
-use crate::kv_bucket;
+use crate::kv_bucket::{self, BucketResult};
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 use tauri::AppHandle;
@@ -6,14 +6,15 @@ use tauri::AppHandle;
 static MODEL_TYPE_BUCKET_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
 // Key is absolute file path in the file system
-pub fn get_model_type_bucket(app_handle: &AppHandle) -> kv::Bucket<'_, String, String> {
-    kv_bucket::get_kv_bucket(app_handle, String::from("model_type"), String::from("v1")).unwrap()
+pub fn get_model_type_bucket(app_handle: &AppHandle) -> BucketResult<'_, String> {
+    kv_bucket::get_kv_bucket(app_handle, String::from("model_type"), String::from("v1"))
+        .map_err(|e| format!("Error getting model type bucket: {}", e))
 }
 
 #[tauri::command]
 pub async fn get_cached_model_type(app_handle: AppHandle, path: &str) -> Result<String, String> {
     let _guard = MODEL_TYPE_BUCKET_LOCK.lock().unwrap();
-    let model_type_bucket = get_model_type_bucket(&app_handle);
+    let model_type_bucket = get_model_type_bucket(&app_handle)?;
 
     let file_path = String::from(path);
 
@@ -30,7 +31,7 @@ pub async fn set_model_type(
     path: &str,
     model_type: &str,
 ) -> Result<bool, String> {
-    let model_type_bucket = get_model_type_bucket(&app_handle);
+    let model_type_bucket = get_model_type_bucket(&app_handle)?;
 
     let file_path = String::from(path);
 
@@ -38,4 +39,18 @@ pub async fn set_model_type(
         Ok(_) => return Ok(true),
         Err(e) => return Err(format!("Error setting model type for {}: {}", path, e)),
     }
+}
+
+pub async fn remove_model_type(app_handle: &AppHandle, path: &str) -> Result<(), String> {
+    let _guard = MODEL_TYPE_BUCKET_LOCK.lock().unwrap();
+
+    let model_type_bucket = get_model_type_bucket(&app_handle)?;
+
+    let file_path = String::from(path);
+
+    model_type_bucket
+        .remove(&file_path)
+        .map_err(|e| format!("{}", e))?;
+
+    Ok(())
 }

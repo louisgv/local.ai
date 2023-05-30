@@ -2,20 +2,14 @@ import { cn } from "@localai/theme/utils"
 import { Button, SpinnerButton } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
 import { ReloadIcon } from "@radix-ui/react-icons"
-import { open } from "@tauri-apps/api/dialog"
+import { open as dialogOpen } from "@tauri-apps/api/dialog"
 import { invoke } from "@tauri-apps/api/tauri"
-import { useState } from "react"
 
 import { ModelConfig } from "~features/inference-server/model-config"
 import { ModelDigest } from "~features/inference-server/model-digest"
 import { ServerConfig } from "~features/inference-server/server-config"
-import { useInit } from "~features/inference-server/use-init"
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
-import {
-  type ModelDirectoryState,
-  type ModelMetadata,
-  toGB
-} from "~features/model-downloader/model-file"
+import { type ModelMetadata, toGB } from "~features/model-downloader/model-file"
 import { ModelSelector } from "~features/model-downloader/model-selector"
 import { useGlobal } from "~providers/global"
 
@@ -31,31 +25,14 @@ import { useGlobal } from "~providers/global"
 
 export function ModelManagerView() {
   const {
-    activeModelState: [activeModel]
-  } = useGlobal()
-  const [modelsDirectory, setModelsDirectory] = useState("")
-  const [models, setModels] = useState<ModelMetadata[]>([])
-  const [isRefreshing, setIsRefreshing] = useState(false)
-
-  useInit(async () => {
-    // get the models directory saved in config
-    const resp = await invoke<ModelDirectoryState>("initialize_models_dir")
-    if (!resp) {
-      return
+    activeModelState: [activeModel],
+    modelsDirectoryState: {
+      isRefreshing,
+      modelsDirectory,
+      models,
+      updateModelsDirectory
     }
-    setModelsDirectory(resp.path)
-    setModels(resp.files)
-  })
-
-  async function updateModelsDirectory(dir: string) {
-    setIsRefreshing(true)
-    const resp = await invoke<ModelDirectoryState>("update_models_dir", {
-      dir
-    })
-    setModelsDirectory(resp.path)
-    setModels(resp.files)
-    setIsRefreshing(false)
-  }
+  } = useGlobal()
 
   return (
     <ViewContainer>
@@ -66,7 +43,7 @@ export function ModelManagerView() {
             isSpinning={isRefreshing}
             title="Refresh Models Directory"
             onClick={async () => {
-              await updateModelsDirectory(modelsDirectory)
+              await updateModelsDirectory()
             }}
           />
         )}
@@ -74,13 +51,22 @@ export function ModelManagerView() {
           className="w-full"
           value={modelsDirectory}
           readOnly
-          placeholder="Models directory"
-        />
+          placeholder="Models directory">
+          <Button
+            className="w-6 h-4 absolute right-2 self-center text-gray-11 flex justify-center items-center"
+            onClick={() => {
+              invoke("open_directory", {
+                path: modelsDirectory
+              })
+            }}>
+            ...
+          </Button>
+        </Input>
 
         <Button
           className="w-24 justify-center"
           onClick={async () => {
-            const selected = (await open({
+            const selected = (await dialogOpen({
               directory: true,
               multiple: false
             })) as string

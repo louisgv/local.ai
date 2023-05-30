@@ -4,7 +4,7 @@ import { type InputHTMLAttributes, forwardRef } from "react"
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {}
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, type, children, ...props }, ref) => {
     return (
       <div className={cn("relative flex h-10", className)}>
         <label
@@ -29,6 +29,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           {...props}
         />
+        {children}
       </div>
     )
   }
