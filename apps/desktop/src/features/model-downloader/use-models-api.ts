@@ -14,17 +14,17 @@ export const useModelsApi = () => {
 
   const modelMap = useMemo(
     () =>
-      data?.reduce((acc, model) => {
+      (data?.reduce((acc, model) => {
         acc[model.blake3] = {
           ...model
         }
         return acc
-      }, {}) as ModelMap,
+      }, {}) as ModelMap) || {},
     [data]
   )
 
   return {
-    models: data,
+    models: data || [],
     modelMap,
     isLoading: !error && !data,
     isError: error
