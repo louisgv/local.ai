@@ -13,17 +13,16 @@ import { useMemo, useState } from "react"
 import Balancer from "react-wrap-balancer"
 
 import { getTruncatedHash } from "~features/inference-server/model-digest"
-import {
-  modelList,
-  modelMap
-} from "~features/model-downloader/model-download-list"
+import { useModelsApi } from "~features/model-downloader/use-models-api"
 
 export const ModelSelector = () => {
+  const { models, modelMap } = useModelsApi()
+
   const [selectedModelHash, setSelectedModelHash] = useState<string>()
 
   const selectedModel = useMemo(
     () => modelMap[selectedModelHash],
-    [selectedModelHash]
+    [modelMap, selectedModelHash]
   )
 
   return (
@@ -52,7 +51,7 @@ export const ModelSelector = () => {
           </SelectValue>
         </SelectTrigger>
         <SelectContent className="flex h-96 w-full">
-          {modelList.map((model) => (
+          {models.map((model) => (
             <SelectItem key={model.downloadUrl} value={model.blake3}>
               <div className={cn("flex flex-col gap-2 text-md w-full text-xs")}>
                 <div className="flex items-center justify-between w-full">

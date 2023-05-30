@@ -17,7 +17,7 @@ export enum LicenseType {
   Apache2 = "apache-2.0"
 }
 
-export type ModelDownloadInfo = {
+export type ModelInfo = {
   name?: string
   downloadUrl: string
   sha256: string
@@ -30,7 +30,7 @@ export type ModelDownloadInfo = {
   citation?: string[]
 }
 
-export type ModelMap = Record<string, ModelDownloadInfo>
+export type ModelMap = Record<string, ModelInfo>
 
 export const toList = (modelMap: ModelMap) =>
   Object.entries(modelMap).map(([name, model]) => ({
