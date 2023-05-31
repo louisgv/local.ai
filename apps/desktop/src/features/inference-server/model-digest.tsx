@@ -18,9 +18,11 @@ export const getTruncatedHash = (hashValue: string) =>
 
 const HashDisplay = ({ hashType = "", hashValue = "", truncated = false }) => {
   return (
-    <div className="flex justify-between gap-4">
+    <div className="flex justify-between gap-4 w-full">
       <label className="font-bold">{hashType}</label>
-      <code>{truncated ? getTruncatedHash(hashValue) : hashValue}</code>
+      <code className="break-all lg:break-normal">
+        {truncated ? getTruncatedHash(hashValue) : hashValue}
+      </code>
     </div>
   )
 }
@@ -58,13 +60,19 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
         <>
           <div
             className={cn(
-              "absolute right-0 top-0",
-              "transition-opacity",
               showDetail
                 ? "z-10 opacity-100 pointer-events-auto"
-                : "z-0 opacity-0 pointer-events-none"
+                : "z-0 opacity-0 pointer-events-none",
+              "absolute right-0 top-0",
+              "transition-opacity",
+              "w-64 sm:w-64 md:w-96 lg:w-auto",
+              "text-xs sm:text-sm md:text-base"
             )}>
-            <div className="bg-gray-4 relative px-5 py-4 rounded-lg border border-gray-6">
+            <div
+              className={cn(
+                "bg-gray-4 relative px-5 py-4 rounded-lg border border-gray-6",
+                "flex-wrap"
+              )}>
               <button
                 className="absolute right-1 top-1"
                 onClick={() => setShowDetail(false)}>
@@ -81,6 +89,7 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
           </div>
           <div className="flex items-center gap-2 pl-2 bg-gray-3 rounded-lg">
             <SpinnerButton
+              className="w-10 p-3"
               isSpinning={isCalculating}
               Icon={ReloadIcon}
               onClick={computeDigest}

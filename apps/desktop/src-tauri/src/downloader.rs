@@ -1,67 +1,69 @@
 use crate::{kv_bucket, models_directory::get_current_models_path};
-use anyhow::{Context, Result};
 use kv::*;
+use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::sync::Arc;
 use std::{error::Error, path::Path};
+use tauri::{App, Manager};
 use tauri::{AppHandle, Window};
 use tokio::{
     fs::{File, OpenOptions},
     io::AsyncWriteExt,
 };
 use tokio_stream::StreamExt;
-use url::Url;
 
-// use md5::{Digest, Md5};
 // use std::fs::File;
 // use std::io::{BufReader, Read};
 // Study this perhaps: https://github.com/rfdonnelly/tauri-async-example/blob/main/src-tauri/src/main.rs
 
-#[derive(Clone, Serialize)]
-struct ProgressData {
+// Download path -> Download join handler
+#[derive(Default)]
+struct DownloadHandlerMap(Arc<Mutex<HashMap<String, String>>>);
+
+#[derive(Clone, Serialize, Deserialize, PartialEq, Default)]
+struct DownloadProgressData {
     path: String,
     digest: String,
     progress: f64,
+    download_url: Option<String>,
+    finished: bool,
 }
 
-#[derive(Serialize, Deserialize, PartialEq)]
-pub struct ModelMetadata {
-    path: String,
-    hash: String,
-    download_url: String,
-}
+type DownloadProgressBucket = Arc<Mutex<Bucket<'static, String, Json<DownloadProgressData>>>>;
 
-// Key is absolute file path in the file system
-pub fn get_model_metadata_bucket(
-    app_handle: &AppHandle,
-) -> kv::Bucket<'_, String, Json<ModelMetadata>> {
-    kv_bucket::get_kv_bucket(
-        app_handle,
-        String::from("data"),
-        String::from("model_metadata"),
-    )
-    .unwrap()
+#[derive(Clone)]
+pub struct State(DownloadProgressBucket);
+
+impl State {
+    pub fn new(app: &mut App) -> Result<(), String> {
+        let bucket = kv_bucket::get_kv_bucket(
+            app.app_handle(),
+            String::from("download_state"),
+            String::from("v1"),
+        )?;
+
+        app.manage(State(Arc::new(Mutex::new(bucket))));
+        Ok(())
+    }
 }
 
 #[tauri::command]
 pub async fn download_model(
     window: Window,
     app_handle: AppHandle,
+    download_state: tauri::State<'_, State>,
     name: String,
     download_url: String,
     digest: String,
 ) -> Result<(), String> {
     println!("download_model: {}", download_url);
     println!("digest: {}", digest);
+    let models_path = get_current_models_path(app_handle).await?;
 
-    if digest.is_empty() {
-        // Might remove this in the future for arbitrary download
-        return Err(format!("blake3 required for integrity check"));
-    }
-
-    let model_bucket = get_model_metadata_bucket(&app_handle);
+    let model_bucket = download_state.0.lock();
 
     let file_name = name;
-    let models_path = get_current_models_path(&app_handle).await?;
 
     let output_path = Path::new(&models_path)
         .join(&file_name)
@@ -70,13 +72,17 @@ pub async fn download_model(
 
     println!("output_path: {}", output_path);
 
-    let value = Json(ModelMetadata {
-        path: output_path.clone(),
-        hash: digest.clone(),
-        download_url: download_url.clone(),
-    });
-
-    model_bucket.set(&output_path, &value).ok();
+    model_bucket
+        .set(
+            &output_path,
+            &Json(DownloadProgressData {
+                path: output_path.clone(),
+                digest: digest.clone(),
+                download_url: Some(download_url.clone()),
+                ..Default::default()
+            }),
+        )
+        .ok();
 
     let (sender, receiver) = flume::unbounded::<f64>();
 
@@ -84,10 +90,11 @@ pub async fn download_model(
     tauri::async_runtime::spawn(async move {
         match receiver.recv_async().await {
             Ok(progress) => {
-                let payload = ProgressData {
+                let payload = DownloadProgressData {
                     path: op_clone,
                     digest: digest.clone(),
                     progress,
+                    ..Default::default()
                 };
                 window.emit("download_progress", payload).unwrap();
             }
@@ -110,6 +117,17 @@ pub async fn download_model(
         }
     });
 
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn pause_download_model(
+    window: Window,
+    app_handle: AppHandle,
+    name: String,
+    download_url: String,
+    digest: String,
+) -> Result<(), String> {
     Ok(())
 }
 
@@ -150,15 +168,12 @@ async fn download_file(
 
     let mut stream = response.bytes_stream();
     while let Some(chunk) = stream.next().await {
-        let chunk = chunk.context("Failed to read chunk")?;
-        file.write_all(&chunk)
-            .await
-            .context("Failed to write chunk")?;
+        // TODO: add a condition here such that
+        let chunk = chunk?;
+        file.write_all(&chunk).await?;
         downloaded += chunk.len() as u64;
         let progress = downloaded as f64 / total_length as f64 * 100.0;
-        progress_sender
-            .send(progress)
-            .context("Failed to send progress")?;
+        progress_sender.send(progress)?;
     }
 
     Ok(())
@@ -171,14 +186,4 @@ async fn open_file(path: &str) -> Result<File, Box<dyn Error>> {
         .open(path)
         .await
         .map_err(|e| Box::new(e) as Box<dyn Error>)
-}
-
-fn extract_file_name(uri: &str) -> Result<String, url::ParseError> {
-    let parsed_url = Url::parse(uri)?;
-    let file_name = parsed_url
-        .path_segments()
-        .and_then(|segments| segments.last())
-        .map(|name| name.to_string())
-        .ok_or_else(|| url::ParseError::RelativeUrlWithoutBase)?;
-    Ok(file_name)
 }

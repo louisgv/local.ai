@@ -10,11 +10,12 @@ export enum ModelType {
 export const modelTypeList = Object.values(ModelType)
 
 export enum LicenseType {
-  Commercial = "commercial",
-  NonCommercial = "non-commercial",
-  Academic = "academic",
-  OpenSource = "open-source",
-  Apache2 = "apache-2.0"
+  Commercial = "Commercial",
+  NonCommercial = "Non-commercial",
+  Academic = "Academic",
+  OpenSource = "Open-source",
+  Apache2 = "Apache-2.0",
+  GPL = "GPL"
 }
 
 export type ModelInfo = {
@@ -27,7 +28,7 @@ export type ModelInfo = {
   modelType: ModelType
   vocabulary?: string[]
   tags?: string[]
-  citation?: string[]
+  citations?: string[]
 }
 
 export type ModelMap = Record<string, ModelInfo>

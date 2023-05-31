@@ -1,24 +1,39 @@
 import { LicenseType, type ModelMap, ModelType } from "./_shared"
 
+const commonCitations = [
+  "https://gpt4all.io/reports/GPT4All_Technical_Report_3.pdf",
+  "https://gpt4all.io/reports/GPT4All_Technical_Report_2.pdf"
+]
+
 export const gpt4AllModelMap: ModelMap = {
   "GPT4All-J v1.3 Groovy": {
     description:
       "Current best commercially licensable model based on GPT-J and trained by Nomic AI on the latest curated GPT4All dataset.",
     modelType: ModelType.GptJ,
-    downloadUrl: "https://gpt4all.io/models/ggml-gpt4all-j-v1.3-groovy.bin",
+    downloadUrl:
+      "https://huggingface.co/rustformers/gpt4all-j-ggml/blob/main/gpt4all-j-q5_1-ggjt.bin",
     sha256: "",
     blake3: "aaa",
-    licenses: [LicenseType.Commercial]
+    licenses: [LicenseType.Commercial, LicenseType.OpenSource, LicenseType.GPL],
+    citations: [
+      ...commonCitations,
+      "https://huggingface.co/rustformers/gpt4all-j-ggml"
+    ]
   },
 
-  "GPT4All-J L13B Snoozy": {
+  "GPT4All-J 13B Snoozy": {
     description:
       "Current best non-commercially licensable model based on Llama 13b and trained by Nomic AI on the latest curated GPT4All dataset.",
     modelType: ModelType.Llama,
-    downloadUrl: "https://gpt4all.io/models/ggml-gpt4all-l13b-snoozy.bin",
+    downloadUrl:
+      "https://huggingface.co/TheBloke/GPT4All-13B-snoozy-GGML/resolve/main/GPT4All-13B-snoozy.ggmlv3.q5_1.bin",
     sha256: "91f886b68fbce697e9a3cd501951e455",
     blake3: "e2b7b4b7c0b0b0b0b0b0b0b0b0b0b0b0",
-    licenses: [LicenseType.NonCommercial]
+    licenses: [LicenseType.NonCommercial],
+    citations: [
+      ...commonCitations,
+      "https://huggingface.co/TheBloke/GPT4All-13B-snoozy-GGML"
+    ]
   }
 }
 

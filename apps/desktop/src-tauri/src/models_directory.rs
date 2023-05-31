@@ -7,8 +7,8 @@ use walkdir::WalkDir;
 
 use crate::{
     config::{get_models_path, set_models_path},
-    model_integrity::remove_model_integrity,
-    model_type::remove_model_type,
+    model_integrity::{self, remove_model_integrity},
+    model_type::{self, remove_model_type},
     path::get_app_dir_path_buf,
 };
 
@@ -61,21 +61,19 @@ pub async fn read_directory(dir: &str) -> Result<Vec<FileInfo>, String> {
     Ok(file_infos)
 }
 
-pub async fn get_default_models_path_buf(app_handle: &AppHandle) -> Result<PathBuf, String> {
-    get_app_dir_path_buf(&app_handle, String::from("models"))
-        .await
-        .map_err(|e| format!("{}", e))
+pub async fn get_default_models_path_buf(app_handle: AppHandle) -> Result<PathBuf, String> {
+    get_app_dir_path_buf(app_handle, String::from("models")).await
 }
 
-pub async fn get_current_models_path(app_handle: &AppHandle) -> Result<String, String> {
-    let default_models_path_buf = get_default_models_path_buf(&app_handle).await?;
+pub async fn get_current_models_path(app_handle: AppHandle) -> Result<String, String> {
+    let default_models_path_buf = get_default_models_path_buf(app_handle.clone()).await?;
 
-    Ok(get_models_path(&app_handle).unwrap_or(default_models_path_buf.display().to_string()))
+    Ok(get_models_path(app_handle).unwrap_or(default_models_path_buf.display().to_string()))
 }
 
 #[tauri::command]
 pub async fn initialize_models_dir(app_handle: AppHandle) -> Result<ModelDirectoryState, String> {
-    let models_path = get_current_models_path(&app_handle).await?;
+    let models_path = get_current_models_path(app_handle).await?;
 
     let files = read_directory(models_path.as_str()).await?;
 
@@ -90,7 +88,7 @@ pub async fn update_models_dir(
     app_handle: AppHandle,
     dir: &str,
 ) -> Result<ModelDirectoryState, String> {
-    set_models_path(&app_handle, dir.to_string())
+    set_models_path(app_handle, dir.to_string())
         .map_err(|e| format!("Error setting models path: {}", e))?;
 
     let files = read_directory(dir).await?;
@@ -102,15 +100,19 @@ pub async fn update_models_dir(
 }
 
 #[tauri::command]
-pub async fn delete_model_file(app_handle: AppHandle, path: &str) -> Result<(), String> {
+pub async fn delete_model_file(
+    model_integrity_bucket_state: tauri::State<'_, model_integrity::State>,
+    model_type_bucket_state: tauri::State<'_, model_type::State>,
+    path: &str,
+) -> Result<(), String> {
     tokio::try_join!(
         async {
             tokio::fs::remove_file(&path)
                 .await
                 .map_err(|e| format!("{}", e))
         },
-        remove_model_integrity(&app_handle, &path),
-        remove_model_type(&app_handle, &path)
+        remove_model_integrity(model_integrity_bucket_state, &path),
+        remove_model_type(model_type_bucket_state, &path)
     )?;
 
     Ok(())

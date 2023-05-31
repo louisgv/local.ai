@@ -35,10 +35,11 @@ export function ModelManagerView() {
   } = useGlobal()
 
   return (
-    <ViewContainer>
+    <ViewContainer className="relative z-50">
       <ViewHeader>
         {!!modelsDirectory && (
           <SpinnerButton
+            className="w-10 p-3"
             Icon={ReloadIcon}
             isSpinning={isRefreshing}
             title="Refresh Models Directory"
@@ -99,6 +100,7 @@ export function ModelManagerView() {
           )
           .map((model: ModelMetadata) => (
             <div
+              key={model.name}
               className={cn(
                 "flex flex-col gap-4 rounded-md p-4",
                 "text-gray-11 hover:text-gray-12",
@@ -106,8 +108,7 @@ export function ModelManagerView() {
                 activeModel?.path === model.path
                   ? "ring ring-green-7 hover:ring-green-8"
                   : "ring ring-gray-7 hover:ring-gray-8"
-              )}
-              key={model.name}>
+              )}>
               <div className="flex items-center justify-between w-full">
                 <div className="flex flex-col justify-between w-full">
                   <div className={"text-md"}>{model.name}</div>

@@ -37,13 +37,9 @@ export const ModelSelector = () => {
             {selectedModel ? (
               <div className="flex gap-2 items-center">
                 <span>{selectedModel.name}</span>
-                <span
-                  className="text-sm text-ellipsis text-gray-10"
-                  style={{
-                    fontFamily: "monospace"
-                  }}>
+                <code className="text-sm text-ellipsis text-gray-10">
                   ({getTruncatedHash(selectedModel.blake3)})
-                </span>
+                </code>
               </div>
             ) : (
               <span>Select a Model to download</span>
@@ -94,7 +90,11 @@ export const ModelSelector = () => {
         disabled={!selectedModelHash}
         // isSpinning
         onClick={() => {
-          invoke("download_model", modelMap[selectedModelHash])
+          invoke("download_model", {
+            name: selectedModel.name,
+            downloadUrl: selectedModel.downloadUrl,
+            digest: selectedModel.blake3
+          })
         }}>
         Download
       </SpinnerButton>

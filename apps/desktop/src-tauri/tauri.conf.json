@@ -84,9 +84,9 @@
       {
         "title": "🎒 local.ai",
         "resizable": true,
-        "visible": false,
         "center": true,
-        "width": 1042,
+        "visible": false,
+        "width": 1247,
         "height": 740
       }
     ]

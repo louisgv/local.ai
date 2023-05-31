@@ -1,20 +1,29 @@
-use crate::kv_bucket::{self, BucketResult};
-use once_cell::sync::Lazy;
-use std::sync::Mutex;
-use tauri::AppHandle;
+use crate::kv_bucket::{self, StateBucket};
 
-static MODEL_TYPE_BUCKET_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
+use parking_lot::Mutex;
+use std::sync::Arc;
 
-// Key is absolute file path in the file system
-pub fn get_model_type_bucket(app_handle: &AppHandle) -> BucketResult<'_, String> {
-    kv_bucket::get_kv_bucket(app_handle, String::from("model_type"), String::from("v1"))
-        .map_err(|e| format!("Error getting model type bucket: {}", e))
+use tauri::Manager;
+
+#[derive(Clone)]
+pub struct State(StateBucket<String>);
+
+impl State {
+    pub fn new(app: &mut tauri::App) -> Result<(), String> {
+        let bucket = kv_bucket::get_kv_bucket(
+            app.app_handle(),
+            String::from("model_type"),
+            String::from("v1"),
+        )?;
+
+        app.manage(State(Arc::new(Mutex::new(bucket))));
+        Ok(())
+    }
 }
 
 #[tauri::command]
-pub async fn get_cached_model_type(app_handle: AppHandle, path: &str) -> Result<String, String> {
-    let _guard = MODEL_TYPE_BUCKET_LOCK.lock().unwrap();
-    let model_type_bucket = get_model_type_bucket(&app_handle)?;
+pub fn get_cached_model_type(state: tauri::State<'_, State>, path: &str) -> Result<String, String> {
+    let model_type_bucket = state.0.lock();
 
     let file_path = String::from(path);
 
@@ -27,11 +36,11 @@ pub async fn get_cached_model_type(app_handle: AppHandle, path: &str) -> Result<
 
 #[tauri::command]
 pub async fn set_model_type(
-    app_handle: AppHandle,
+    state: tauri::State<'_, State>,
     path: &str,
     model_type: &str,
 ) -> Result<bool, String> {
-    let model_type_bucket = get_model_type_bucket(&app_handle)?;
+    let model_type_bucket = state.0.lock();
 
     let file_path = String::from(path);
 
@@ -41,10 +50,8 @@ pub async fn set_model_type(
     }
 }
 
-pub async fn remove_model_type(app_handle: &AppHandle, path: &str) -> Result<(), String> {
-    let _guard = MODEL_TYPE_BUCKET_LOCK.lock().unwrap();
-
-    let model_type_bucket = get_model_type_bucket(&app_handle)?;
+pub async fn remove_model_type(state: tauri::State<'_, State>, path: &str) -> Result<(), String> {
+    let model_type_bucket = state.0.lock();
 
     let file_path = String::from(path);
 

@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use inference_server::InferenceServerState;
+use tauri::Manager;
 
 mod abort_stream;
 mod config;
@@ -22,8 +22,22 @@ mod utils;
 
 fn main() {
     tauri::Builder::default()
-        .manage(InferenceServerState::default())
+        .manage(inference_server::State::default())
         .plugin(tauri_plugin_persisted_scope::init())
+        .setup(|app| {
+            downloader::State::new(app)?;
+            model_type::State::new(app)?;
+            model_integrity::State::new(app)?;
+
+            // A hack to make MacOS window show up in dev mode...
+            #[cfg(all(debug_assertions, target_os = "macos"))]
+            {
+                let window = app.get_window("main").unwrap();
+                window.show().unwrap();
+            }
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             downloader::download_model,
             model_integrity::get_cached_integrity,

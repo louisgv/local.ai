@@ -10,6 +10,9 @@ export const guanacoModelMap: ModelMap = {
     sha256: "8ca43ccb8adadeaa9b9853dac2b1cdbad7b499c270c76ea448e1a97c64ed5a4e",
     vocabulary: ["JosephusCheung/Guanaco"],
     licenses: [LicenseType.Academic, LicenseType.NonCommercial],
-    citation: ["https://arxiv.org/pdf/2305.14314.pdf"]
+    citations: [
+      "https://arxiv.org/pdf/2305.14314.pdf",
+      "https://huggingface.co/TheBloke/guanaco-7B-GGML"
+    ]
   }
 }

@@ -1,25 +1,28 @@
 use std::path::PathBuf;
 
+use tauri::AppHandle;
 use tokio::fs::create_dir_all;
 
 pub async fn get_app_dir_path_buf(
-    app_handle: &tauri::AppHandle,
+    app_handle: AppHandle,
     namespace: String,
-) -> Result<PathBuf, std::io::Error> {
+) -> Result<PathBuf, String> {
     let ns_dir = app_handle
         .path_resolver()
         .app_data_dir()
-        .unwrap()
+        .ok_or_else(|| String::from("Could not get app data dir."))?
         .join(namespace);
 
     if !ns_dir.exists() {
-        create_dir_all(&ns_dir).await?;
+        create_dir_all(&ns_dir)
+            .await
+            .map_err(|e| format!("{}", e))?;
     }
 
     Ok(ns_dir)
 }
 
-pub async fn _get_app_dir_path(app_handle: &tauri::AppHandle, namespace: String) -> String {
+pub async fn _get_app_dir_path(app_handle: AppHandle, namespace: String) -> String {
     get_app_dir_path_buf(app_handle, namespace)
         .await
         .unwrap()
@@ -27,11 +30,7 @@ pub async fn _get_app_dir_path(app_handle: &tauri::AppHandle, namespace: String)
         .to_string()
 }
 
-pub async fn _get_app_file_path(
-    app_handle: &tauri::AppHandle,
-    namespace: String,
-    name: String,
-) -> String {
+pub async fn _get_app_file_path(app_handle: AppHandle, namespace: String, name: String) -> String {
     get_app_dir_path_buf(app_handle, namespace)
         .await
         .unwrap()

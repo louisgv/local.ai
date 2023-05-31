@@ -13,7 +13,8 @@ export const Button = ({ className, ...props }: ButtonProps) => (
   <button
     {...props}
     className={cn(
-      `bg-gray-3 hover:bg-gray-4 py-2 px-4 text-sm flex flex-row items-center gap-2 rounded-md transition`,
+      "py-2 px-4 h-10",
+      `bg-gray-3 hover:bg-gray-4 text-sm flex flex-row items-center gap-2 rounded-md transition`,
       "disabled:text-gray-9",
       "text-gray-11 hover:text-gray-12",
       className

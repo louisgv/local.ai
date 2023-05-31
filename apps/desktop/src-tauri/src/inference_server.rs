@@ -23,18 +23,10 @@ use llm::{Model, VocabularySource};
 static _LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
-pub struct InferenceServerState {
+#[derive(Default)]
+pub struct State {
     server: Arc<Mutex<Option<ServerHandle>>>,
     running: AtomicBool,
-}
-
-impl Default for InferenceServerState {
-    fn default() -> Self {
-        Self {
-            server: Arc::new(Mutex::new(None)),
-            running: AtomicBool::new(false),
-        }
-    }
 }
 
 #[get("/")]
@@ -98,10 +90,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 }
 
 #[tauri::command]
-pub async fn start_server<'a>(
-    state: tauri::State<'a, InferenceServerState>,
-    port: u16,
-) -> Result<(), String> {
+pub async fn start_server<'a>(state: tauri::State<'a, State>, port: u16) -> Result<(), String> {
     if state.running.load(Ordering::SeqCst) {
         return Err("Server is already running.".to_string());
     }
@@ -130,7 +119,7 @@ pub async fn start_server<'a>(
 }
 
 #[tauri::command]
-pub async fn stop_server<'a>(state: tauri::State<'a, InferenceServerState>) -> Result<(), String> {
+pub async fn stop_server<'a>(state: tauri::State<'a, State>) -> Result<(), String> {
     println!("Stopping server on port");
 
     if !state.running.load(Ordering::SeqCst) {
@@ -183,9 +172,7 @@ pub async fn load_model<'a>(
     model_vocabulary: ModelVocabulary,
     concurrency: usize,
 ) -> Result<(), String> {
-    let cache_dir = get_app_dir_path_buf(&app_handle, String::from("inference_cache"))
-        .await
-        .unwrap();
+    let cache_dir = get_app_dir_path_buf(app_handle, String::from("inference_cache")).await?;
 
     spawn_pool(
         path,
