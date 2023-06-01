@@ -13,6 +13,7 @@ import { invoke } from "@tauri-apps/api/tauri"
 import { useEffect, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
+import { DownloadProgress } from "~features/model-downloader/download-progress"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 import { useGlobal } from "~providers/global"
 
@@ -98,6 +99,7 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
           disabled={modelLoadState === ModelLoadState.Loaded}
           className="group-hover:opacity-100 opacity-0 transition-opacity"
         />
+        <DownloadProgress model={model} />
       </div>
       <div className="flex items-center justify-end w-96 gap-2">
         {/* <TestModelButton model={model} modelType={modelType} /> */}

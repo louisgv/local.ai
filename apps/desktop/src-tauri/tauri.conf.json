@@ -73,7 +73,7 @@
       "csp": null
     },
     "updater": {
-      "active": false,
+      "active": true,
       "endpoints": [
         "https://localai.app/api/update/{{target}}/{{arch}}/{{current_version}}"
       ],

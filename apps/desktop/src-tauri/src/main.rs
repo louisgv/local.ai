@@ -39,7 +39,10 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            downloader::download_model,
+            downloader::get_download_progress,
+            downloader::start_download,
+            downloader::pause_download,
+            downloader::resume_download,
             model_integrity::get_cached_integrity,
             model_integrity::get_integrity,
             models_directory::read_directory,

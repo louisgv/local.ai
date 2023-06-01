@@ -25,3 +25,7 @@ pub fn get_kv_bucket<T: Value>(
 }
 
 pub type StateBucket<T> = Arc<Mutex<Bucket<'static, String, T>>>;
+
+pub fn get_state_json<T: kv::Value>(json_arc: &StateBucket<T>, key: &String) -> T {
+    json_arc.lock().get(key).unwrap().unwrap()
+}

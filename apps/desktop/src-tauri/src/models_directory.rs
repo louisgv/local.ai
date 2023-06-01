@@ -65,6 +65,7 @@ pub async fn get_default_models_path_buf(app_handle: AppHandle) -> Result<PathBu
     get_app_dir_path_buf(app_handle, String::from("models")).await
 }
 
+// Move this to a state
 pub async fn get_current_models_path(app_handle: AppHandle) -> Result<String, String> {
     let default_models_path_buf = get_default_models_path_buf(app_handle.clone()).await?;
 
