@@ -14,11 +14,18 @@ import Balancer from "react-wrap-balancer"
 
 import { getTruncatedHash } from "~features/inference-server/model-digest"
 import { useModelsApi } from "~features/model-downloader/use-models-api"
+import { useGlobal } from "~providers/global"
 
 export const ModelSelector = () => {
+  const {
+    modelsDirectoryState: { updateModelsDirectory }
+  } = useGlobal()
+
   const { models, modelMap } = useModelsApi()
 
   const [selectedModelHash, setSelectedModelHash] = useState<string>()
+
+  const [isDownloading, setIsDownloading] = useState(false)
 
   const selectedModel = useMemo(
     () => modelMap[selectedModelHash],
@@ -88,13 +95,19 @@ export const ModelSelector = () => {
       <SpinnerButton
         Icon={DownloadIcon}
         disabled={!selectedModelHash}
-        // isSpinning
-        onClick={() => {
-          invoke("download_model", {
+        isSpinning={isDownloading}
+        onClick={async () => {
+          setIsDownloading(true)
+          await invoke("start_download", {
             name: selectedModel.name,
             downloadUrl: selectedModel.downloadUrl,
-            digest: selectedModel.blake3
+            digest: selectedModel.blake3,
+            modelType: selectedModel.modelType
           })
+          setSelectedModelHash(undefined)
+
+          await updateModelsDirectory()
+          setIsDownloading(false)
         }}>
         Download
       </SpinnerButton>

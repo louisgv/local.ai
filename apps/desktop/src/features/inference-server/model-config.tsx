@@ -7,29 +7,19 @@ import {
   SelectTrigger,
   SelectValue
 } from "@localai/ui/select"
-import { ModelType, modelTypeList } from "@models/index"
+import { modelTypeList } from "@models/index"
 import { TrashIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
-import { useEffect, useState } from "react"
+import { useMemo, useState } from "react"
 
-import { useInit } from "~features/inference-server/use-init"
 import { DownloadProgress } from "~features/model-downloader/download-progress"
-import type { ModelMetadata } from "~features/model-downloader/model-file"
+import { DownloadState } from "~features/model-downloader/use-model-download"
 import { useGlobal } from "~providers/global"
+import { ModelLoadState, useModel } from "~providers/model"
 
-export enum ModelLoadState {
-  Default,
-  Loading,
-  Loaded
-}
+const TestModelButton = () => {
+  const { model, modelType } = useModel()
 
-const TestModelButton = ({
-  model,
-  modelType
-}: {
-  model: ModelMetadata
-  modelType: ModelType
-}) => {
   const [isTesting, setIsTesting] = useState(false)
 
   return (
@@ -49,35 +39,26 @@ const TestModelButton = ({
   )
 }
 
-export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
+export const ModelConfig = () => {
   const {
-    activeModelState: [activeModel, setActiveModel],
-    concurrencyState: [concurrency],
     modelsDirectoryState: { updateModelsDirectory }
   } = useGlobal()
-  // TODO: Cache the model type in a kv later
-  const [modelType, setModelType] = useState<ModelType>(ModelType.GptJ)
-  const [modelLoadState, setModelLoadState] = useState<ModelLoadState>(
-    ModelLoadState.Default
+
+  const {
+    model,
+    modelType,
+    modelLoadState,
+    updateModelType: setModelType,
+    loadModel,
+    downloadState
+  } = useModel()
+
+  const isDownloadDone = useMemo(
+    () =>
+      downloadState !== DownloadState.None &&
+      downloadState !== DownloadState.Completed,
+    [downloadState]
   )
-
-  useInit(async () => {
-    const resp = await invoke<string>("get_cached_model_type", {
-      path: model.path
-    }).catch(() => null)
-
-    if (!!resp) {
-      setModelType(resp)
-    }
-  }, [model])
-
-  useEffect(() => {
-    if (activeModel?.path !== model.path) {
-      setModelLoadState(ModelLoadState.Default)
-    } else {
-      setModelLoadState(ModelLoadState.Loaded)
-    }
-  }, [activeModel, model])
 
   return (
     <div className="flex items-center justify-between w-full gap-2 group">
@@ -86,8 +67,12 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
         value={label}
         onChange={(e) => setLabel(e.target.value)}
       /> */}
-      <div>
+      <div className="flex gap-2">
         <SpinnerButton
+          className={cn(
+            "group-hover:opacity-100 opacity-0 transition-opacity",
+            downloadState === DownloadState.Downloading ? "hidden" : "block"
+          )}
           Icon={TrashIcon}
           onClick={async () => {
             await invoke("delete_model_file", {
@@ -97,21 +82,12 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
             await updateModelsDirectory()
           }}
           disabled={modelLoadState === ModelLoadState.Loaded}
-          className="group-hover:opacity-100 opacity-0 transition-opacity"
         />
-        <DownloadProgress model={model} />
+        <DownloadProgress />
       </div>
       <div className="flex items-center justify-end w-96 gap-2">
         {/* <TestModelButton model={model} modelType={modelType} /> */}
-        <Select
-          value={modelType}
-          onValueChange={(s: ModelType) => {
-            setModelType(s)
-            invoke("set_model_type", {
-              path: model.path,
-              modelType: s
-            })
-          }}>
+        <Select value={modelType} onValueChange={setModelType}>
           <SelectTrigger className={cn("text-gray-11", "w-24")}>
             <SelectValue aria-label={modelType}>{modelType}</SelectValue>
           </SelectTrigger>
@@ -126,23 +102,12 @@ export const ModelConfig = ({ model }: { model: ModelMetadata }) => {
 
         <SpinnerButton
           isSpinning={modelLoadState === ModelLoadState.Loading}
-          disabled={modelLoadState === ModelLoadState.Loaded}
-          onClick={async () => {
-            setModelLoadState(ModelLoadState.Loading)
-            try {
-              await invoke("load_model", {
-                ...model,
-                modelType,
-                modelVocabulary: {},
-                concurrency
-              })
-              setActiveModel(model)
-              setModelLoadState(ModelLoadState.Loaded)
-            } catch (error) {
-              alert(error)
-              setModelLoadState(ModelLoadState.Default)
-            }
-          }}>
+          disabled={
+            modelLoadState === ModelLoadState.Loaded ||
+            (downloadState !== DownloadState.None &&
+              downloadState !== DownloadState.Completed)
+          }
+          onClick={loadModel}>
           {modelLoadState === ModelLoadState.Loaded ? "Loaded" : "Load Model"}
         </SpinnerButton>
       </div>
