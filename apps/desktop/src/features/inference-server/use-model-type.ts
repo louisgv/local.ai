@@ -15,7 +15,7 @@ export function setModelType(model: ModelMetadata, modelType: ModelType) {
 export const useModelType = (model: ModelMetadata) => {
   const [modelType, _setModelType] = useState<ModelType>(ModelType.GptJ)
   useInit(async () => {
-    const resp = await invoke<string>("get_cached_model_type", {
+    const resp = await invoke<string>("get_model_type", {
       path: model.path
     }).catch(() => null)
 

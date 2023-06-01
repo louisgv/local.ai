@@ -43,7 +43,7 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
     setDigestHash(null)
     setIsCalculating(true)
     try {
-      const resp = await invoke<ModelDigest>("get_integrity", {
+      const resp = await invoke<ModelDigest>("compute_integrity", {
         path: model.path
       })
       setDigestHash(resp)

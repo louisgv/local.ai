@@ -12,8 +12,8 @@ export const mptModelMap: ModelMap = {
     modelType: ModelType.Mpt,
     downloadUrl:
       "https://huggingface.co/rustformers/mpt-7b-ggml/resolve/main/mpt-7b-q5_1-ggjt.bin",
-    sha256: "ab4825853856833ee2d9626c231079509d7f5f1f048e874b15ca9da263a01b13",
     blake3: "7e2d9fbee3507bf5dc1d35b1774a4cc3c36001c24e90d521c9d30ebd096201f2",
+    sha256: "a2af24525130f923c54dad0eddac870d18982a939927f222a0aef1b9aaf92d78",
     licenses: [
       LicenseType.Commercial,
       LicenseType.OpenSource,
@@ -27,8 +27,8 @@ export const mptModelMap: ModelMap = {
     modelType: ModelType.Mpt,
     downloadUrl:
       "https://huggingface.co/rustformers/mpt-7b-ggml/resolve/main/mpt-7b-instruct-q5_1-ggjt.bin",
-    sha256: "",
-    blake3: "dddd",
+    blake3: "2331ea1208288cd52bcaaae555f231f9a51a264f4b8548a7998da43573e6935a",
+    sha256: "ab4825853856833ee2d9626c231079509d7f5f1f048e874b15ca9da263a01b13",
     tags: ["instruct"],
     licenses: [LicenseType.Commercial, LicenseType.OpenSource, "CC-By-SA-3.0"],
     citations: [
@@ -42,8 +42,8 @@ export const mptModelMap: ModelMap = {
     modelType: ModelType.Mpt,
     downloadUrl:
       "https://huggingface.co/rustformers/mpt-7b-ggml/resolve/main/mpt-7b-chat-q5_1-ggjt.bin",
-    sha256: "",
-    blake3: "eee",
+    blake3: "5e4f603682116735773b977d54dc74522da22f899c1609376be5e723782fdacd",
+    sha256: "63b1e4ca828d00a808284fa50f5a02c31a536e79af18914549ce9bb85dfec3d7",
     tags: ["chat"],
     licenses: [LicenseType.NonCommercial, "CC-By-NC-SA-4.0"],
     citations: [

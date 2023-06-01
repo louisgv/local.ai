@@ -34,7 +34,7 @@ impl State {
 
 const BUFFER_SIZE: usize = 42 * 1024 * 1024; // 42 MiB buffer
 
-pub async fn compute_integrity<P: AsRef<Path>>(path: P) -> Result<ModelIntegrity, io::Error> {
+pub async fn _compute_integrity<P: AsRef<Path>>(path: P) -> Result<ModelIntegrity, io::Error> {
     let mut file = File::open(path).await?;
     let mut buffer = vec![0u8; BUFFER_SIZE];
     let mut hasher_sha256 = Sha256::new();
@@ -76,20 +76,27 @@ pub async fn get_cached_integrity(
 }
 
 #[tauri::command]
-pub async fn get_integrity(
+pub async fn compute_integrity(
     state: tauri::State<'_, self::State>,
     path: &str,
 ) -> Result<ModelIntegrity, String> {
-    let integrity = compute_integrity(path).await.unwrap();
+    let integrity = _compute_integrity(path)
+        .await
+        .map_err(|e| format!("{}", e))?;
 
     let model_integrity_bucket = state.0.lock();
 
     let file_path = String::from(path);
 
-    match model_integrity_bucket.set(&file_path, &Json(integrity.clone())) {
-        Ok(_) => Ok(integrity),
-        Err(e) => return Err(format!("Error caching hash for {}: {}", path, e)),
-    }
+    model_integrity_bucket
+        .set(&file_path, &Json(integrity.clone()))
+        .map_err(|e| format!("Error setting cached hash for {}: {}", path, e))?;
+
+    model_integrity_bucket
+        .flush()
+        .map_err(|e| format!("{}", e))?;
+
+    Ok(integrity)
 }
 
 pub async fn remove_model_integrity(

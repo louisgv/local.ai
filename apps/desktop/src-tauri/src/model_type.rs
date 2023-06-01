@@ -22,14 +22,17 @@ impl State {
 }
 
 #[tauri::command]
-pub fn get_cached_model_type(state: tauri::State<'_, State>, path: &str) -> Result<String, String> {
+pub fn get_model_type(state: tauri::State<'_, State>, path: &str) -> Result<String, String> {
     let model_type_bucket = state.0.lock();
 
     let file_path = String::from(path);
 
     match model_type_bucket.get(&file_path) {
         Ok(Some(value)) => return Ok(value),
-        Ok(None) => return Err(format!("No cached model type for {}", path)),
+        Ok(None) => {
+            println!("No cached model type for {}", path);
+            return Err(format!("No cached model type for {}", path));
+        }
         Err(e) => return Err(format!("Error retrieving model type for {}: {}", path, e)),
     }
 }
@@ -39,15 +42,20 @@ pub async fn set_model_type(
     state: tauri::State<'_, State>,
     path: &str,
     model_type: &str,
-) -> Result<bool, String> {
+) -> Result<(), String> {
     let model_type_bucket = state.0.lock();
 
     let file_path = String::from(path);
 
-    match model_type_bucket.set(&file_path, &String::from(model_type)) {
-        Ok(_) => return Ok(true),
-        Err(e) => return Err(format!("Error setting model type for {}: {}", path, e)),
-    }
+    println!("Setting model type for {} to {}", path, model_type);
+
+    model_type_bucket
+        .set(&file_path, &String::from(model_type))
+        .map_err(|e| format!("{}", e))?;
+
+    model_type_bucket.flush().map_err(|e| format!("{}", e))?;
+
+    Ok(())
 }
 
 pub async fn remove_model_type(state: tauri::State<'_, State>, path: &str) -> Result<(), String> {

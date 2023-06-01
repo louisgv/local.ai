@@ -48,17 +48,10 @@ export const ModelConfig = () => {
     model,
     modelType,
     modelLoadState,
-    updateModelType: setModelType,
+    updateModelType,
     loadModel,
     downloadState
   } = useModel()
-
-  const isDownloadDone = useMemo(
-    () =>
-      downloadState !== DownloadState.None &&
-      downloadState !== DownloadState.Completed,
-    [downloadState]
-  )
 
   return (
     <div className="flex items-center justify-between w-full gap-2 group">
@@ -86,8 +79,8 @@ export const ModelConfig = () => {
         <DownloadProgress />
       </div>
       <div className="flex items-center justify-end w-96 gap-2">
-        {/* <TestModelButton model={model} modelType={modelType} /> */}
-        <Select value={modelType} onValueChange={setModelType}>
+        {/* <TestModelButton /> */}
+        <Select value={modelType} onValueChange={updateModelType}>
           <SelectTrigger className={cn("text-gray-11", "w-24")}>
             <SelectValue aria-label={modelType}>{modelType}</SelectValue>
           </SelectTrigger>

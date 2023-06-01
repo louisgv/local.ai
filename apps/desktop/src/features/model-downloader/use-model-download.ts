@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
@@ -86,6 +86,7 @@ export const useModelDownload = (model: ModelMetadata) => {
     await invoke<ProgressData>("pause_download", {
       path: model.path
     })
+    setDownloadState(DownloadState.Idle)
   }
 
   return {
