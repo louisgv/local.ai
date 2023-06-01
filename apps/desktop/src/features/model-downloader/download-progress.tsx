@@ -1,5 +1,5 @@
 import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
+import { Button, SpinnerButton } from "@localai/ui/button"
 import { CheckIcon, PauseIcon, PlayIcon } from "@radix-ui/react-icons"
 
 import { DownloadState } from "~features/model-downloader/use-model-download"
@@ -21,10 +21,14 @@ export const DownloadProgress = () => {
           : "group-hover:opacity-100 opacity-0"
       )}>
       {downloadState === DownloadState.Completed && <CheckIcon />}
-      {downloadState === DownloadState.Downloading && (
-        <Button onClick={() => pauseDownload()}>
-          <PauseIcon />
-        </Button>
+
+      {(downloadState === DownloadState.Downloading ||
+        downloadState === DownloadState.Processing) && (
+        <SpinnerButton
+          Icon={PauseIcon}
+          onClick={() => pauseDownload()}
+          isSpinning={downloadState === DownloadState.Processing}
+        />
       )}
 
       {downloadState === DownloadState.Idle && (

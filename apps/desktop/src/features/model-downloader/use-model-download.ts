@@ -8,6 +8,7 @@ export enum DownloadState {
   None = "none",
   Idle = "idle",
   Downloading = "downloading",
+  Processing = "processing",
   Completed = "completed"
 }
 
@@ -40,12 +41,9 @@ export const useModelDownload = (model: ModelMetadata) => {
     setProgress(resp.progress)
     setModelSize(resp.size)
     setDownloadState(resp.downloadState)
-    return resp
   }
 
-  useInit(async () => {
-    await syncDownloadState()
-  }, [model])
+  useInit(syncDownloadState, [model])
 
   useEffect(() => {
     if (downloadState !== DownloadState.Downloading || !eventId) {
@@ -61,6 +59,8 @@ export const useModelDownload = (model: ModelMetadata) => {
           setModelSize(payload.size)
 
           if (payload.downloadState !== DownloadState.Downloading) {
+            console.log({ payload })
+
             setDownloadState(payload.downloadState)
             unlisten?.()
           }
@@ -77,16 +77,15 @@ export const useModelDownload = (model: ModelMetadata) => {
     await invoke<ProgressData>("resume_download", {
       path: model.path
     })
+
     setDownloadState(DownloadState.Downloading)
-    // const t = await syncDownloadState()
-    // alert(JSON.stringify(t))
   }
 
   const pauseDownload = async () => {
+    setDownloadState(DownloadState.Processing)
     await invoke<ProgressData>("pause_download", {
       path: model.path
     })
-    await syncDownloadState()
   }
 
   return {

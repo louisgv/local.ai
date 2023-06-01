@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::{error::Error, path::Path};
+use tauri::async_runtime::JoinHandle;
 use tauri::{App, Manager};
 use tauri::{AppHandle, Window};
 use tokio::{
@@ -45,7 +46,8 @@ pub struct DownloadProgressData {
 }
 
 type DownloadProgressBucket = StateBucket<Json<DownloadProgressData>>;
-type DownloadStateMap = Arc<Mutex<HashMap<String, Arc<RwLock<DownloadState>>>>>;
+type DownloadStateMap =
+    Arc<Mutex<HashMap<String, (Arc<RwLock<DownloadState>>, JoinHandle<()>, JoinHandle<()>)>>>;
 
 #[derive(Clone)]
 pub struct State {
@@ -69,6 +71,28 @@ impl State {
     }
 }
 
+fn assert_download_state(
+    download_state_map: &DownloadStateMap,
+    output_path: &str,
+    expected_state: DownloadState,
+) -> Result<(), String> {
+    let download_state_map = download_state_map.lock();
+
+    let (current_state_arc, ..) = match download_state_map.get(output_path) {
+        Some(arc) => arc.clone(),
+        None => return Ok(()),
+    };
+    let current_state = current_state_arc.read();
+    if *current_state != expected_state {
+        return Err(format!(
+            "Download state for {} is {:?}, expected {:?}",
+            output_path, current_state, expected_state
+        ));
+    }
+
+    Ok(())
+}
+
 #[tauri::command]
 pub async fn get_download_progress(
     state: tauri::State<'_, self::State>,
@@ -87,125 +111,18 @@ pub async fn get_download_progress(
     }
 }
 
-fn spawn_download_threads(
-    output_path: String,
-    download_progress_bucket: DownloadProgressBucket,
-    download_state_map: DownloadStateMap,
-    window_arc: Arc<RwLock<Window>>,
-) {
-    let download_state_arc = Arc::new(RwLock::new(DownloadState::Downloading));
+#[tauri::command]
+pub async fn pause_download(path: String, state: tauri::State<'_, State>) -> Result<(), String> {
+    let download_state_map = state.download_state_map.lock();
 
-    download_state_map
-        .lock()
-        .insert(output_path.clone(), download_state_arc.clone());
+    let download_state_arc = download_state_map.get(&path).unwrap();
 
-    let (sender, receiver) = flume::unbounded::<(f64, u64)>();
+    {
+        let (download_state, join_1, join_2) = download_state_arc.clone();
 
-    tauri::async_runtime::spawn({
-        let window_arc = window_arc.clone();
-        let dlpb_arc = download_progress_bucket.clone();
-        let dlp_data = get_state_json(&dlpb_arc, &output_path).0;
-        let event_id = dlp_data.event_id;
-
-        async move {
-            while let Ok((progress, size)) = receiver.recv_async().await {
-                window_arc
-                    .read()
-                    .emit(
-                        &event_id,
-                        DownloadProgressData {
-                            progress,
-                            size,
-                            download_state: DownloadState::Downloading,
-                            ..Default::default()
-                        },
-                    )
-                    .unwrap();
-            }
-        }
-    });
-
-    tauri::async_runtime::spawn({
-        let output_path = output_path.clone();
-
-        let dlpb_arc = download_progress_bucket.clone();
-
-        let window_arc = window_arc.clone();
-
-        let dlp_data = get_state_json(&dlpb_arc, &output_path).0;
-
-        let download_url = dlp_data.download_url;
-
-        let event_id = dlp_data.event_id;
-
-        async move {
-            match download_file(
-                &download_url,
-                &output_path,
-                &sender,
-                download_state_arc.clone(),
-            )
-            .await
-            {
-                Ok((progress, size)) => {
-                    println!("On final progress update: {}", progress);
-
-                    let download_state = if progress >= 100.0 {
-                        DownloadState::Completed
-                    } else {
-                        DownloadState::Idle
-                    };
-
-                    println!("Download state: {:?}", download_state);
-
-                    let download_progress = get_state_json(&dlpb_arc, &output_path).0;
-
-                    let payload = DownloadProgressData {
-                        progress,
-                        size,
-                        download_state,
-                        ..download_progress
-                    };
-
-                    println!("Download progress: {:?}", payload);
-
-                    window_arc.read().emit(&event_id, payload.clone()).unwrap();
-
-                    let download_progress_bucket = dlpb_arc.lock();
-
-                    match download_progress_bucket.set(&output_path, &Json(payload)) {
-                        Ok(_) => println!("Download progress updated"),
-                        Err(e) => println!("Error updating download progress: {}", e),
-                    }
-                }
-                Err(e) => {
-                    // Handle the error case, e.g., log the error
-                    eprintln!("Error downloading file: {}", e);
-                }
-            }
-        }
-    });
-}
-
-fn assert_download_state(
-    download_state_map: &DownloadStateMap,
-    output_path: &str,
-    expected_state: DownloadState,
-) -> Result<(), String> {
-    let download_state_map = download_state_map.lock();
-
-    let download_state_arc = match download_state_map.get(output_path) {
-        Some(arc) => arc.clone(),
-        None => return Ok(()),
-    };
-
-    if *download_state_arc.read() != expected_state {
-        return Err(format!(
-            "Download state for {} is {:?}, expected {:?}",
-            output_path,
-            *download_state_arc.read(),
-            expected_state
-        ));
+        *download_state.write() = DownloadState::Idle;
+        join_1.abort();
+        join_2.abort();
     }
 
     Ok(())
@@ -267,21 +184,27 @@ pub async fn start_download(
 
     crate::model_type::set_model_type(model_type_state, &output_path, &model_type).await?;
 
-    state
-        .download_progress_bucket
-        .lock()
-        .set(
-            &output_path,
-            &Json(DownloadProgressData {
-                path: output_path.clone(),
-                digest,
-                download_url,
-                download_state: DownloadState::Downloading,
-                event_id: format!("download_progress:{}", blake3::hash(output_path.as_bytes())),
-                ..Default::default()
-            }),
-        )
-        .ok();
+    {
+        let download_progress_bucket = state.download_progress_bucket.clone();
+        let download_progress_bucket = download_progress_bucket.lock();
+        download_progress_bucket
+            .set(
+                &output_path,
+                &Json(DownloadProgressData {
+                    path: output_path.clone(),
+                    digest,
+                    download_url,
+                    download_state: DownloadState::Downloading,
+                    event_id: format!("download_progress:{}", blake3::hash(output_path.as_bytes())),
+                    ..Default::default()
+                }),
+            )
+            .map_err(|e| e.to_string())?;
+
+        download_progress_bucket
+            .flush()
+            .map_err(|e| e.to_string())?;
+    }
 
     spawn_download_threads(
         output_path,
@@ -293,15 +216,98 @@ pub async fn start_download(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn pause_download(path: String, state: tauri::State<'_, State>) -> Result<(), String> {
-    let download_state_map = state.download_state_map.lock();
+fn spawn_download_threads(
+    output_path: String,
+    download_progress_bucket: DownloadProgressBucket,
+    download_state_map: DownloadStateMap,
+    window_arc: Arc<RwLock<Window>>,
+) {
+    let download_state_arc = Arc::new(RwLock::new(DownloadState::Downloading));
 
-    let download_state_arc = download_state_map.get(&path).unwrap().clone();
+    let (sender, receiver) = flume::unbounded::<(f64, u64)>();
 
-    *download_state_arc.write() = DownloadState::Idle;
+    let event_handler = tauri::async_runtime::spawn({
+        let window_arc = window_arc.clone();
+        let dlpb_arc = download_progress_bucket.clone();
+        let dlp_data = get_state_json(&dlpb_arc, &output_path).0;
+        let event_id = dlp_data.event_id;
 
-    Ok(())
+        async move {
+            while let Ok((progress, size)) = receiver.recv_async().await {
+                window_arc
+                    .read()
+                    .emit(
+                        &event_id,
+                        DownloadProgressData {
+                            progress,
+                            size,
+                            download_state: DownloadState::Downloading,
+                            ..Default::default()
+                        },
+                    )
+                    .unwrap();
+            }
+        }
+    });
+
+    let download_handler = tauri::async_runtime::spawn({
+        let output_path = output_path.clone();
+
+        let dlpb_arc = download_progress_bucket.clone();
+
+        let window_arc = window_arc.clone();
+
+        let dlp_data = get_state_json(&dlpb_arc, &output_path).0;
+
+        let download_url = dlp_data.download_url;
+
+        let event_id = dlp_data.event_id;
+
+        let download_state_arc = download_state_arc.clone();
+
+        async move {
+            match download_file(&download_url, &output_path, &sender, download_state_arc).await {
+                Ok((progress, size)) => {
+                    println!("On final progress update: {}", progress);
+
+                    let download_state = if progress >= 100.0 {
+                        DownloadState::Completed
+                    } else {
+                        DownloadState::Idle
+                    };
+
+                    let download_progress = get_state_json(&dlpb_arc, &output_path).0;
+
+                    let payload = DownloadProgressData {
+                        progress,
+                        size,
+                        download_state,
+                        ..download_progress
+                    };
+
+                    window_arc.read().emit(&event_id, payload.clone()).unwrap();
+
+                    let download_progress_bucket = dlpb_arc.lock();
+
+                    match download_progress_bucket.set(&output_path, &Json(payload)) {
+                        Ok(_) => println!("Download progress updated"),
+                        Err(e) => println!("Error updating download progress: {}", e),
+                    };
+
+                    download_progress_bucket.flush().unwrap();
+                }
+                Err(e) => {
+                    // Handle the error case, e.g., log the error
+                    eprintln!("Error downloading file: {}", e);
+                }
+            }
+        }
+    });
+
+    download_state_map.lock().insert(
+        output_path.clone(),
+        (download_state_arc, download_handler, event_handler),
+    );
 }
 
 async fn download_file(
@@ -346,18 +352,24 @@ async fn download_file(
         file.write_all(&chunk).await?;
         downloaded += chunk.len() as u64;
         let progress = downloaded as f64 / total_length as f64 * 100.0;
-        progress_sender.send((progress, downloaded))?;
 
         if *download_state_arc.read() == DownloadState::Idle {
+            println!("FLUSHING THE FILE");
+            file.flush().await?;
+            println!("FLUSHED THE FILE");
             return Ok((progress, downloaded));
+        } else {
+            progress_sender.send_async((progress, downloaded)).await?;
         }
     }
 
+    file.flush().await?;
     Ok((100.0, downloaded))
 }
 
 async fn open_file(path: &str) -> Result<File, Box<dyn Error>> {
     OpenOptions::new()
+        .read(true)
         .write(true)
         .create(true)
         .open(path)
