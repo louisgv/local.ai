@@ -13,6 +13,7 @@ import { useMemo, useState } from "react"
 import Balancer from "react-wrap-balancer"
 
 import { getTruncatedHash } from "~features/inference-server/model-digest"
+import { toGB } from "~features/model-downloader/model-file"
 import { useModelsApi } from "~features/model-downloader/use-models-api"
 import { useGlobal } from "~providers/global"
 
@@ -66,27 +67,32 @@ export const ModelSelector = () => {
                     {model.name}
                   </span>
 
-                  <span
-                    className="text-ellipsis text-gray-10"
-                    style={{
-                      fontFamily: "monospace"
-                    }}>
-                    {getTruncatedHash(model.blake3)}
+                  <span className="flex flex-col items-end">
+                    <code className="text-ellipsis text-gray-10">
+                      {getTruncatedHash(model.blake3)}
+                    </code>
+                    <div className="italic">
+                      {toGB(model.size).toFixed(2)} GB
+                    </div>
                   </span>
                 </div>
-                <p>
-                  <Balancer>{model.description}</Balancer>
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {model.licenses.map((license) => (
-                    <span
-                      key={license}
-                      className="px-2 py-1 rounded-lg bg-gray-6">
-                      {license}
-                    </span>
-                  ))}
+                <div className="flex flex-col gap-3">
+                  <p>
+                    <Balancer>{model.description}</Balancer>
+                  </p>
+                  <code className="text-gray-10 break-all">
+                    <Balancer>{model.downloadUrl}</Balancer>
+                  </code>
+                  <div className="flex flex-wrap gap-2 justify-end">
+                    {model.licenses.map((license) => (
+                      <span
+                        key={license}
+                        className="px-2 py-1 rounded-lg bg-gray-6">
+                        {license}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-gray-10">{model.downloadUrl}</p>
               </div>
             </SelectItem>
           ))}

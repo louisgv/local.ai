@@ -1,8 +1,8 @@
-import { type ModelInfo, toList } from "@models/_shared"
-import { gpt4AllModelMap } from "@models/gpt4all"
-import { guanacoModelMap } from "@models/guanaco"
-import { mptModelMap } from "@models/mpt"
-import { wizardModelMap } from "@models/wizard"
+import { type ModelInfo, toList } from "./_shared"
+import { gpt4AllModelMap } from "./gpt4all"
+import { guanacoModelMap } from "./guanaco"
+import { mptModelMap } from "./mpt"
+import { wizardModelMap } from "./wizard"
 
 export type ModelInfoList = ModelInfo[]
 
@@ -13,4 +13,4 @@ export const modelList: ModelInfoList = [
   ...toList(wizardModelMap)
 ]
 
-export * from "@models/_shared"
+export * from "./_shared"

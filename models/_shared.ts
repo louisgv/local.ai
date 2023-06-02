@@ -20,6 +20,7 @@ export enum LicenseType {
 
 export type ModelInfo = {
   name?: string
+  size: number
   downloadUrl: string
   sha256: string
   blake3: string

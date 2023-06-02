@@ -6,14 +6,15 @@ const commonCitations = [
 ]
 
 export const gpt4AllModelMap: ModelMap = {
-  "GPT4All-J v1.3 Groovy": {
+  "GPT4All-J Groovy": {
+    size: 4541706976,
     description:
       "Current best commercially licensable model based on GPT-J and trained by Nomic AI on the latest curated GPT4All dataset.",
     modelType: ModelType.GptJ,
     downloadUrl:
-      "https://huggingface.co/rustformers/gpt4all-j-ggml/resolve/main/gpt4all-j-q5_1-ggjt.bin",
-    sha256: "",
-    blake3: "aaa",
+      "https://huggingface.co/rustformers/gpt4all-j-ggml/resolve/5bf009629f2b4c7d2e8a115df129a98e096ca46d/gpt4all-j-q5_1-ggjt.bin",
+    blake3: "6846329dc7ccc04cb16323f15496677bf31eba2020e92799cc291948d317d836",
+    sha256: "7a01109d70542198d950e4b4abddb3d57fe280ab5abed9b35c5c7250324d59c4",
     licenses: [LicenseType.Commercial, LicenseType.OpenSource, LicenseType.GPL],
     citations: [
       ...commonCitations,
@@ -26,9 +27,10 @@ export const gpt4AllModelMap: ModelMap = {
       "Current best non-commercially licensable model based on Llama 13b and trained by Nomic AI on the latest curated GPT4All dataset.",
     modelType: ModelType.Llama,
     downloadUrl:
-      "https://huggingface.co/TheBloke/GPT4All-13B-snoozy-GGML/resolve/main/GPT4All-13B-snoozy.ggmlv3.q5_1.bin",
-    sha256: "91f886b68fbce697e9a3cd501951e455",
-    blake3: "e2b7b4b7c0b0b0b0b0b0b0b0b0b0b0b0",
+      "https://huggingface.co/TheBloke/GPT4All-13B-snoozy-GGML/resolve/1ecb0d84599229509cd4d7927a7b4a111c6cd97d/GPT4All-13B-snoozy.ggmlv3.q5_1.bin",
+    size: 9763701888,
+    blake3: "97394367c9438853472f0d91b4394bd51996f9bd8fc090b68759b6ef2c065674",
+    sha256: "a2f7e626051b7d94525490f4b817b2f280dd0a0cf9c983bc5ec8691e69c49682",
     licenses: [LicenseType.NonCommercial],
     citations: [
       ...commonCitations,

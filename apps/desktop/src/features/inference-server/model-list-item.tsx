@@ -1,4 +1,5 @@
 import { cn } from "@localai/theme/utils"
+import { useReducer, useState } from "react"
 
 import { ModelConfig } from "~features/inference-server/model-config"
 import { ModelDigest } from "~features/inference-server/model-digest"
@@ -8,12 +9,13 @@ import { ModelProvider, useModel } from "~providers/model"
 
 const ModelLabel = () => {
   const { model, modelSize } = useModel()
+  const [showByte, toggleShowByte] = useReducer((s) => !s, false)
   return (
     <div className="flex flex-col justify-between w-full">
       <div className={"text-md"}>{model.name}</div>
-      <div className="text-xs text-gray-10">
-        {`${toGB(modelSize).toFixed(2)} GB`}
-      </div>
+      <button className="flex text-xs text-gray-10" onClick={toggleShowByte}>
+        {showByte ? `${modelSize} B` : `${toGB(modelSize).toFixed(2)} GB`}
+      </button>
     </div>
   )
 }
