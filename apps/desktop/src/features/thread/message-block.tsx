@@ -22,17 +22,22 @@ export const MessageBlock = ({
 }) => {
   const isUser = useMemo(() => from === "user", [from])
   return (
-    <div className="flex gap-2">
+    <div className="flex">
       <div
         className={cn(
-          "px-4 py-3 rounded-md w-full",
-          isUser ? "bg-gray-3 hover:bg-gray-4" : "bg-blue-6 hover:bg-blue-7"
+          "px-4 py-3 rounded-md rounded-tr-none w-full transition-colors",
+          isUser
+            ? "bg-gray-4 hover:bg-gray-5 text-gray-11 hover:text-gray-12"
+            : "bg-blue-7 hover:bg-blue-8 text-blue-11 hover:text-blue-12"
         )}>
         <MarkdownContainer>{children}</MarkdownContainer>
       </div>
       <Button
         className={cn(
-          isUser ? "bg-gray-3 hover:bg-gray-4" : "bg-blue-6 hover:bg-blue-7"
+          "transition-colors rounded-l-none",
+          isUser
+            ? "bg-gray-3 hover:bg-gray-4"
+            : "bg-blue-6 hover:bg-blue-7 text-blue-11 hover:text-blue-12"
         )}>
         {isUser ? <User /> : <BotIcon />}
       </Button>

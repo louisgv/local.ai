@@ -1,6 +1,10 @@
 import { Button, SpinnerButton } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
-import { ReloadIcon } from "@radix-ui/react-icons"
+import {
+  DotsHorizontalIcon,
+  OpenInNewWindowIcon,
+  ReloadIcon
+} from "@radix-ui/react-icons"
 import { open as dialogOpen } from "@tauri-apps/api/dialog"
 import { invoke } from "@tauri-apps/api/tauri"
 
@@ -34,48 +38,53 @@ export function ModelManagerView() {
   return (
     <ViewContainer className="relative z-50">
       <ViewHeader>
-        {!!modelsDirectory && (
-          <SpinnerButton
-            className="w-10 p-3"
-            Icon={ReloadIcon}
-            isSpinning={isRefreshing}
-            title="Refresh Models Directory"
-            onClick={async () => {
-              await updateModelsDirectory()
-            }}
+        <div className="flex">
+          {!!modelsDirectory && (
+            <SpinnerButton
+              className="w-10 p-3 rounded-r-none"
+              Icon={ReloadIcon}
+              isSpinning={isRefreshing}
+              title="Refresh Models Directory"
+              onClick={async () => {
+                await updateModelsDirectory()
+              }}
+            />
+          )}
+          <Input
+            className="w-96 rounded-none border-gray-3"
+            value={modelsDirectory}
+            readOnly
+            placeholder="Models directory"
           />
-        )}
-        <Input
-          className="w-full"
-          value={modelsDirectory}
-          readOnly
-          placeholder="Models directory">
+
           <Button
-            className="w-6 h-4 absolute right-2 self-center text-gray-11 flex justify-center items-center"
+            title="Change models directory"
+            className="w-10 p-3 rounded-none"
+            onClick={async () => {
+              const selected = (await dialogOpen({
+                directory: true,
+                multiple: false
+              })) as string
+
+              if (!selected) {
+                return
+              }
+              await updateModelsDirectory(selected)
+            }}>
+            <DotsHorizontalIcon />
+          </Button>
+
+          <Button
+            title="Open models directory"
+            className="w-10 p-3 rounded-l-none"
             onClick={() => {
               invoke("open_directory", {
                 path: modelsDirectory
               })
             }}>
-            ...
+            <OpenInNewWindowIcon />
           </Button>
-        </Input>
-
-        <Button
-          className="w-24 justify-center"
-          onClick={async () => {
-            const selected = (await dialogOpen({
-              directory: true,
-              multiple: false
-            })) as string
-
-            if (!selected) {
-              return
-            }
-            await updateModelsDirectory(selected)
-          }}>
-          Change
-        </Button>
+        </div>
 
         <ServerConfig />
       </ViewHeader>

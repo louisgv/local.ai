@@ -30,7 +30,7 @@ export function ChatSideBar() {
     <ViewBody>
       <ul
         role="list"
-        className="flex flex-1 flex-col gap-y-4 overflow-auto px-4 border-b border-gray-3 py-4 pr-2 h-full">
+        className="flex flex-1 flex-col gap-y-4 overflow-auto border-b border-gray-3 p-4 h-full">
         {chatList.map((item) => (
           <li key={item.name} className="flex relative group">
             <NavButton

@@ -6,8 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::{error::Error, path::Path};
-use tauri::{App, Manager};
-use tauri::{AppHandle, Window};
+use tauri::{App, Manager, Window};
 use tokio::{
     fs::{File, OpenOptions},
     io::AsyncWriteExt,
@@ -147,9 +146,10 @@ pub async fn resume_download(
 #[tauri::command]
 pub async fn start_download(
     window: Window,
-    app_handle: AppHandle,
     state: tauri::State<'_, State>,
+    default_path_state: tauri::State<'_, crate::path::State>,
     model_type_state: tauri::State<'_, crate::model_type::State>,
+    config_state: tauri::State<'_, crate::config::State>,
     name: String,
     download_url: String,
     digest: String,
@@ -158,7 +158,7 @@ pub async fn start_download(
     println!("download_model: {}", download_url);
     println!("digest: {}", digest);
 
-    let models_path = get_current_models_path(app_handle).await?;
+    let models_path = get_current_models_path(default_path_state, config_state)?;
 
     let output_path = Path::new(&models_path)
         .join(format!("{}.bin", name))

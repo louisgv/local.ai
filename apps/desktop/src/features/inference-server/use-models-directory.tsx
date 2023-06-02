@@ -2,7 +2,7 @@ import { useCallback, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
 import type {
-  ModelDirectoryState,
+  DirectoryState,
   ModelMetadata
 } from "~features/model-downloader/model-file"
 
@@ -14,7 +14,7 @@ export const useModelsDirectory = () => {
   useInit(async () => {
     // get the models directory saved in config
     const { invoke } = await import("@tauri-apps/api/tauri")
-    const resp = await invoke<ModelDirectoryState>("initialize_models_dir")
+    const resp = await invoke<DirectoryState>("initialize_models_dir")
     if (!resp) {
       return
     }
@@ -26,7 +26,7 @@ export const useModelsDirectory = () => {
     async (dir = modelsDirectory) => {
       setIsRefreshing(true)
       const { invoke } = await import("@tauri-apps/api/tauri")
-      const resp = await invoke<ModelDirectoryState>("update_models_dir", {
+      const resp = await invoke<DirectoryState>("update_models_dir", {
         dir
       })
       setModelsDirectory(resp.path)

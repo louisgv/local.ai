@@ -177,7 +177,7 @@ pub async fn load_model<'a>(
     concurrency: usize,
 ) -> Result<(), String> {
     model_stats::increment_load_count(model_stats_bucket_state, path)?;
-    let cache_dir = get_app_dir_path_buf(app_handle, String::from("inference_cache")).await?;
+    let cache_dir = get_app_dir_path_buf(app_handle, String::from("inference_cache"))?;
 
     spawn_pool(
         path,

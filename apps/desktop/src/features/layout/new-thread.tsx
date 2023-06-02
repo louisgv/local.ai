@@ -1,5 +1,5 @@
 import { Button } from "@localai/ui/button"
-import { AddCircle } from "iconoir-react"
+import { FilePlusIcon } from "@radix-ui/react-icons"
 
 import { Route, useGlobal } from "~providers/global"
 
@@ -27,7 +27,7 @@ export const NewThreadButton = ({ className = "" }) => {
         ])
         setCurrentRoute(Route.Chat)
       }}>
-      <AddCircle /> New Thread
+      <FilePlusIcon /> New Thread
     </Button>
   )
 }

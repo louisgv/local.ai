@@ -10,7 +10,7 @@ export type ModelMetadata = FileInfo & {
   description?: string
 }
 
-export type ModelDirectoryState = {
+export type DirectoryState = {
   path: string
   files: FileInfo[]
 }

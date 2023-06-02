@@ -6,7 +6,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {}
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, children, ...props }, ref) => {
     return (
-      <div className={cn("relative flex h-10", className)}>
+      <div className={cn("relative flex h-10 rounded-md", className)}>
         <label
           className={cn(
             "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-50 text-ellipsis whitespace-nowrap",
@@ -20,12 +20,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           className={cn(
             "h-full w-full",
             "px-3 py-2",
-            "border border-gray-6",
+            "border border-gray-6 rounded-md",
             "transition-colors",
-            "rounded-md bg-transparent text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            "bg-transparent text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none",
             "disabled:cursor-not-allowed disabled:opacity-50",
             "placeholder:text-gray-10",
-            "text-gray-11"
+            "outline-1",
+            "text-gray-11",
+            className
           )}
           ref={ref}
           {...props}

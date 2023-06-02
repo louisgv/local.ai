@@ -1,74 +1,20 @@
-use std::{path::PathBuf, time::SystemTime};
-
-use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
-use tauri::AppHandle;
-use walkdir::WalkDir;
-
 use crate::{
-    config::{get_models_path, set_models_path},
+    config::{self, ConfigKey},
     downloader,
     kv_bucket::remove_data,
     model_integrity, model_stats, model_type,
-    path::get_app_dir_path_buf,
+    path::{read_directory, DirectoryState, FileInfo},
 };
 
-#[derive(Serialize, Deserialize)]
-pub struct FileInfo {
-    size: u64,
-    path: String,
-    name: String,
-    modified: SystemTime,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ModelDirectoryState {
-    path: String,
-    files: Vec<FileInfo>,
-}
-
-#[tauri::command]
-pub async fn read_directory(dir: &str) -> Result<Vec<FileInfo>, String> {
-    let walker = WalkDir::new(dir).into_iter();
-
-    let file_infos: Vec<FileInfo> = walker
-        .filter_map(Result::ok)
-        .filter(|entry| entry.file_type().is_file())
-        .par_bridge()
-        .map(|entry| {
-            let path = entry.path().display().to_string();
-            let name = entry
-                .path()
-                .file_stem()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_string();
-            let metadata = entry.metadata().unwrap();
-            let size = metadata.len();
-            let modified = metadata.modified().unwrap();
-
-            FileInfo {
-                path,
-                size,
-                name,
-                modified,
-            }
-        })
-        .collect();
-
-    Ok(file_infos)
-}
-
-pub async fn get_default_models_path_buf(app_handle: AppHandle) -> Result<PathBuf, String> {
-    get_app_dir_path_buf(app_handle, String::from("models")).await
-}
-
 // Move this to a state
-pub async fn get_current_models_path(app_handle: AppHandle) -> Result<String, String> {
-    let default_models_path_buf = get_default_models_path_buf(app_handle.clone()).await?;
-
-    Ok(get_models_path(app_handle).unwrap_or(default_models_path_buf.display().to_string()))
+pub fn get_current_models_path(
+    default_path_state: tauri::State<'_, crate::path::State>,
+    config_bucket_state: tauri::State<'_, crate::config::State>,
+) -> Result<String, String> {
+    let default_models_path_buf = &default_path_state.models_directory_buf;
+    Ok(config_bucket_state
+        .get(ConfigKey::ModelsDirectory)
+        .unwrap_or(default_models_path_buf.display().to_string()))
 }
 
 fn sort_files(
@@ -95,16 +41,17 @@ fn sort_files(
 
 #[tauri::command]
 pub async fn initialize_models_dir(
-    app_handle: AppHandle,
+    default_path_state: tauri::State<'_, crate::path::State>,
+    config_bucket_state: tauri::State<'_, config::State>,
     model_stats_bucket_state: tauri::State<'_, model_stats::State>,
-) -> Result<ModelDirectoryState, String> {
-    let models_path = get_current_models_path(app_handle).await?;
+) -> Result<DirectoryState, String> {
+    let models_path = get_current_models_path(default_path_state, config_bucket_state)?;
 
     let mut files = read_directory(models_path.as_str()).await?;
 
     sort_files(&mut files, model_stats_bucket_state.clone());
 
-    Ok(ModelDirectoryState {
+    Ok(DirectoryState {
         path: models_path,
         files,
     })
@@ -112,18 +59,19 @@ pub async fn initialize_models_dir(
 
 #[tauri::command]
 pub async fn update_models_dir(
-    app_handle: AppHandle,
     dir: &str,
+    config_bucket: tauri::State<'_, config::State>,
     model_stats_bucket_state: tauri::State<'_, model_stats::State>,
-) -> Result<ModelDirectoryState, String> {
-    set_models_path(app_handle, dir.to_string())
+) -> Result<DirectoryState, String> {
+    config_bucket
+        .set(ConfigKey::ModelsDirectory, dir.to_string())
         .map_err(|e| format!("Error setting models path: {}", e))?;
 
     let mut files = read_directory(dir).await?;
 
     sort_files(&mut files, model_stats_bucket_state.clone());
 
-    Ok(ModelDirectoryState {
+    Ok(DirectoryState {
         path: String::from(dir),
         files,
     })

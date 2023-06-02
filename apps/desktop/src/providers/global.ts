@@ -6,6 +6,7 @@ import { useContext, useState } from "react"
 import { useInit } from "~features/inference-server/use-init"
 import { useModelsDirectory } from "~features/inference-server/use-models-directory"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
+import { useThreadsDirectory } from "~features/thread/use-threads-directory"
 
 export enum Route {
   ModelManager = "model-manager",
@@ -25,6 +26,7 @@ const useGlobalProvider = () => {
   const serverStartedState = useState(false)
 
   const modelsDirectoryState = useModelsDirectory()
+  const threadsDirectoryState = useThreadsDirectory()
 
   useInit(async () => {
     const { getCurrent } = await import("@tauri-apps/api/window")
@@ -44,7 +46,8 @@ const useGlobalProvider = () => {
     activeModelState,
     concurrencyState,
     serverStartedState,
-    modelsDirectoryState
+    modelsDirectoryState,
+    threadsDirectoryState
   }
 }
 

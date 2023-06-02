@@ -35,12 +35,8 @@ const SSE_DATA_EVENT_PREFIX = "data:"
 const DEFAULT_SYSTEM_PROMPT =
   "Greeting! I am a friendly AI assistant. Feel free to ask me anything."
 
-const getQAPrompt = (
-  text: string,
-  systemPrompt: string
-) => `ASSISTANT: ${systemPrompt}
-USER: ${text}
-ASSISTANT: `
+const getQAPrompt = (text: string, systemPrompt: string) =>
+  [`ASSISTANT: ${systemPrompt}`, `USER: ${text}`, `ASSISTANT: `].join("\n")
 
 const botIconList = [
   BreadSlice,

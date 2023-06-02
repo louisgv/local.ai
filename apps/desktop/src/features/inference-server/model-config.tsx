@@ -100,7 +100,7 @@ export const ModelConfig = () => {
             <code
               className={cn(
                 "flex items-center justify-center",
-                "text-xs rounded-lg bg-gray-6 p-2",
+                "text-xs rounded-lg bg-gray-6 py-2 px-3",
                 className
               )}>
               {launchCount}
