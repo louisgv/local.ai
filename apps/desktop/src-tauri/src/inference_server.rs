@@ -1,3 +1,4 @@
+use actix_cors::Cors;
 use actix_web::dev::ServerHandle;
 use actix_web::web::{Bytes, Json};
 
@@ -102,7 +103,9 @@ pub async fn start_server<'a>(state: tauri::State<'a, State>, port: u16) -> Resu
 
     tauri::async_runtime::spawn(async move {
         let server = HttpServer::new(|| {
+            let cors = Cors::permissive();
             App::new()
+                .wrap(cors)
                 .service(ping)
                 .service(post_model)
                 .service(post_completions)

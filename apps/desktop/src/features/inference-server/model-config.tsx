@@ -8,7 +8,7 @@ import {
   SelectValue
 } from "@localai/ui/select"
 import { modelTypeList } from "@models/index"
-import { EyeOpenIcon, PlayIcon, TrashIcon } from "@radix-ui/react-icons"
+import { TrashIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
 import { useState } from "react"
 

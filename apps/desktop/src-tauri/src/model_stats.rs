@@ -9,7 +9,7 @@ use tauri::Manager;
 
 #[derive(Serialize, Deserialize, Default, PartialEq, Clone)]
 pub struct ModelStats {
-    #[serde(rename(serialize = "loadCount"))]
+    #[serde(rename = "loadCount")]
     pub load_count: u64,
 }
 
@@ -59,7 +59,7 @@ pub fn get_model_stats(state: tauri::State<'_, State>, path: &str) -> Result<Mod
         Ok(None) => Ok(Default::default()),
         Err(e) => {
             println!("Error retrieving model stats for {}: {}", path, e);
-            bucket.set(&file_path, &Json(Default::default())).unwrap();
+            bucket.clear().unwrap();
             return Ok(Default::default());
         }
     }
