@@ -14,6 +14,7 @@ mod inference_thread;
 mod kv_bucket;
 mod model_integrity;
 mod model_pool;
+mod model_stats;
 mod model_type;
 mod models_directory;
 mod path;
@@ -28,6 +29,7 @@ fn main() {
             downloader::State::new(app)?;
             model_type::State::new(app)?;
             model_integrity::State::new(app)?;
+            model_stats::State::new(app)?;
 
             // A hack to make MacOS window show up in dev mode...
             #[cfg(all(debug_assertions, target_os = "macos"))]
@@ -49,6 +51,7 @@ fn main() {
             models_directory::update_models_dir,
             models_directory::initialize_models_dir,
             models_directory::delete_model_file,
+            model_stats::get_model_stats,
             inference_server::start_server,
             inference_server::stop_server,
             inference_server::load_model,

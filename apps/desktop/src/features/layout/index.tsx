@@ -33,7 +33,7 @@ export const Layout = ({ children = null as ReactNode }) => {
 
   return (
     <AppLayout
-      showSidebar={!isStarted}
+      showSidebar={isStarted}
       top={<TopBar />}
       sidebar={<ChatSideBar />}
       bottom={<BottomBar />}>

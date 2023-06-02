@@ -17,7 +17,7 @@ pub struct ModelIntegrity {
 }
 
 #[derive(Clone)]
-pub struct State(StateBucket<Json<ModelIntegrity>>);
+pub struct State(pub StateBucket<Json<ModelIntegrity>>);
 
 impl State {
     pub fn new(app: &mut App) -> Result<(), String> {
@@ -97,19 +97,4 @@ pub async fn compute_integrity(
         .map_err(|e| format!("{}", e))?;
 
     Ok(integrity)
-}
-
-pub async fn remove_model_integrity(
-    state: tauri::State<'_, self::State>,
-    path: &str,
-) -> Result<(), String> {
-    let model_integrity_bucket = state.0.lock();
-
-    let file_path = String::from(path);
-
-    model_integrity_bucket
-        .remove(&file_path)
-        .map_err(|e| format!("{}", e))?;
-
-    Ok(())
 }

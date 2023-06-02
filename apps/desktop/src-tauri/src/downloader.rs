@@ -160,10 +160,8 @@ pub async fn start_download(
 
     let models_path = get_current_models_path(app_handle).await?;
 
-    let file_name = name;
-
     let output_path = Path::new(&models_path)
-        .join(&file_name)
+        .join(format!("{}.bin", name))
         .display()
         .to_string();
 

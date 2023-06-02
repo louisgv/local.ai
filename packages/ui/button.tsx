@@ -1,6 +1,9 @@
 import { cn } from "@localai/theme/utils"
-import { ReloadIcon } from "@radix-ui/react-icons"
-import type { ButtonHTMLAttributes, DetailedHTMLProps } from "react"
+import type {
+  ButtonHTMLAttributes,
+  ComponentType,
+  DetailedHTMLProps
+} from "react"
 
 import { Spinner } from "./spinner"
 
@@ -28,7 +31,7 @@ export const SpinnerButton = ({
   isSpinning = false,
   ...props
 }: ButtonProps & {
-  Icon?: typeof ReloadIcon
+  Icon?: ComponentType<{ className?: string }>
   isSpinning?: boolean
 }) => (
   <Button {...props} disabled={isSpinning || props.disabled}>

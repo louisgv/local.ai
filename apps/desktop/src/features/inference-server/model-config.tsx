@@ -8,9 +8,9 @@ import {
   SelectValue
 } from "@localai/ui/select"
 import { modelTypeList } from "@models/index"
-import { TrashIcon } from "@radix-ui/react-icons"
+import { EyeOpenIcon, PlayIcon, TrashIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 
 import { DownloadProgress } from "~features/model-downloader/download-progress"
 import { DownloadState } from "~features/model-downloader/use-model-download"
@@ -48,6 +48,8 @@ export const ModelConfig = () => {
     model,
     modelType,
     modelLoadState,
+    launchCount,
+    incrementLaunchCount,
     updateModelType,
     loadModel,
     downloadState
@@ -94,13 +96,26 @@ export const ModelConfig = () => {
         </Select>
 
         <SpinnerButton
+          Icon={({ className }) => (
+            <code
+              className={cn(
+                "flex items-center justify-center",
+                "text-xs rounded-lg bg-gray-6 p-2",
+                className
+              )}>
+              {launchCount}
+            </code>
+          )}
           isSpinning={modelLoadState === ModelLoadState.Loading}
           disabled={
             modelLoadState === ModelLoadState.Loaded ||
             (downloadState !== DownloadState.None &&
               downloadState !== DownloadState.Completed)
           }
-          onClick={loadModel}>
+          onClick={() => {
+            incrementLaunchCount()
+            loadModel()
+          }}>
           {modelLoadState === ModelLoadState.Loaded ? "Loaded" : "Load Model"}
         </SpinnerButton>
       </div>

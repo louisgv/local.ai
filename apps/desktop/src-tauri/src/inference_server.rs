@@ -17,6 +17,7 @@ use std::sync::{
 use crate::abort_stream::AbortStream;
 use crate::inference_thread::{start_inference, CompletionRequest, InferenceThreadRequest};
 use crate::model_pool::{self, spawn_pool};
+use crate::model_stats;
 use crate::path::get_app_dir_path_buf;
 use llm::{Model, VocabularySource};
 
@@ -156,22 +157,23 @@ pub struct ModelVocabulary {
 impl ModelVocabulary {
     pub fn to_source(&self) -> VocabularySource {
         match (&self.vocabulary_path, &self.vocabulary_repository) {
-            (Some(_), Some(_)) => VocabularySource::Model,
             (Some(path), None) => VocabularySource::HuggingFaceTokenizerFile(path.to_owned()),
             (None, Some(repo)) => VocabularySource::HuggingFaceRemote(repo.to_owned()),
-            (None, None) => VocabularySource::Model,
+            (_, _) => VocabularySource::Model,
         }
     }
 }
 
 #[tauri::command]
 pub async fn load_model<'a>(
+    model_stats_bucket_state: tauri::State<'_, model_stats::State>,
     app_handle: AppHandle,
     path: &str,
     model_type: &str,
     model_vocabulary: ModelVocabulary,
     concurrency: usize,
 ) -> Result<(), String> {
+    model_stats::increment_load_count(model_stats_bucket_state, path)?;
     let cache_dir = get_app_dir_path_buf(app_handle, String::from("inference_cache")).await?;
 
     spawn_pool(

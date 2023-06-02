@@ -80,7 +80,7 @@ export const ModelSelector = () => {
                   <p>
                     <Balancer>{model.description}</Balancer>
                   </p>
-                  <code className="text-gray-10 break-all">
+                  <code className="text-gray-10 break-all max-w-screen-md">
                     <Balancer>{model.downloadUrl}</Balancer>
                   </code>
                   <div className="flex flex-wrap gap-2 justify-end">

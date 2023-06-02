@@ -2,10 +2,13 @@ import { cn } from "@localai/theme/utils"
 import { SpinnerButton } from "@localai/ui/button"
 import { CrossCircledIcon, ReloadIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
+import { ShoppingCodeCheck } from "iconoir-react"
 import { useState } from "react"
 
 import { InitState, useInit } from "~features/inference-server/use-init"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
+import { DownloadState } from "~features/model-downloader/use-model-download"
+import { useModel } from "~providers/model"
 
 type ModelDigest = {
   md5: string
@@ -28,6 +31,7 @@ const HashDisplay = ({ hashType = "", hashValue = "", truncated = false }) => {
 }
 
 export function ModelDigest({ model }: { model: ModelMetadata }) {
+  const { downloadState } = useModel()
   const [digestHash, setDigestHash] = useState<ModelDigest>(null)
   const [isCalculating, setIsCalculating] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
@@ -112,8 +116,13 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
         </>
       ) : (
         <SpinnerButton
+          disabled={
+            downloadState !== DownloadState.None &&
+            downloadState !== DownloadState.Completed
+          }
           isSpinning={isCalculating || initState === InitState.Initializing}
-          onClick={computeDigest}>
+          onClick={computeDigest}
+          Icon={ShoppingCodeCheck}>
           {isCalculating ? "Computing" : "Get Hashes"}
         </SpinnerButton>
       )}

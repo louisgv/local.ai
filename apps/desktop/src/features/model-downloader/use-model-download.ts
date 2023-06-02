@@ -59,8 +59,6 @@ export const useModelDownload = (model: ModelMetadata) => {
           setModelSize(payload.size)
 
           if (payload.downloadState !== DownloadState.Downloading) {
-            console.log({ payload })
-
             setDownloadState(payload.downloadState)
             unlisten?.()
           }

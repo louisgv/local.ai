@@ -4,6 +4,7 @@ import { invoke } from "@tauri-apps/api/tauri"
 import { createProvider } from "puro"
 import { useContext, useEffect, useState } from "react"
 
+import { useModelStats } from "~features/inference-server/use-model-stats"
 import { useModelType } from "~features/inference-server/use-model-type"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 import { useModelDownload } from "~features/model-downloader/use-model-download"
@@ -31,6 +32,8 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
 
   const { downloadState, pauseDownload, progress, resumeDownload, modelSize } =
     useModelDownload(model)
+
+  const { launchCount, incrementLaunchCount } = useModelStats(model)
 
   useEffect(() => {
     if (activeModel?.path !== model.path) {
@@ -67,7 +70,9 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
     downloadState,
     progress,
     pauseDownload,
-    resumeDownload
+    resumeDownload,
+    launchCount,
+    incrementLaunchCount
   }
 }
 

@@ -26,6 +26,17 @@ pub fn get_kv_bucket<T: Value>(
 
 pub type StateBucket<T> = Arc<Mutex<Bucket<'static, String, T>>>;
 
-pub fn get_state_json<T: kv::Value>(json_arc: &StateBucket<T>, key: &String) -> T {
-    json_arc.clone().lock().get(key).unwrap().unwrap()
+pub fn get_state_json<T: kv::Value>(bucket_arc: &StateBucket<T>, key: &String) -> T {
+    bucket_arc.clone().lock().get(key).unwrap().unwrap()
+}
+
+pub async fn remove_data<T: kv::Value>(
+    bucket_arc: &StateBucket<T>,
+    path: &str,
+) -> Result<(), String> {
+    let bucket = bucket_arc.lock();
+    let file_path = String::from(path);
+    bucket.remove(&file_path).map_err(|e| format!("{}", e))?;
+    bucket.flush().map_err(|e| format!("{}", e))?;
+    Ok(())
 }

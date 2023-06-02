@@ -1,6 +1,7 @@
 import { cn } from "@localai/theme/utils"
 import { Button, SpinnerButton } from "@localai/ui/button"
-import { CheckIcon, PauseIcon, PlayIcon } from "@radix-ui/react-icons"
+import { PauseIcon, ResumeIcon } from "@radix-ui/react-icons"
+import { CloudCheck } from "iconoir-react"
 
 import { DownloadState } from "~features/model-downloader/use-model-download"
 import { useModel } from "~providers/model"
@@ -20,7 +21,9 @@ export const DownloadProgress = () => {
           ? "opacity-100"
           : "group-hover:opacity-100 opacity-0"
       )}>
-      {downloadState === DownloadState.Completed && <CheckIcon />}
+      {downloadState === DownloadState.Completed && (
+        <CloudCheck className="h-4 w-4" />
+      )}
 
       {(downloadState === DownloadState.Downloading ||
         downloadState === DownloadState.Processing) && (
@@ -33,7 +36,7 @@ export const DownloadProgress = () => {
 
       {downloadState === DownloadState.Idle && (
         <Button onClick={() => resumeDownload()}>
-          <PlayIcon />
+          <ResumeIcon />
         </Button>
       )}
 
