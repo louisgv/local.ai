@@ -53,5 +53,25 @@ export const mptModelMap: ModelMap = {
       ...commonCitations,
       "https://huggingface.co/mosaicml/mpt-7b-chat"
     ]
+  },
+  "MPT 7B Storywriter": {
+    description:
+      "MPT-7B-StoryWriter-65k+ is a model designed to read and write fictional stories with super long context lengths. (NOTE: This model is still under development, hence its output is pretty buggy).",
+    modelType: ModelType.Mpt,
+    size: 4988356608,
+    downloadUrl:
+      "https://huggingface.co/TheBloke/MPT-7B-Storywriter-GGML/resolve/8ba65dc5e6cd9f40317c9ec12a900f3b88f9d7ca/mpt-7b-storywriter.ggmlv3.q5_1.bin",
+    blake3: "e8652cc6ff9faec96cba8a43ad966a9191fd954be3182bfd0e78e2fe45b55bbe",
+    sha256: "3b7dd7aa7508cc8cb4e262fe4b93214826f38d18d04059075e05837457f54025",
+    licenses: [
+      LicenseType.Commercial,
+      LicenseType.Apache2,
+      LicenseType.OpenSource
+    ],
+    citations: [
+      ...commonCitations,
+      "https://huggingface.co/TheBloke/MPT-7B-Storywriter-GGML",
+      "https://huggingface.co/mosaicml/mpt-7b-storywriter"
+    ]
   }
 }

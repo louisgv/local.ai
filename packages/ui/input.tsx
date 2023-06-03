@@ -7,13 +7,15 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, children, ...props }, ref) => {
     return (
       <div className={cn("relative flex h-10 rounded-md", className)}>
-        <label
-          className={cn(
-            "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-50 text-ellipsis whitespace-nowrap",
-            props.value || props.defaultValue ? "opacity-100" : "opacity-0"
-          )}>
-          {props.placeholder}
-        </label>
+        {props.placeholder && (
+          <label
+            className={cn(
+              "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-50 text-ellipsis whitespace-nowrap",
+              props.value || props.defaultValue ? "opacity-100" : "opacity-0"
+            )}>
+            {props.placeholder}
+          </label>
+        )}
 
         <input
           type={type}

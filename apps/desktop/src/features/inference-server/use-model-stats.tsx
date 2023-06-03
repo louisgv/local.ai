@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri"
-import { useReducer, useState } from "react"
+import { useReducer } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
 import type { ModelMetadata } from "~features/model-downloader/model-file"

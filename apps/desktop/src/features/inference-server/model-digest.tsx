@@ -30,16 +30,18 @@ const HashDisplay = ({ hashType = "", hashValue = "", truncated = false }) => {
   )
 }
 
+export const getCachedIntegrity = async (path: string) =>
+  invoke<ModelDigest>("get_cached_integrity", {
+    path
+  }).catch<ModelDigest>(() => null)
+
 export function ModelDigest({ model }: { model: ModelMetadata }) {
   const { downloadState } = useModel()
   const [digestHash, setDigestHash] = useState<ModelDigest>(null)
   const [isCalculating, setIsCalculating] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
   const { initState } = useInit(async () => {
-    const resp = await invoke<ModelDigest>("get_cached_integrity", {
-      path: model.path
-    }).catch(() => null)
-
+    const resp = await getCachedIntegrity(model.path)
     setDigestHash(resp)
   }, [model])
 

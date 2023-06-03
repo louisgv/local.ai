@@ -4,6 +4,7 @@ import { invoke } from "@tauri-apps/api/tauri"
 import { createProvider } from "puro"
 import { useContext, useEffect, useState } from "react"
 
+import { getCachedIntegrity } from "~features/inference-server/model-digest"
 import { useModelStats } from "~features/inference-server/use-model-stats"
 import { useModelType } from "~features/inference-server/use-model-type"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
@@ -52,7 +53,13 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
         modelVocabulary: {},
         concurrency
       })
-      setActiveModel(model)
+
+      const integrity = await getCachedIntegrity(model.path)
+
+      setActiveModel({
+        ...model,
+        digest: integrity?.blake3
+      })
       setModelLoadState(ModelLoadState.Loaded)
     } catch (error) {
       alert(error)

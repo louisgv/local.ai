@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::{
     config::{self, ConfigKey},
     downloader,
@@ -31,11 +33,12 @@ fn sort_files(
         let a_load_count = get_load_count(a);
         let b_load_count = get_load_count(b);
 
-        if a_load_count == b_load_count {
-            b.modified.cmp(&a.modified)
-        } else {
-            b_load_count.cmp(&a_load_count)
-        }
+        // Adjust the modification date by adding 1 hour for each load count
+        let a_modified_adjusted = a.modified + Duration::from_secs(a_load_count as u64 * 3600);
+        let b_modified_adjusted = b.modified + Duration::from_secs(b_load_count as u64 * 3600);
+
+        // Compare the adjusted modification dates
+        b_modified_adjusted.cmp(&a_modified_adjusted)
     });
 }
 

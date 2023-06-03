@@ -5,7 +5,7 @@ export type FileInfo = {
 }
 
 export type ModelMetadata = FileInfo & {
-  hash?: string
+  digest?: string
   label?: string
   description?: string
 }

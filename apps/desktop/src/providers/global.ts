@@ -5,6 +5,7 @@ import { useContext, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
 import { useModelsDirectory } from "~features/inference-server/use-models-directory"
+import { useToggle } from "~features/layout/use-toggle"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 import { useThreadsDirectory } from "~features/thread/use-threads-directory"
 
@@ -18,12 +19,12 @@ const useGlobalProvider = () => {
 
   const activeModelState = useState<ModelMetadata>(null)
   const concurrencyState = useState(1)
-  const activeChatState = useState(0)
-  const chatListState = useState([])
+  const activeThreadState = useState<string>()
 
   const portState = useState(8000)
 
   const serverStartedState = useState(false)
+  const sidebarState = useToggle(true)
 
   const modelsDirectoryState = useModelsDirectory()
   const threadsDirectoryState = useThreadsDirectory()
@@ -41,11 +42,11 @@ const useGlobalProvider = () => {
   return {
     portState,
     routeState,
-    activeChatState,
-    chatListState,
+    activeThreadState,
     activeModelState,
     concurrencyState,
     serverStartedState,
+    sidebarState,
     modelsDirectoryState,
     threadsDirectoryState
   }

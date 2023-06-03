@@ -1,3 +1,5 @@
+import { dollyModelMap } from "@models/dolly"
+
 import { type ModelInfo, toList } from "./_shared"
 import { gpt4AllModelMap } from "./gpt4all"
 import { guanacoModelMap } from "./guanaco"
@@ -8,6 +10,7 @@ export type ModelInfoList = ModelInfo[]
 
 export const modelList: ModelInfoList = [
   ...toList(mptModelMap),
+  ...toList(dollyModelMap),
   ...toList(gpt4AllModelMap),
   ...toList(guanacoModelMap),
   ...toList(wizardModelMap)

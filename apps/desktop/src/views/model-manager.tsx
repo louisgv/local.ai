@@ -51,7 +51,7 @@ export function ModelManagerView() {
             />
           )}
           <Input
-            className="w-96 rounded-none border-gray-3"
+            className="w-full lg:w-96 rounded-none border-gray-3"
             value={modelsDirectory}
             readOnly
             placeholder="Models directory"
@@ -92,7 +92,8 @@ export function ModelManagerView() {
         <ModelSelector />
         {models.length === 0 && (
           <p className="text-gray-9 italic pointer-events-none text-center">
-            To start, download a model or change the models directory.
+            {`To start, download a model or change the models directory by
+            clicking the "..." button.`}
           </p>
         )}
 
