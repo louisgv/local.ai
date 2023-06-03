@@ -14,6 +14,7 @@ export enum LicenseType {
   NonCommercial = "Non-commercial",
   Academic = "Academic",
   OpenSource = "Open-source",
+  MIT = "MIT",
   Apache2 = "Apache-2.0",
   GPL = "GPL"
 }

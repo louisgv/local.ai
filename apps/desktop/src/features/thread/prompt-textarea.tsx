@@ -35,18 +35,27 @@ export const PromptTextarea = ({
       )}>
       <Textarea
         rows={4}
-        disabled={disabled}
         className="w-full bg-gray-3"
         placeholder={[
-          "Markdown is available. Here are some tips:",
-          "\t- 🤖 ENTER to send prompt to the AI for inferencing",
-          "\t- 🦾 CMD/CTRL + ENTER to take note only",
-          "\t- 🦿 SHIFT + ENTER to add a new line"
+          "Pst... try using Markdown. Here're some shortcuts:",
+          "\t- [CTRL/CMD + ENTER]\t\tTake note",
+          "\t- [SHIFT + ENTER]\t\t\t\t\tAdd a new line",
+          "\t- [ENTER]\t\t\t\t\t\t\t\tStart AI inferencing"
         ].join("\n")}
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
+          if (e.key === "Enter") {
+            if (e.shiftKey) {
+              return
+            }
+
+            if (e.ctrlKey || e.metaKey) {
+              e.preventDefault()
+              note()
+              return
+            }
+
             e.preventDefault()
             submit()
           }

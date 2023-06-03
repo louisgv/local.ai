@@ -45,9 +45,15 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             path::read_directory,
+            path::write_file,
+            path::read_file,
+            threads_directory::append_thread_content,
+            threads_directory::read_thread_file,
             threads_directory::initialize_threads_dir,
             threads_directory::update_threads_dir,
             threads_directory::delete_thread_file,
+            threads_directory::create_thread_file,
+            threads_directory::rename_thread_file,
             models_directory::update_models_dir,
             models_directory::initialize_models_dir,
             models_directory::delete_model_file,

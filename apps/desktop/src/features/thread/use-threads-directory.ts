@@ -32,14 +32,41 @@ export const useThreadsDirectory = () => {
       setThreadsDirectory(resp.path)
       setThreads(resp.files)
       setIsRefreshing(false)
+      return resp
     },
     [threadsDirectory]
   )
+
+  const removeThread = useCallback(async (thread: FileInfo) => {
+    const { invoke } = await import("@tauri-apps/api/tauri")
+    await invoke<DirectoryState>("delete_thread_file", {
+      path: thread.path
+    })
+  }, [])
+
+  const renameThread = useCallback(
+    async (thread: FileInfo, newName: string) => {
+      const { invoke } = await import("@tauri-apps/api/tauri")
+      return invoke<string>("rename_thread_file", {
+        path: thread.path,
+        newName
+      })
+    },
+    []
+  )
+
+  const createThread = useCallback(async () => {
+    const { invoke } = await import("@tauri-apps/api/tauri")
+    return invoke<string>("create_thread_file")
+  }, [])
 
   return {
     threads,
     threadsDirectory,
     isRefreshing,
-    updateThreadsDirectory
+    updateThreadsDirectory,
+    removeThread,
+    createThread,
+    renameThread
   }
 }

@@ -12,9 +12,9 @@ export const gpt4AllModelMap: ModelMap = {
       "Current best commercially licensable model based on GPT-J and trained by Nomic AI on the latest curated GPT4All dataset.",
     modelType: ModelType.GptJ,
     downloadUrl:
-      "https://huggingface.co/rustformers/gpt4all-j-ggml/resolve/5bf009629f2b4c7d2e8a115df129a98e096ca46d/gpt4all-j-q5_1-ggjt.bin",
-    blake3: "6846329dc7ccc04cb16323f15496677bf31eba2020e92799cc291948d317d836",
-    sha256: "7a01109d70542198d950e4b4abddb3d57fe280ab5abed9b35c5c7250324d59c4",
+      "https://huggingface.co/rustformers/gpt4all-j-ggml/resolve/f61973ebcc39a991aecb997a839ae4cca962dd48/gpt4all-j-q5_1-ggjt.bin",
+    blake3: "5ad4dbefbd002099b60dfe73fc1bec9ca86a06d21321ef3e23ce6b7a23ef3320",
+    sha256: "7314a0aeb1332583947cdaeb61552b566ed42badf503c0e0bc436bcea7d7c919",
     licenses: [LicenseType.Commercial, LicenseType.OpenSource, LicenseType.GPL],
     citations: [
       ...commonCitations,

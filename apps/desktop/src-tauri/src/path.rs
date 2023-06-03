@@ -82,3 +82,18 @@ pub async fn read_directory(dir: &str) -> Result<Vec<FileInfo>, String> {
 
     Ok(file_infos)
 }
+
+#[tauri::command]
+pub async fn write_file(path: &str, content: &str) -> Result<(), String> {
+    tokio::fs::write(path, content)
+        .await
+        .map_err(|e| format!("{}", e))
+}
+
+#[tauri::command]
+pub async fn read_file(path: &str) -> Result<String, String> {
+    let bytes = tokio::fs::read(path).await.map_err(|e| format!("{}", e))?;
+
+    let content = String::from_utf8(bytes).map_err(|e| format!("{}", e))?;
+    Ok(content)
+}

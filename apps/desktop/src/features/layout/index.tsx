@@ -7,8 +7,8 @@ import { Home } from "iconoir-react"
 import type { ReactNode } from "react"
 
 import { NavButton } from "~features/layout/nav-button"
-import { NewThreadButton } from "~features/layout/new-thread"
-import { ChatSideBar } from "~features/layout/side-bar"
+import { NewThreadButton } from "~features/thread/new-thread"
+import { ChatSideBar } from "~features/thread/side-bar"
 import { Route, useGlobal } from "~providers/global"
 
 const TopBar = () => {
@@ -60,12 +60,13 @@ const BottomBar = () => {
 
 export const Layout = ({ children = null as ReactNode }) => {
   const {
-    serverStartedState: [isStarted]
+    serverStartedState: [isStarted],
+    sidebarState: [isSidebarShowing]
   } = useGlobal()
 
   return (
     <AppLayout
-      showSidebar={isStarted}
+      showSidebar={isStarted && isSidebarShowing}
       top={<TopBar />}
       sidebar={<ChatSideBar />}
       bottom={<BottomBar />}>

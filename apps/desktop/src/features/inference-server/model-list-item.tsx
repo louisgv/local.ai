@@ -1,15 +1,15 @@
 import { cn } from "@localai/theme/utils"
-import { useReducer, useState } from "react"
 
 import { ModelConfig } from "~features/inference-server/model-config"
 import { ModelDigest } from "~features/inference-server/model-digest"
+import { useToggle } from "~features/layout/use-toggle"
 import { type ModelMetadata, toGB } from "~features/model-downloader/model-file"
 import { useGlobal } from "~providers/global"
 import { ModelProvider, useModel } from "~providers/model"
 
 const ModelLabel = () => {
   const { model, modelSize } = useModel()
-  const [showByte, toggleShowByte] = useReducer((s) => !s, false)
+  const [showByte, toggleShowByte] = useToggle()
   return (
     <div className="flex flex-col justify-between w-full">
       <div className={"text-md"}>{model.name}</div>
