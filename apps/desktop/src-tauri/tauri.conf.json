@@ -63,9 +63,9 @@
       "shortDescription": "",
       "targets": "all",
       "windows": {
-        "certificateThumbprint": null,
+        "certificateThumbprint": "8A6998E0725F565B9746380C3444ACFB75371FDD",
         "digestAlgorithm": "sha256",
-        "timestampUrl": ""
+        "timestampUrl": "http://timestamp.sectigo.com"
       }
     },
     "security": {
