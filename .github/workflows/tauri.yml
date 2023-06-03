@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-20.04, windows-latest]
+        platform: [macos-latest, ubuntu-20.04, windows-latest, self-hosted]
     runs-on: ${{ matrix.platform }}
 
     steps:
@@ -83,8 +83,8 @@ jobs:
 
         with:
           releaseName: "v__VERSION__" # tauri-action replaces \_\_VERSION\_\_ with the app version.
-          releaseBody: "See the assets to download and install this version."
-          releaseDraft: false
           prerelease: false
+          releaseDraft: false
+          releaseBody: ${{ github.event.release.body }}
           releaseId: ${{ github.event.release.id }}
           tagName: ${{ github.event.release.tag_name }}

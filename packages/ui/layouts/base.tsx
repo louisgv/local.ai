@@ -1,5 +1,6 @@
 import { GitHubLogoIcon } from "@radix-ui/react-icons"
 import clsx from "clsx"
+import Image from "next/image"
 import type { ReactNode } from "react"
 
 import { Button } from "../button"
@@ -60,7 +61,9 @@ export const BasicLayout = ({
           {/* <!-- Company Information --> */}
           <div className="text-mauve-10">
             All Right Reserved,{" "}
-            <QuickLink href="https://github.com/louisgv/">L ❤️ ☮ ✋</QuickLink>{" "}
+            <QuickLink href="https://github.com/louisgv/">
+              <code>L ❤️ ☮ ✋</code>
+            </QuickLink>{" "}
             © 2023
           </div>
 
