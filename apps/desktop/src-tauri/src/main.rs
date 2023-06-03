@@ -3,8 +3,6 @@
     windows_subsystem = "windows"
 )]
 
-use tauri::Manager;
-
 mod abort_stream;
 mod config;
 mod db;
@@ -37,6 +35,7 @@ fn main() {
             // A hack to make MacOS window show up in dev mode...
             #[cfg(all(debug_assertions, target_os = "macos"))]
             {
+                use tauri::Manager;
                 let window = app.get_window("main").unwrap();
                 window.show().unwrap();
             }
