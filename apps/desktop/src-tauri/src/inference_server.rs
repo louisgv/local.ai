@@ -1,10 +1,13 @@
+use actix_cors::Cors;
 use actix_web::dev::ServerHandle;
 use actix_web::web::{Bytes, Json};
 
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::path::PathBuf;
 use tauri::AppHandle;
 
 use std::sync::{
@@ -15,29 +18,34 @@ use std::sync::{
 use crate::abort_stream::AbortStream;
 use crate::inference_thread::{start_inference, CompletionRequest, InferenceThreadRequest};
 use crate::model_pool::{self, spawn_pool};
+use crate::model_stats;
 use crate::path::get_app_dir_path_buf;
-use llm::Model;
+use llm::{Model, VocabularySource};
 
 static _LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
-pub struct InferenceServerState {
+#[derive(Default)]
+pub struct State {
     server: Arc<Mutex<Option<ServerHandle>>>,
     running: AtomicBool,
-}
-
-impl Default for InferenceServerState {
-    fn default() -> Self {
-        Self {
-            server: Arc::new(Mutex::new(None)),
-            running: AtomicBool::new(false),
-        }
-    }
 }
 
 #[get("/")]
 async fn ping() -> impl Responder {
     HttpResponse::Ok().body("pong")
+}
+
+#[derive(Serialize)]
+struct ModelInfo {
+    id: String,
+}
+
+#[post("/model")]
+async fn post_model() -> impl Responder {
+    HttpResponse::Ok().json(ModelInfo {
+        id: String::from("local.ai"),
+    })
 }
 
 #[post("/completions")]
@@ -84,10 +92,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 }
 
 #[tauri::command]
-pub async fn start_server<'a>(
-    state: tauri::State<'a, InferenceServerState>,
-    port: u16,
-) -> Result<(), String> {
+pub async fn start_server<'a>(state: tauri::State<'a, State>, port: u16) -> Result<(), String> {
     if state.running.load(Ordering::SeqCst) {
         return Err("Server is already running.".to_string());
     }
@@ -97,11 +102,18 @@ pub async fn start_server<'a>(
     let server_clone = Arc::clone(&state.server);
 
     tauri::async_runtime::spawn(async move {
-        let server = HttpServer::new(|| App::new().service(ping).service(post_completions))
-            .bind(("127.0.0.1", port))
-            .unwrap()
-            // .disable_signals()
-            .run();
+        let server = HttpServer::new(|| {
+            let cors = Cors::permissive();
+            App::new()
+                .wrap(cors)
+                .service(ping)
+                .service(post_model)
+                .service(post_completions)
+        })
+        .bind(("127.0.0.1", port))
+        .unwrap()
+        // .disable_signals()
+        .run();
         *server_clone.lock() = Some(server.handle());
         println!("Server started on port {port}");
         server.await.unwrap();
@@ -111,7 +123,7 @@ pub async fn start_server<'a>(
 }
 
 #[tauri::command]
-pub async fn stop_server<'a>(state: tauri::State<'a, InferenceServerState>) -> Result<(), String> {
+pub async fn stop_server<'a>(state: tauri::State<'a, State>) -> Result<(), String> {
     println!("Stopping server on port");
 
     if !state.running.load(Ordering::SeqCst) {
@@ -137,16 +149,42 @@ pub async fn stop_server<'a>(state: tauri::State<'a, InferenceServerState>) -> R
     Ok(())
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct ModelVocabulary {
+    /// Local path to vocabulary
+    pub vocabulary_path: Option<PathBuf>,
+
+    /// Remote HuggingFace repository containing vocabulary
+    pub vocabulary_repository: Option<String>,
+}
+impl ModelVocabulary {
+    pub fn to_source(&self) -> VocabularySource {
+        match (&self.vocabulary_path, &self.vocabulary_repository) {
+            (Some(path), None) => VocabularySource::HuggingFaceTokenizerFile(path.to_owned()),
+            (None, Some(repo)) => VocabularySource::HuggingFaceRemote(repo.to_owned()),
+            (_, _) => VocabularySource::Model,
+        }
+    }
+}
+
 #[tauri::command]
 pub async fn load_model<'a>(
+    model_stats_bucket_state: tauri::State<'_, model_stats::State>,
     app_handle: AppHandle,
     path: &str,
     model_type: &str,
+    model_vocabulary: ModelVocabulary,
     concurrency: usize,
 ) -> Result<(), String> {
-    let cache_dir = get_app_dir_path_buf(&app_handle, String::from("inference_cache"))
-        .await
-        .unwrap();
+    model_stats::increment_load_count(model_stats_bucket_state, path)?;
+    let cache_dir = get_app_dir_path_buf(app_handle, String::from("inference_cache"))?;
 
-    spawn_pool(path, model_type, concurrency, &cache_dir).await
+    spawn_pool(
+        path,
+        model_type,
+        &model_vocabulary.to_source(),
+        concurrency,
+        &cache_dir,
+    )
+    .await
 }

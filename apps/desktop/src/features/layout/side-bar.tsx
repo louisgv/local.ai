@@ -30,9 +30,9 @@ export function ChatSideBar() {
     <ViewBody>
       <ul
         role="list"
-        className="flex flex-1 flex-col gap-y-4 overflow-auto px-4 border-b border-gray-3 py-4 pr-2 h-full">
+        className="flex flex-1 flex-col gap-y-4 overflow-auto border-b border-gray-3 p-4 h-full">
         {chatList.map((item) => (
-          <li key={item.name}>
+          <li key={item.name} className="flex relative group">
             <NavButton
               route={Route.Chat}
               isActive={item.id === activeChat}
@@ -41,34 +41,37 @@ export function ChatSideBar() {
               }}>
               <ChatIcon type={item.type} />
               <div className="w-full flex">{item.name}</div>
-              <button
-                className="flex items-center justify-center w-6 h-6 rounded-full text-gray-11 hover:text-gray-12 group-hover:opacity-100 opacity-0 transition-opacity"
-                onClick={() => {
-                  const removeIndex = chatList.findIndex(
-                    (chat) => chat.id === item.id
-                  )
+            </NavButton>
 
-                  if (removeIndex !== -1) {
-                    // check if item is found
-                    // creating a new array by removing the item
-                    const newChatList = [
-                      ...chatList.slice(0, removeIndex),
-                      ...chatList.slice(removeIndex + 1)
-                    ]
+            <button
+              className="absolute right-0 flex items-center justify-center w-12 h-full rounded-full text-gray-11 hover:text-gray-12 group-hover:opacity-100 opacity-0 transition-opacity"
+              onClick={() => {
+                const removeIndex = chatList.findIndex(
+                  (chat) => chat.id === item.id
+                )
 
+                if (removeIndex !== -1) {
+                  // check if item is found
+                  // creating a new array by removing the item
+                  const newChatList = [
+                    ...chatList.slice(0, removeIndex),
+                    ...chatList.slice(removeIndex + 1)
+                  ]
+                  setChatList(newChatList)
+
+                  if (activeChat === item.id) {
                     let newActiveChat = newChatList[removeIndex - 1]?.id
                     if (removeIndex === 0 && newChatList.length > 0) {
                       // if the removed item was the first in the list, select the new first item
                       newActiveChat = newChatList[0]?.id
                     }
 
-                    setChatList(newChatList)
                     setActiveChat(newActiveChat)
                   }
-                }}>
-                <TrashIcon />
-              </button>
-            </NavButton>
+                }
+              }}>
+              <TrashIcon />
+            </button>
           </li>
         ))}
       </ul>

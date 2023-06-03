@@ -1,18 +1,64 @@
-import { useDownloadProgress } from "~features/model-downloader/use-download-progress"
+import { cn } from "@localai/theme/utils"
+import { Button, SpinnerButton } from "@localai/ui/button"
+import { PauseIcon, ResumeIcon } from "@radix-ui/react-icons"
+import { CloudCheck } from "iconoir-react"
+
+import { DownloadState } from "~features/model-downloader/use-model-download"
+import { useModel } from "~providers/model"
 
 export const DownloadProgress = () => {
-  const { progressList } = useDownloadProgress()
+  const { downloadState, pauseDownload, resumeDownload, progress } = useModel()
+
+  if (downloadState === DownloadState.None) {
+    return null
+  }
 
   return (
-    <div className="flex flex-col gap-2">
-      {progressList.map(({ progress, md5Hash }) => (
-        <div>
-          <span>
-            {md5Hash}: {progress}%
+    <div
+      className={cn(
+        "flex gap-2 items-center",
+        downloadState === DownloadState.Downloading
+          ? "opacity-100"
+          : "group-hover:opacity-100 opacity-0"
+      )}>
+      {downloadState === DownloadState.Completed && (
+        <CloudCheck className="h-4 w-4" />
+      )}
+
+      {(downloadState === DownloadState.Downloading ||
+        downloadState === DownloadState.Processing) && (
+        <SpinnerButton
+          Icon={PauseIcon}
+          onClick={() => pauseDownload()}
+          isSpinning={downloadState === DownloadState.Processing}
+        />
+      )}
+
+      {downloadState === DownloadState.Idle && (
+        <Button onClick={() => resumeDownload()}>
+          <ResumeIcon />
+        </Button>
+      )}
+
+      {downloadState !== DownloadState.Completed && (
+        <span className="flex w-40 h-full relative">
+          <progress
+            className={cn(
+              "w-full h-full rounded-md overflow-hidden bg-gray-3",
+              `
+            [&::-webkit-progress-bar]:bg-gray-3
+            [&::-webkit-progress-value]:bg-gray-5 
+            [&::-moz-progress-bar]:bg-gray-5
+          `
+            )}
+            value={progress}
+            max={100}
+          />
+          <span className="absolute w-full flex justify-center self-center">
+            {progress.toFixed(2)}%
           </span>
-          <progress className="w-full" value={progress} max={100} />
-        </div>
-      ))}
+        </span>
+      )}
     </div>
   )
 }

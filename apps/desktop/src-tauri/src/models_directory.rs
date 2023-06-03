@@ -1,94 +1,105 @@
-use std::path::PathBuf;
-
-use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
-use tauri::AppHandle;
-use walkdir::WalkDir;
-
 use crate::{
-    config::{get_models_path, set_models_path},
-    path::get_app_dir_path_buf,
+    config::{self, ConfigKey},
+    downloader,
+    kv_bucket::remove_data,
+    model_integrity, model_stats, model_type,
+    path::{read_directory, DirectoryState, FileInfo},
 };
 
-#[derive(Serialize, Deserialize)]
-pub struct FileInfo {
-    size: u64,
-    path: String,
-    name: String,
+// Move this to a state
+pub fn get_current_models_path(
+    default_path_state: tauri::State<'_, crate::path::State>,
+    config_bucket_state: tauri::State<'_, crate::config::State>,
+) -> Result<String, String> {
+    let default_models_path_buf = &default_path_state.models_directory_buf;
+    Ok(config_bucket_state
+        .get(ConfigKey::ModelsDirectory)
+        .unwrap_or(default_models_path_buf.display().to_string()))
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct ModelDirectoryState {
-    path: String,
-    files: Vec<FileInfo>,
-}
+fn sort_files(
+    files: &mut Vec<FileInfo>,
+    model_stats_bucket_state: tauri::State<'_, model_stats::State>,
+) {
+    let get_load_count = |file: &FileInfo| {
+        model_stats::get_model_stats(model_stats_bucket_state.clone(), file.path.as_str())
+            .unwrap_or(model_stats::ModelStats::default())
+            .load_count
+    };
 
-#[tauri::command]
-pub async fn read_directory(dir: &str) -> Result<Vec<FileInfo>, String> {
-    let walker = WalkDir::new(dir).into_iter();
+    files.sort_unstable_by(|a, b| {
+        let a_load_count = get_load_count(a);
+        let b_load_count = get_load_count(b);
 
-    let mut file_infos: Vec<FileInfo> = walker
-        .filter_map(Result::ok)
-        .filter(|entry| entry.file_type().is_file())
-        .par_bridge()
-        .map(|entry| {
-            let path = entry.path().display().to_string();
-            let name = entry
-                .path()
-                .file_stem()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_string();
-            let size = entry.metadata().unwrap().len();
-            FileInfo { path, size, name }
-        })
-        .collect();
-
-    file_infos.sort_by(|a, b| a.name.cmp(&b.name));
-
-    Ok(file_infos)
-}
-
-pub async fn get_default_models_path_buf(app_handle: &AppHandle) -> PathBuf {
-    get_app_dir_path_buf(&app_handle, String::from("models"))
-        .await
-        .unwrap()
+        if a_load_count == b_load_count {
+            b.modified.cmp(&a.modified)
+        } else {
+            b_load_count.cmp(&a_load_count)
+        }
+    });
 }
 
 #[tauri::command]
-pub async fn initialize_models_dir(app_handle: AppHandle) -> Result<ModelDirectoryState, String> {
-    let default_directory = get_default_models_path_buf(&app_handle)
-        .await
-        .display()
-        .to_string();
+pub async fn initialize_models_dir(
+    default_path_state: tauri::State<'_, crate::path::State>,
+    config_bucket_state: tauri::State<'_, config::State>,
+    model_stats_bucket_state: tauri::State<'_, model_stats::State>,
+) -> Result<DirectoryState, String> {
+    let models_path = get_current_models_path(default_path_state, config_bucket_state)?;
 
-    let model_path = get_models_path(&app_handle).unwrap_or(default_directory);
+    let mut files = read_directory(models_path.as_str()).await?;
 
-    println!("model_path: {}", model_path);
+    sort_files(&mut files, model_stats_bucket_state.clone());
 
-    let files = read_directory(model_path.as_str()).await?;
-
-    Ok(ModelDirectoryState {
-        path: model_path,
+    Ok(DirectoryState {
+        path: models_path,
         files,
     })
 }
 
 #[tauri::command]
 pub async fn update_models_dir(
-    app_handle: AppHandle,
     dir: &str,
-) -> Result<ModelDirectoryState, String> {
-    match set_models_path(&app_handle, dir.to_string()) {
-        Ok(_) => (),
-        Err(e) => return Err(format!("Error setting models path: {}", e)),
-    };
+    config_bucket: tauri::State<'_, config::State>,
+    model_stats_bucket_state: tauri::State<'_, model_stats::State>,
+) -> Result<DirectoryState, String> {
+    config_bucket
+        .set(ConfigKey::ModelsDirectory, dir.to_string())
+        .map_err(|e| format!("Error setting models path: {}", e))?;
 
-    let files = read_directory(dir).await?;
+    let mut files = read_directory(dir).await?;
 
-    Ok(ModelDirectoryState {
+    sort_files(&mut files, model_stats_bucket_state.clone());
+
+    Ok(DirectoryState {
         path: String::from(dir),
         files,
     })
+}
+
+#[tauri::command]
+pub async fn delete_model_file(
+    model_integrity_bucket_state: tauri::State<'_, model_integrity::State>,
+    model_type_bucket_state: tauri::State<'_, model_type::State>,
+    model_stats_bucket_state: tauri::State<'_, model_stats::State>,
+    model_download_progress_state: tauri::State<'_, downloader::State>,
+
+    path: &str,
+) -> Result<(), String> {
+    tokio::try_join!(
+        async {
+            tokio::fs::remove_file(&path)
+                .await
+                .map_err(|e| format!("{}", e))
+        },
+        remove_data(&model_integrity_bucket_state.0, &path),
+        remove_data(&model_type_bucket_state.0, &path),
+        remove_data(&model_stats_bucket_state.0, &path),
+        remove_data(
+            &model_download_progress_state.download_progress_bucket,
+            &path
+        )
+    )?;
+
+    Ok(())
 }

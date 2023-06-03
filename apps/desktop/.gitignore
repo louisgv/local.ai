@@ -13,6 +13,7 @@ dist-ssr
 out
 *.local
 .next
+keys
 
 # Editor directories and files
 .vscode/*

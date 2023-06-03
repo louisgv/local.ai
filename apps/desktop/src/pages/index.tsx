@@ -1,5 +1,3 @@
-"use client"
-
 import { useMemo } from "react"
 
 import { Route, useGlobal } from "~providers/global"
@@ -12,6 +10,7 @@ function IndexPage() {
   const {
     routeState: [currentRoute]
   } = useGlobal()
+
   return useMemo(() => {
     switch (currentRoute) {
       case Route.Chat:

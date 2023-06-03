@@ -1,21 +1,16 @@
-import { cn } from "@localai/theme/utils"
 import { Button, SpinnerButton } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
-import { ReloadIcon } from "@radix-ui/react-icons"
-import { open } from "@tauri-apps/api/dialog"
-import { invoke } from "@tauri-apps/api/tauri"
-import { useState } from "react"
-
-import { ModelConfig } from "~features/inference-server/model-config"
-import { ModelDigest } from "~features/inference-server/model-digest"
-import { ServerConfig } from "~features/inference-server/server-config"
-import { useInit } from "~features/inference-server/use-init"
-import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
 import {
-  type ModelDirectoryState,
-  type ModelMetadata,
-  toGB
-} from "~features/model-downloader/model-file"
+  DotsHorizontalIcon,
+  OpenInNewWindowIcon,
+  ReloadIcon
+} from "@radix-ui/react-icons"
+import { open as dialogOpen } from "@tauri-apps/api/dialog"
+import { invoke } from "@tauri-apps/api/tauri"
+
+import { ModelListItem } from "~features/inference-server/model-list-item"
+import { ServerConfig } from "~features/inference-server/server-config"
+import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
 import { ModelSelector } from "~features/model-downloader/model-selector"
 import { useGlobal } from "~providers/global"
 
@@ -31,67 +26,65 @@ import { useGlobal } from "~providers/global"
 
 export function ModelManagerView() {
   const {
-    activeModelState: [activeModel]
-  } = useGlobal()
-  const [modelsDirectory, setModelsDirectory] = useState("")
-  const [models, setModels] = useState<ModelMetadata[]>([])
-  const [isRefreshing, setIsRefreshing] = useState(false)
-
-  useInit(async () => {
-    // get the models directory saved in config
-    const resp = await invoke<ModelDirectoryState>("initialize_models_dir")
-    if (!resp) {
-      return
+    activeModelState: [activeModel],
+    modelsDirectoryState: {
+      isRefreshing,
+      modelsDirectory,
+      models,
+      updateModelsDirectory
     }
-    setModelsDirectory(resp.path)
-    setModels(resp.files)
-  })
-
-  async function updateModelsDirectory(dir: string) {
-    setIsRefreshing(true)
-    const resp = await invoke<ModelDirectoryState>("update_models_dir", {
-      dir
-    })
-    setModelsDirectory(resp.path)
-    setModels(resp.files)
-    setIsRefreshing(false)
-  }
+  } = useGlobal()
 
   return (
-    <ViewContainer>
+    <ViewContainer className="relative z-50">
       <ViewHeader>
-        {!!modelsDirectory && (
-          <SpinnerButton
-            Icon={ReloadIcon}
-            isSpinning={isRefreshing}
-            title="Refresh Models Directory"
-            onClick={async () => {
-              await updateModelsDirectory(modelsDirectory)
-            }}
+        <div className="flex">
+          {!!modelsDirectory && (
+            <SpinnerButton
+              className="w-10 p-3 rounded-r-none"
+              Icon={ReloadIcon}
+              isSpinning={isRefreshing}
+              title="Refresh Models Directory"
+              onClick={async () => {
+                await updateModelsDirectory()
+              }}
+            />
+          )}
+          <Input
+            className="w-96 rounded-none border-gray-3"
+            value={modelsDirectory}
+            readOnly
+            placeholder="Models directory"
           />
-        )}
-        <Input
-          className="w-full"
-          value={modelsDirectory}
-          readOnly
-          placeholder="Models directory"
-        />
 
-        <Button
-          className="w-24 justify-center"
-          onClick={async () => {
-            const selected = (await open({
-              directory: true,
-              multiple: false
-            })) as string
+          <Button
+            title="Change models directory"
+            className="w-10 p-3 rounded-none"
+            onClick={async () => {
+              const selected = (await dialogOpen({
+                directory: true,
+                multiple: false
+              })) as string
 
-            if (!selected) {
-              return
-            }
-            await updateModelsDirectory(selected)
-          }}>
-          Change
-        </Button>
+              if (!selected) {
+                return
+              }
+              await updateModelsDirectory(selected)
+            }}>
+            <DotsHorizontalIcon />
+          </Button>
+
+          <Button
+            title="Open models directory"
+            className="w-10 p-3 rounded-l-none"
+            onClick={() => {
+              invoke("open_directory", {
+                path: modelsDirectory
+              })
+            }}>
+            <OpenInNewWindowIcon />
+          </Button>
+        </div>
 
         <ServerConfig />
       </ViewHeader>
@@ -104,35 +97,15 @@ export function ModelManagerView() {
         )}
 
         {models
-          .sort((a: ModelMetadata, b: ModelMetadata) =>
+          .sort((a, b) =>
             activeModel?.path === a.path
               ? -1
               : activeModel?.path === b.path
               ? 1
               : 0
           )
-          .map((model: ModelMetadata) => (
-            <div
-              className={cn(
-                "flex flex-col gap-4 rounded-md p-4",
-                "text-gray-11 hover:text-gray-12",
-                "transition-colors group",
-                activeModel?.path === model.path
-                  ? "ring ring-green-7 hover:ring-green-8"
-                  : "ring ring-gray-7 hover:ring-gray-8"
-              )}
-              key={model.name}>
-              <div className="flex items-center justify-between w-full">
-                <div className="flex flex-col justify-between w-full">
-                  <div className={"text-md"}>{model.name}</div>
-                  <div className="text-xs text-gray-10">
-                    {`${toGB(model.size).toFixed(2)} GB`}
-                  </div>
-                </div>
-                <ModelDigest model={model} />
-              </div>
-              <ModelConfig model={model} />
-            </div>
+          .map((model) => (
+            <ModelListItem key={model.name} model={model} />
           ))}
       </ViewBody>
     </ViewContainer>

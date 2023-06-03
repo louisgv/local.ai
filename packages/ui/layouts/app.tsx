@@ -27,12 +27,12 @@ export const AppLayout = ({
         </div>
         <div className="flex flex-col overflow-auto w-full">{bottom}</div>
       </div>
-
       <div
         className={cn(
           showSidebar ? "w-full md:w-5/6" : "w-full",
           "flex flex-col flex-1",
-          "overflow-auto h-screen"
+          "overflow-auto h-screen",
+          "z-50"
         )}>
         {children}
       </div>

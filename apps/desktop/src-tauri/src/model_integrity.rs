@@ -1,16 +1,14 @@
-use crate::kv_bucket;
+use crate::kv_bucket::{self, StateBucket};
 use digest::Digest;
 use kv::Json;
-use once_cell::sync::Lazy;
+use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use std::path::Path;
-use std::sync::Mutex;
-use tauri::AppHandle;
+use std::sync::Arc;
+use tauri::{App, Manager};
 use tokio::fs::File;
 use tokio::io::{self, AsyncReadExt};
-
-static BUCKET_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
 #[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub struct ModelIntegrity {
@@ -18,21 +16,25 @@ pub struct ModelIntegrity {
     blake3: String,
 }
 
-// Key is absolute file path in the file system
-pub fn get_model_integrity_bucket(
-    app_handle: &AppHandle,
-) -> kv::Bucket<'_, String, Json<ModelIntegrity>> {
-    kv_bucket::get_kv_bucket(
-        app_handle,
-        String::from("model_integrity"),
-        String::from("v1"),
-    )
-    .unwrap()
+#[derive(Clone)]
+pub struct State(pub StateBucket<Json<ModelIntegrity>>);
+
+impl State {
+    pub fn new(app: &mut App) -> Result<(), String> {
+        let bucket = kv_bucket::get_kv_bucket(
+            app.app_handle(),
+            String::from("model_integrity"),
+            String::from("v1"),
+        )?;
+
+        app.manage(State(Arc::new(Mutex::new(bucket))));
+        Ok(())
+    }
 }
 
 const BUFFER_SIZE: usize = 42 * 1024 * 1024; // 42 MiB buffer
 
-pub async fn compute_integrity<P: AsRef<Path>>(path: P) -> Result<ModelIntegrity, io::Error> {
+pub async fn _compute_integrity<P: AsRef<Path>>(path: P) -> Result<ModelIntegrity, io::Error> {
     let mut file = File::open(path).await?;
     let mut buffer = vec![0u8; BUFFER_SIZE];
     let mut hasher_sha256 = Sha256::new();
@@ -59,15 +61,14 @@ pub async fn compute_integrity<P: AsRef<Path>>(path: P) -> Result<ModelIntegrity
 
 #[tauri::command]
 pub async fn get_cached_integrity(
-    app_handle: AppHandle,
+    state: tauri::State<'_, self::State>,
     path: &str,
 ) -> Result<ModelIntegrity, String> {
-    let _guard = BUCKET_LOCK.lock().unwrap();
-    let model_checksum_bucket = get_model_integrity_bucket(&app_handle);
+    let state = state.0.lock();
 
     let file_path = String::from(path);
 
-    match model_checksum_bucket.get(&file_path) {
+    match state.get(&file_path) {
         Ok(Some(value)) => return Ok(value.0),
         Ok(None) => return Err(format!("No cached hash for {}", path)),
         Err(e) => return Err(format!("Error retrieving cached hash for {}: {}", path, e)),
@@ -75,17 +76,25 @@ pub async fn get_cached_integrity(
 }
 
 #[tauri::command]
-pub async fn get_integrity(app_handle: AppHandle, path: &str) -> Result<ModelIntegrity, String> {
-    let integrity = compute_integrity(path).await.unwrap();
+pub async fn compute_integrity(
+    state: tauri::State<'_, self::State>,
+    path: &str,
+) -> Result<ModelIntegrity, String> {
+    let integrity = _compute_integrity(path)
+        .await
+        .map_err(|e| format!("{}", e))?;
 
-    let _guard = BUCKET_LOCK.lock().unwrap();
-
-    let model_checksum_bucket = get_model_integrity_bucket(&app_handle);
+    let model_integrity_bucket = state.0.lock();
 
     let file_path = String::from(path);
 
-    match model_checksum_bucket.set(&file_path, &Json(integrity.clone())) {
-        Ok(_) => Ok(integrity),
-        Err(e) => return Err(format!("Error caching hash for {}: {}", path, e)),
-    }
+    model_integrity_bucket
+        .set(&file_path, &Json(integrity.clone()))
+        .map_err(|e| format!("Error setting cached hash for {}: {}", path, e))?;
+
+    model_integrity_bucket
+        .flush()
+        .map_err(|e| format!("{}", e))?;
+
+    Ok(integrity)
 }

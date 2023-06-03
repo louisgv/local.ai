@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
 
-use std::{path::PathBuf, sync::Arc};
+use std::{fs, path::PathBuf, sync::Arc};
 
 use llm::{
     load_progress_callback_stdout, InferenceParameters, ModelArchitecture, VocabularySource,
@@ -43,16 +43,16 @@ pub fn get_inference_params() -> InferenceParameters {
 pub async fn spawn_pool(
     path: &str,
     model_type: &str,
+    vocabulary_source: &VocabularySource,
     concurrency: usize,
     cache_dir: &PathBuf,
 ) -> Result<(), String> {
     let now = std::time::Instant::now();
     let model_path = Path::new(path);
 
-    let architecture: ModelArchitecture = match model_type.parse() {
-        Ok(architecture) => architecture,
-        Err(_) => return Err(format!("Invalid model type: {model_type}")),
-    };
+    let architecture: ModelArchitecture = model_type
+        .parse()
+        .map_err(|_| format!("Invalid model type: {model_type}"))?;
 
     let skip_copy = concurrency == 1;
     let mut tasks = vec![];
@@ -65,14 +65,11 @@ pub async fn spawn_pool(
         let cache_file_path = cache_dir.join(cache_name);
         let original_model_path = original_model_path.clone();
         let architecture = architecture.clone();
-
-        // Create a new task for each copy operation
-        let task = tokio::spawn(async move {
-            // Copy the file if necessary
+        let vocabulary_source = vocabulary_source.to_owned();
+        let task = tokio::task::spawn_blocking(move || {
             if !skip_copy {
-                tokio::fs::copy(&original_model_path, &cache_file_path)
-                    .await
-                    .expect("Failed to copy file");
+                fs::copy(&original_model_path, &cache_file_path)
+                    .map_err(|_| "Failed to copy file".to_string())?;
             }
 
             let cache_path = if skip_copy {
@@ -81,10 +78,10 @@ pub async fn spawn_pool(
                 cache_file_path
             };
 
-            let model = match llm::load_dynamic(
+            match llm::load_dynamic(
                 architecture,
                 cache_path.as_path(),
-                VocabularySource::HuggingFaceRemote(String::from("JosephusCheung/Guanaco")),
+                vocabulary_source.clone(),
                 llm::ModelParameters {
                     prefer_mmap: true,
                     context_size: 8472,
@@ -94,28 +91,25 @@ pub async fn spawn_pool(
                 None,
                 load_progress_callback_stdout,
             ) {
-                Ok(model) => Some(Arc::new(Mutex::new(Some(model)))),
-                Err(err) => {
-                    println!("Failed to load model: {}", err);
-                    None
-                }
-            };
-
-            model
+                Ok(model) => Ok(Arc::new(Mutex::new(Some(model)))),
+                Err(e) => Err(format!("Failed to load model: {}", e)),
+            }
         });
 
         tasks.push(task);
     }
 
-    // Wait for all tasks to complete and collect the results
-    let models: Result<Vec<_>, _> = futures::future::join_all(tasks).await.into_iter().collect();
+    let task_results = futures::future::join_all(tasks).await;
 
-    let models = match models {
-        Ok(models) => models,
-        Err(_) => {
-            return Err("Failed to load model".to_string());
-        }
-    };
+    let models: Result<Vec<_>, _> = task_results
+        .into_iter()
+        .map(|res| {
+            res.map_err(|e| format!("{}", e))
+                .and_then(|inner| inner.map(Some))
+        })
+        .collect();
+
+    let models = models?;
 
     println!(
         "Model fully loaded! Elapsed: {}ms",
