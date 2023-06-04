@@ -82,9 +82,9 @@ jobs:
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
 
         with:
-          releaseName: "v__VERSION__" # tauri-action replaces \_\_VERSION\_\_ with the app version.
           prerelease: false
           releaseDraft: false
+          releaseName: ${{ github.event.release.name }}
           releaseBody: ${{ github.event.release.body }}
           releaseId: ${{ github.event.release.id }}
           tagName: ${{ github.event.release.tag_name }}
