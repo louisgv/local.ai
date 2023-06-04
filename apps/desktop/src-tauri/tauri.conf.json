@@ -74,9 +74,7 @@
     },
     "updater": {
       "active": true,
-      "endpoints": [
-        "https://localai.app/api/update/{{target}}/{{arch}}/{{current_version}}"
-      ],
+      "endpoints": ["https://localai.app/api/update"],
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyNTk4NUYyNTAxQjQyNQpSV1FsdEFFbFg1Z2xCNnVuL3JDd3c4bVB5Q0pYUUROd2N3QnRnN2lNblVSeDZ3VnhxL09ZSHZ3SAo="
     },

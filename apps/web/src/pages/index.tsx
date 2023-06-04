@@ -9,11 +9,8 @@ import type { ReactNode } from "react"
 import Balancer from "react-wrap-balancer"
 
 import {
-  MacArm64DownloadButton,
-  MacIntelDownloadButton,
-  MiniDownloadButtonGroup,
-  UbuntuDownloadButton,
-  WindowsDownloadButton
+  DownloadButtonGroup,
+  MiniDownloadButtonGroup
 } from "~features/press/download-buttons"
 
 const FeatureCard = ({
@@ -21,7 +18,7 @@ const FeatureCard = ({
   title = "loremipsum",
   children = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut suscipit consequuntur nam distinctio blanditiis. Reprehenderit unde incidunt eaque alias nam aut. Beatae magni reiciendis sapiente illum quisquam fugiat tempore neque?` as ReactNode
 }) => (
-  <div className="p-8 md:w-1/3 w-full">
+  <div className="p-2 md:p-8 md:w-1/3 w-full">
     <div className="bg-mauve-3 text-mauve-11 flex flex-col items-center p-12 rounded-lg">
       <div className="rounded-full bg-mauve-6 w-min p-4 mb-6">
         <Icon className="w-8 h-8" />
@@ -114,13 +111,8 @@ const IndexPage: NextPage = () => (
       </div>
     </section>
 
-    <section className="w-full px-8 flex flex-col md:flex-row gap-6 items-center justify-center">
-      <WindowsDownloadButton />
-      <div className="flex flex-col gap-6 w-40">
-        <MacArm64DownloadButton />
-        <MacIntelDownloadButton />
-      </div>
-      <UbuntuDownloadButton />
+    <section className="w-full px-8 flex flex-col md:flex-row md:gap-2 gap-6 items-center justify-center">
+      <DownloadButtonGroup />
     </section>
 
     {/* <!-- Features Section --> */}
@@ -128,7 +120,8 @@ const IndexPage: NextPage = () => (
       <div
         className={clsx(
           "container mx-auto",
-          "flex flex-col md:flex-row md:flex-wrap md:justify-center"
+          "flex flex-col md:flex-row md:flex-wrap md:justify-center",
+          "gap-8 md:gap-0"
         )}>
         <FeatureCard Icon={ListSelect} title="Model Management">
           <div className="flex flex-col gap-2">

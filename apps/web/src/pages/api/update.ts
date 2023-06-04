@@ -2,8 +2,9 @@ export const config = {
   runtime: "edge"
 }
 
-const releaseJsonUrl =
-  "https://github.com/louisgv/local.ai/releases/latest/download/latest.json"
+const version = "v0.0.2"
+
+const releaseJsonUrl = `https://github.com/louisgv/local.ai/releases/download/${version}/latest.json`
 
 export default async function handler() {
   const releaseJson = await fetch(releaseJsonUrl).then((res) => res.text())
