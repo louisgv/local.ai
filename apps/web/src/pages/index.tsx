@@ -55,13 +55,10 @@ const FeaturesList = ({
 const IndexPage: NextPage = () => (
   <BasicLayout logo={<Logo />} rightNav={<MiniDownloadButtonGroup />}>
     <NextSeo
-      title="local.ai"
+      title="The Local AI Playground"
       titleTemplate="%s – local.ai"
-      description="local.ai enables developers to quickly test AI models locally."
+      description="local.ai enables everyone to quickly test AI models locally with zero technical setup."
       openGraph={{
-        title: "Quickly test AI models on your local machine.",
-        description:
-          "local.ai enables developers to quickly test AI models in their local machine.",
         url: "https://www.localai.app",
         siteName: "local.ai",
         type: "website"
