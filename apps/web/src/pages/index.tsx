@@ -41,14 +41,14 @@ const FeaturesList = ({
     <p className="text-sm font-bold">Available features:</p>
     <ul className="list-disc text-xs">
       {available.map((feature) => (
-        <li>{feature}</li>
+        <li key={feature}>{feature}</li>
       ))}
     </ul>
     <hr className="border-gray-6 border-dashed" />
     <p className="text-sm font-bold">Upcoming features:</p>
     <ul className="list-disc text-xs">
       {upcoming.map((feature) => (
-        <li>{feature}</li>
+        <li key={feature}>{feature}</li>
       ))}
     </ul>
   </>

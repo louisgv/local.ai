@@ -88,7 +88,6 @@ pub async fn spawn_pool(
 
                     ..Default::default()
                 },
-                None,
                 load_progress_callback_stdout,
             ) {
                 Ok(model) => Ok(Arc::new(Mutex::new(Some(model)))),
