@@ -1,7 +1,7 @@
 {
   "name": "@localai/desktop",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "scripts": {
     "dev:next": "next dev -p 1470",
     "build:next": "next build",
