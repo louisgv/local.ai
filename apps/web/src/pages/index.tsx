@@ -10,7 +10,8 @@ import Balancer from "react-wrap-balancer"
 
 import {
   DownloadButtonGroup,
-  MiniDownloadButtonGroup
+  MiniDownloadButtonGroup,
+  ReleaseDownloadButton
 } from "~features/press/download-buttons"
 
 const FeatureCard = ({

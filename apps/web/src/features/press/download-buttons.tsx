@@ -4,11 +4,9 @@ import { QuickLink } from "@localai/ui/link"
 import { DownloadIcon, GitHubLogoIcon } from "@radix-ui/react-icons"
 import { AppleMac, Linux, Windows } from "iconoir-react"
 
+import { baseUrl, version } from "~pages/api/_constants"
+
 const buttonClass = "rounded-full transition-all font-bold w-36"
-
-const version = `0.0.4`
-
-const baseUrl = `https://github.com/louisgv/local.ai/releases/download/v${version}`
 
 export const WindowsMsiDownloadButton = () => (
   <QuickLink external href={`${baseUrl}/Local.AI_${version}_x64_en-US.msi`}>

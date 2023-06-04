@@ -1,10 +1,10 @@
+import { baseUrl } from "~pages/api/_constants"
+
 export const config = {
   runtime: "edge"
 }
 
-const version = "v0.0.2"
-
-const releaseJsonUrl = `https://github.com/louisgv/local.ai/releases/download/${version}/latest.json`
+const releaseJsonUrl = `${baseUrl}/latest.json`
 
 export default async function handler() {
   const releaseJson = await fetch(releaseJsonUrl).then((res) => res.text())
