@@ -34,12 +34,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: "pnpm" # Set this to npm, yarn or pnpm.
 
       - name: install pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 8
-          cache: "pnpm" # Set this to npm, yarn or pnpm.
 
       - uses: actions/checkout@v3
         with:

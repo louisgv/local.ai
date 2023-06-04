@@ -9,8 +9,11 @@ import type { ReactNode } from "react"
 import Balancer from "react-wrap-balancer"
 
 import {
+  MacArm64DownloadButton,
+  MacIntelDownloadButton,
   MiniDownloadButtonGroup,
-  ReleaseDownloadButton
+  UbuntuDownloadButton,
+  WindowsDownloadButton
 } from "~features/press/download-buttons"
 
 const FeatureCard = ({
@@ -27,6 +30,28 @@ const FeatureCard = ({
       {children}
     </div>
   </div>
+)
+
+const FeaturesList = ({
+  available = [] as string[],
+  upcoming = [] as string[]
+}) => (
+  <>
+    <hr className="border-gray-6" />
+    <p className="text-sm font-bold">Available features:</p>
+    <ul className="list-disc text-xs">
+      {available.map((feature) => (
+        <li>{feature}</li>
+      ))}
+    </ul>
+    <hr className="border-gray-6 border-dashed" />
+    <p className="text-sm font-bold">Upcoming features:</p>
+    <ul className="list-disc text-xs">
+      {upcoming.map((feature) => (
+        <li>{feature}</li>
+      ))}
+    </ul>
+  </>
 )
 
 const IndexPage: NextPage = () => (
@@ -89,11 +114,13 @@ const IndexPage: NextPage = () => (
       </div>
     </section>
 
-    <section className="w-full px-8 flex flex-col md:flex-row gap-4 items-center justify-center">
-      <ReleaseDownloadButton />
-      {/* <MacDownloadButton />
+    <section className="w-full px-8 flex flex-col md:flex-row gap-6 items-center justify-center">
       <WindowsDownloadButton />
-      <UbuntuDownloadButton /> */}
+      <div className="flex flex-col gap-6 w-40">
+        <MacArm64DownloadButton />
+        <MacIntelDownloadButton />
+      </div>
+      <UbuntuDownloadButton />
     </section>
 
     {/* <!-- Features Section --> */}
@@ -109,45 +136,49 @@ const IndexPage: NextPage = () => (
               Keep track of your AI models in one centralized location. Pick any
               directory!
             </p>
-            <hr className="border-gray-6" />
-            <p className="text-xs font-bold">Upcoming features:</p>
-            <ul className="list-disc text-xs">
-              <li>Resumable model downloader</li>
-              <li>Nested directory</li>
-              <li>Custom Sorting and Searching</li>
-            </ul>
+            <FeaturesList
+              available={[
+                "Resumable model downloader",
+                "Usage-based sorting",
+                "Pick any directory"
+              ]}
+              upcoming={["Nested directory", "Custom Sorting and Searching"]}
+            />
           </div>
         </FeatureCard>
 
         <FeatureCard Icon={ShoppingCodeCheck} title="Digest Verification">
           <div className="flex flex-col gap-2">
             <p className="h-24">
-              {`Ensure the integrity of downloaded models with a robust MD5, SHA256, and Blake3 digest
+              {`Ensure the integrity of downloaded models with a robust BLAKE3 and SHA256 digest
               compute feature.`}
             </p>
-            <hr className="border-gray-6" />
-            <p className="text-xs font-bold">Upcoming features:</p>
-            <ul className="list-disc text-xs">
-              <li>Known-good model repository</li>
-              <li>Blake3 quick check</li>
-              <li>Model card</li>
-            </ul>
+
+            <FeaturesList
+              available={[
+                "Known-good model API",
+                "Digest compute",
+                "License and Usage tracking"
+              ]}
+              upcoming={["BLAKE3 quick check", "Model card"]}
+            />
           </div>
         </FeatureCard>
 
         <FeatureCard Icon={ServerConnection} title="Inferencing Server">
           <div className="flex flex-col gap-2">
             <p className="h-24">
-              Start a local streaming server for AI inferencing in 3 clicks:
-              Pick directory, load model, then start server.
+              Start a local streaming server for AI inferencing in 2 clicks:
+              Load model, then start server.
             </p>
-            <hr className="border-gray-6" />
-            <p className="text-xs font-bold">Upcoming features:</p>
-            <ul className="list-disc text-xs">
-              <li>Support no streaming</li>
-              <li>/audio</li>
-              <li>/image</li>
-            </ul>
+            <FeaturesList
+              available={[
+                "Streaming server",
+                "Quick Inference UI",
+                "Writes to .mdx"
+              ]}
+              upcoming={["/audio", "/image"]}
+            />
           </div>
         </FeatureCard>
       </div>

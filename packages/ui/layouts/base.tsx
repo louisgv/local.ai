@@ -59,12 +59,14 @@ export const BasicLayout = ({
             "flex flex-col md:flex-row gap-12 items-center justify-center"
           )}>
           {/* <!-- Company Information --> */}
-          <div className="text-mauve-10">
+          <div className="text-mauve-10 hover:text-mauve-11 hover:underline hover:underline-offset-2 transition-all">
             All Right Reserved,{" "}
             <QuickLink href="https://github.com/louisgv/">
               <code>L ❤️ ☮ ✋</code>
             </QuickLink>{" "}
-            © 2023
+            <QuickLink href="https://plasmo.com/">
+              © 2023 Plasmo Corp.
+            </QuickLink>
           </div>
 
           {/* <!-- Contact Details --> */}

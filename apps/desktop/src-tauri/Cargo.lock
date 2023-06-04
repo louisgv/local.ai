@@ -1655,7 +1655,7 @@ dependencies = [
 [[package]]
 name = "ggml"
 version = "0.2.0-dev"
-source = "git+https://github.com/RedBoxing/llm.git?branch=hf-tokenizer#7407264364c2ea701a973f8bbab194e8333d4318"
+source = "git+https://github.com/rustformers/llm?branch=main#e52a102d27b6e98e98cbd4e456a49cebfd4617b1"
 dependencies = [
  "ggml-sys",
  "thiserror",
@@ -1664,7 +1664,7 @@ dependencies = [
 [[package]]
 name = "ggml-sys"
 version = "0.2.0-dev"
-source = "git+https://github.com/RedBoxing/llm.git?branch=hf-tokenizer#7407264364c2ea701a973f8bbab194e8333d4318"
+source = "git+https://github.com/rustformers/llm?branch=main#e52a102d27b6e98e98cbd4e456a49cebfd4617b1"
 dependencies = [
  "cc",
 ]
@@ -2364,7 +2364,7 @@ checksum = "ef53942eb7bf7ff43a617b3e2c1c4a5ecf5944a7c1bc12d7ee39bbb15e5c1519"
 [[package]]
 name = "llm"
 version = "0.2.0-dev"
-source = "git+https://github.com/RedBoxing/llm.git?branch=hf-tokenizer#7407264364c2ea701a973f8bbab194e8333d4318"
+source = "git+https://github.com/rustformers/llm?branch=main#e52a102d27b6e98e98cbd4e456a49cebfd4617b1"
 dependencies = [
  "llm-base",
  "llm-bloom",
@@ -2379,7 +2379,7 @@ dependencies = [
 [[package]]
 name = "llm-base"
 version = "0.2.0-dev"
-source = "git+https://github.com/RedBoxing/llm.git?branch=hf-tokenizer#7407264364c2ea701a973f8bbab194e8333d4318"
+source = "git+https://github.com/rustformers/llm?branch=main#e52a102d27b6e98e98cbd4e456a49cebfd4617b1"
 dependencies = [
  "bytemuck",
  "ggml",
@@ -2397,7 +2397,7 @@ dependencies = [
 [[package]]
 name = "llm-bloom"
 version = "0.2.0-dev"
-source = "git+https://github.com/RedBoxing/llm.git?branch=hf-tokenizer#7407264364c2ea701a973f8bbab194e8333d4318"
+source = "git+https://github.com/rustformers/llm?branch=main#e52a102d27b6e98e98cbd4e456a49cebfd4617b1"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -2406,7 +2406,7 @@ dependencies = [
 [[package]]
 name = "llm-gpt2"
 version = "0.2.0-dev"
-source = "git+https://github.com/RedBoxing/llm.git?branch=hf-tokenizer#7407264364c2ea701a973f8bbab194e8333d4318"
+source = "git+https://github.com/rustformers/llm?branch=main#e52a102d27b6e98e98cbd4e456a49cebfd4617b1"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -2415,7 +2415,7 @@ dependencies = [
 [[package]]
 name = "llm-gptj"
 version = "0.2.0-dev"
-source = "git+https://github.com/RedBoxing/llm.git?branch=hf-tokenizer#7407264364c2ea701a973f8bbab194e8333d4318"
+source = "git+https://github.com/rustformers/llm?branch=main#e52a102d27b6e98e98cbd4e456a49cebfd4617b1"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -2424,7 +2424,7 @@ dependencies = [
 [[package]]
 name = "llm-gptneox"
 version = "0.2.0-dev"
-source = "git+https://github.com/RedBoxing/llm.git?branch=hf-tokenizer#7407264364c2ea701a973f8bbab194e8333d4318"
+source = "git+https://github.com/rustformers/llm?branch=main#e52a102d27b6e98e98cbd4e456a49cebfd4617b1"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -2434,7 +2434,7 @@ dependencies = [
 [[package]]
 name = "llm-llama"
 version = "0.2.0-dev"
-source = "git+https://github.com/RedBoxing/llm.git?branch=hf-tokenizer#7407264364c2ea701a973f8bbab194e8333d4318"
+source = "git+https://github.com/rustformers/llm?branch=main#e52a102d27b6e98e98cbd4e456a49cebfd4617b1"
 dependencies = [
  "bytemuck",
  "llm-base",
@@ -2445,7 +2445,7 @@ dependencies = [
 [[package]]
 name = "llm-mpt"
 version = "0.2.0-dev"
-source = "git+https://github.com/RedBoxing/llm.git?branch=hf-tokenizer#7407264364c2ea701a973f8bbab194e8333d4318"
+source = "git+https://github.com/rustformers/llm?branch=main#e52a102d27b6e98e98cbd4e456a49cebfd4617b1"
 dependencies = [
  "bytemuck",
  "llm-base",

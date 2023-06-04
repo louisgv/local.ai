@@ -51,7 +51,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "app.localai.desktop",
+      "identifier": "com.localai.desktop",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
