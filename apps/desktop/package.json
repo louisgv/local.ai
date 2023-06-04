@@ -29,7 +29,7 @@
     "@plasmo/config": "workspace:*",
     "@plasmo/constants": "workspace:*",
     "@plasmo/utils": "workspace:*",
-    "@tauri-apps/cli": "1.3.1",
+    "@tauri-apps/cli": "file:/Users/lab/Projects/tauri/tooling/cli/node",
     "@types/node": "20.2.5",
     "@types/react": "18.2.7",
     "@types/react-dom": "18.2.4",

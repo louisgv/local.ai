@@ -2,7 +2,7 @@
 
 A desktop app for hosting an inference API on your local machine. Binary distribution will be released soon once Code Signing is set up. If you're experienced in this matter, feel free to reach out!
 
-It's made to be used alongside https://github.com/alexanderatallah/window.ai/ as a simple way to have a local inference server up and running with just the model files.
+It's made to be used alongside https://github.com/alexanderatallah/window.ai/ as a simple way to have an inference server up and running with local model files.
 
 Right now, local.ai uses the https://github.com/rustformers/llm rust crate at the core. Check them out, they are super cool!
 
@@ -10,7 +10,6 @@ Right now, local.ai uses the https://github.com/rustformers/llm rust crate at th
 
 <video src="https://github.com/louisgv/local.ai/assets/6723574/900f6d83-0867-4aa1-886a-e3c59b144864" controls="controls" style="max-width: 470px;">
 </video>
-
 
 ## Development
 
@@ -26,20 +25,21 @@ Here's how to run the project locally:
 
 ```
 pnpm i
-pnpm dev:desktop
+pnpm dev
 ```
 
 ## Roadmap:
 
-- Code signing, official binary release
-- Auto update server
-- LLM model downloader
 - Start as many inference endpoints/ports as needed
-- Website with download links
-- (NTH): Automated release bundling
+- ~~Code signing, official binary release~~
+- ~~Auto update server~~
+- ~~LLM model downloader~~
+- ~~Website with download links~~
+- ~~(NTH): Automated release bundling~~
 
 > NTH: Nice to have
+> ~~item~~: Done
 
 ## License
 
-MIT
+- 🤖 [GNU GPLv3](./LICENSE) 🤖
