@@ -72,6 +72,27 @@ const Logo = () => (
   </QuickLink>
 )
 
+const SocialBumper = () => (
+  <section className="flex w-full p-8 items-center justify-center">
+    <a
+      href="https://www.producthunt.com/posts/local-ai?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-local&#0045;ai"
+      target="_blank">
+      <picture>
+        <img
+          src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=397982&theme=light"
+          alt="local&#0046;ai - Free&#0044;&#0032;Local&#0044;&#0032;Offline&#0032;AI&#0032;with&#0032;Zero&#0032;Technical&#0032;Setup&#0046; | Product Hunt"
+          style={{
+            width: "250px",
+            height: "54px"
+          }}
+          width="250"
+          height="54"
+        />
+      </picture>
+    </a>
+  </section>
+)
+
 const IndexPage: NextPage = () => (
   <BasicLayout logo={<Logo />} nav={[]} rightNav={<MiniDownloadButtonGroup />}>
     <NextSeo
@@ -93,6 +114,7 @@ const IndexPage: NextPage = () => (
         site: "https://www.localai.app"
       }}
     />
+
     {/* <!-- Hero Section --> */}
     <section className="p-8 pt-16 md:px-20 flex flex-col md:flex-row gap-8 mb-16">
       <div className="container flex flex-col h-full">
@@ -263,6 +285,7 @@ const IndexPage: NextPage = () => (
     <section className="w-full px-8 pb-8 flex flex-col md:flex-row md:gap-2 gap-6 items-center justify-center">
       <DownloadButtonGroup />
     </section>
+    <SocialBumper />
   </BasicLayout>
 )
 
