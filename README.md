@@ -1,17 +1,23 @@
-# local.ai
+# 🎒 local.ai - bring your model and start the experimentation!
 
-A desktop app for hosting an inference API on your local machine. Binary distribution will be released soon once Code Signing is set up. If you're experienced in this matter, feel free to reach out!
+A desktop app for local AI experimentation, model inference hosting, and note-taking.
 
-It's made to be used alongside https://github.com/alexanderatallah/window.ai/ as a simple way to have an inference server up and running with local model files.
+It's made to be used alongside https://github.com/alexanderatallah/window.ai/ as a simple way to have a local inference server up and running in no time. window.ai + local.ai enable every web app to utilize AI without incurring any cost from either the developer or the user!
 
-Right now, local.ai uses the https://github.com/rustformers/llm rust crate at the core. Check them out, they are super cool!
+Right now, local.ai uses the https://github.com/rustformers/llm rust crate at its core. Check them out, they are super cool!
 
-## Demo
+## 📺 Demo
 
 <video src="https://github.com/louisgv/local.ai/assets/6723574/900f6d83-0867-4aa1-886a-e3c59b144864" controls="controls" style="max-width: 470px;">
 </video>
 
-## Development
+## 🤔 Trivia
+
+### Why the backpack?
+
+> Ties into the bring your own model concept -- Alex from window.ai
+
+## 🧵 Development
 
 Here's how to run the project locally:
 
@@ -28,18 +34,26 @@ pnpm i
 pnpm dev
 ```
 
-## Roadmap:
+## 🛣️ Roadmap:
+
+### Todo:
 
 - Start as many inference endpoints/ports as needed
+
+### Done:
+
 - ~~Code signing, official binary release~~
 - ~~Auto update server~~
 - ~~LLM model downloader~~
 - ~~Website with download links~~
 - ~~(NTH): Automated release bundling~~
 
-> NTH: Nice to have
-> ~~item~~: Done
+### Legends:
 
-## License
+- NTH: Nice to have
+- ~~item~~: Done
 
-- 🤖 [GNU GPLv3](./LICENSE) 🤖
+## 🪪 License
+
+- [GNU GPLv3](./LICENSE)
+- Why? Anything AI-related including their derivatives should be open-source for all to inspect. GPLv3 enforces this chain of open-source.
