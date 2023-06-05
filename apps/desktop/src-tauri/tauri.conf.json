@@ -13,16 +13,9 @@
   "tauri": {
     "allowlist": {
       "all": false,
-      "fs": {
-        "all": true
-      },
       "http": {
         "all": true,
         "scope": ["http://**", "https://**"]
-      },
-      "shell": {
-        "all": false,
-        "open": true
       },
       "dialog": {
         "all": false,
@@ -31,7 +24,17 @@
       },
       "window": {
         "all": false,
+<<<<<<< HEAD
         "show": true
+=======
+        "show": true,
+        "maximize": true,
+        "center": true,
+        "setTitle": true
+      },
+      "os": {
+        "all": true
+>>>>>>> e460be5 (update icons for 0.0.5)
       }
     },
     "bundle": {

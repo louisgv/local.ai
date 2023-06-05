@@ -6,6 +6,7 @@ import { DynamicFavIcon } from "~providers/seo"
 
 import "@localai/theme/fonts.css"
 import "@localai/theme/tailwind.css"
+import "@localai/theme/scrollbar.css"
 
 const LocalAIWebApp = ({ Component, pageProps }: AppProps) => (
   <GlobalProvider>

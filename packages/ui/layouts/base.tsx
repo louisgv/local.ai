@@ -27,7 +27,7 @@ export const BasicLayout = ({
   rightNav = null as ReactNode
 }) => {
   return (
-    <div className="bg-mauve-1 text-mauve-11 h-screen overflow-auto">
+    <div className="flex flex-col bg-mauve-1 text-mauve-11 h-screen overflow-y-auto overflow-x-hidden">
       {/* <!-- Header --> */}
       <header className="sticky top-0 p-4 backdrop-blur-md backdrop-saturate-100 bg-transparent text-mauve-11 before:bg-mauve-3 ">
         <div className="container mx-auto flex justify-between items-center gap-12">
@@ -50,8 +50,7 @@ export const BasicLayout = ({
           {rightNav}
         </div>
       </header>
-
-      {children}
+      <main className="max-w-screen-2xl self-center">{children}</main>
 
       <footer className={clsx("bg-mauve-2 text-mauve-11", "px-8 py-12")}>
         <div

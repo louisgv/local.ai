@@ -16,6 +16,15 @@ export enum Route {
   Chat = "chat"
 }
 
+async function setTitle(window: WebviewWindow) {
+  const { platform } = await import("@tauri-apps/api/os")
+
+  const currentPlatform = await platform()
+  const prefix = currentPlatform === "darwin" ? "🎒 " : ""
+
+  await window.setTitle(`${prefix}local.ai`)
+}
+
 const useGlobalProvider = () => {
   const routeState = useState<Route>(Route.ModelManager)
 
@@ -37,7 +46,12 @@ const useGlobalProvider = () => {
     const { getCurrent } = await import("@tauri-apps/api/window")
     const currentWindow = getCurrent()
     windowRef.current = currentWindow
-    const isVisible = await currentWindow.isVisible()
+
+    const [isVisible] = await Promise.all([
+      currentWindow.isVisible(),
+      setTitle(currentWindow)
+    ])
+
     if (!isVisible) {
       await currentWindow.center()
       await currentWindow.show()
