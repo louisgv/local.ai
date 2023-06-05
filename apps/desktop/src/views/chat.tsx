@@ -6,9 +6,9 @@ import {
   Cpu,
   ElectronicsChip,
   ElectronicsTransistor,
-  EmojiLookDown,
   FavouriteBook,
-  Palette
+  Palette,
+  Pokeball
 } from "iconoir-react"
 import { useMemo } from "react"
 
@@ -20,7 +20,7 @@ import { useActiveThread } from "~features/thread/use-active-thread"
 const botIconList = [
   BreadSlice,
   CoffeeCup,
-  EmojiLookDown,
+  Pokeball,
   ElectronicsTransistor,
   ElectronicsChip,
   Cpu,

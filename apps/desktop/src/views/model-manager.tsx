@@ -38,7 +38,7 @@ export function ModelManagerView() {
   return (
     <ViewContainer className="relative z-50">
       <ViewHeader>
-        <div className="flex">
+        <div className="flex w-full">
           {!!modelsDirectory && (
             <SpinnerButton
               className="w-10 p-3 rounded-r-none"

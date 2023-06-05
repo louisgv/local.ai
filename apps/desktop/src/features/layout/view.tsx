@@ -21,7 +21,7 @@ export const ViewHeader = ({ children = null as ReactNode }) => {
   } = useGlobal()
   return (
     <div
-      data-tauri-drag-region
+      // data-tauri-drag-region
       className="flex items-center gap-2 bg-gray-1 w-full h-16 shrink-0 px-4 border-b border-b-gray-6 z-50">
       {isStarted && (
         <Button onClick={() => toggleSidebar()}>

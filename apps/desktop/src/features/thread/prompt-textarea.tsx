@@ -63,7 +63,7 @@ export const PromptTextarea = ({
       />
       <div className="flex flex-col h-full justify-between">
         <Button
-          className="border border-cyan-9 text-cyan-9 disabled:border-gray-9 disabled:text-gray-9 disabled:cursor-not-allowed"
+          className="border border-gold-9 text-gold-9 disabled:border-gold-9 disabled:text-gold-9 disabled:cursor-not-allowed"
           disabled={disabled || !prompt}
           onClick={note}>
           <Notes />

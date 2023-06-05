@@ -1,6 +1,6 @@
 import { Button } from "@localai/ui/button"
 import { AppLayout } from "@localai/ui/layouts/app"
-import { GearIcon, OpenInNewWindowIcon } from "@radix-ui/react-icons"
+import { DotsHorizontalIcon, OpenInNewWindowIcon } from "@radix-ui/react-icons"
 import { open as dialogOpen } from "@tauri-apps/api/dialog"
 import { invoke } from "@tauri-apps/api/tauri"
 import { Home } from "iconoir-react"
@@ -32,7 +32,7 @@ const TopBar = () => {
           }
           await updateThreadsDirectory(selected)
         }}>
-        <GearIcon />
+        <DotsHorizontalIcon />
       </Button>
       <Button
         title="Open threads directory"
