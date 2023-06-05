@@ -8,7 +8,8 @@ Right now, local.ai uses the https://github.com/rustformers/llm rust crate at it
 
 ## 📺 Demo
 
-<video src="https://github.com/louisgv/local.ai/assets/6723574/900f6d83-0867-4aa1-886a-e3c59b144864" controls="controls" style="max-width: 470px;">
+<!-- https://github.com/louisgv/local.ai/assets/6723574/900f6d83-0867-4aa1-886a-e3c59b144864 -->
+<video src="https://github.com/louisgv/local.ai/assets/6723574/ba4a04dc-5087-4725-b619-165ad774aedd" controls="controls" style="max-width: 470px;">
 </video>
 
 ## 🤔 Trivia
