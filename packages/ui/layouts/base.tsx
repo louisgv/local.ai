@@ -1,9 +1,6 @@
-import { GitHubLogoIcon } from "@radix-ui/react-icons"
 import clsx from "clsx"
-import Image from "next/image"
 import type { ReactNode } from "react"
 
-import { Button } from "../button"
 import { QuickLink } from "../link"
 
 const defaultNavItems = [
@@ -33,7 +30,7 @@ export const BasicLayout = ({
         <div className="container mx-auto flex justify-between items-center gap-12">
           {logo}
           <nav className="hidden md:flex flex-1">
-            <ul className="flex space-x-4">
+            <ul className="flex space-x-8">
               {nav.map((navi) => (
                 <li
                   key={navi.link}

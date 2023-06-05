@@ -1,17 +1,16 @@
 import { BasicLayout } from "@localai/ui/layouts/base"
 import { QuickLink } from "@localai/ui/link"
-import { Logo } from "@localai/ui/logo"
 import { clsx } from "clsx"
 import { ListSelect, ServerConnection, ShoppingCodeCheck } from "iconoir-react"
 import type { NextPage } from "next"
 import { NextSeo } from "next-seo"
+import Image from "next/image"
 import type { ReactNode } from "react"
 import Balancer from "react-wrap-balancer"
 
 import {
   DownloadButtonGroup,
-  MiniDownloadButtonGroup,
-  ReleaseDownloadButton
+  MiniDownloadButtonGroup
 } from "~features/press/download-buttons"
 
 const FeatureCard = ({
@@ -52,8 +51,23 @@ const FeaturesList = ({
   </>
 )
 
+const Logo = () => (
+  <QuickLink
+    className="flex items-center justify-center gap-2 font-bold text-lg text-mauve-12"
+    href="/">
+    <Image src={"/favicon.png"} alt="local.ai logo" width={40} height={40} />
+    local.ai
+  </QuickLink>
+)
+
 const IndexPage: NextPage = () => (
-  <BasicLayout logo={<Logo />} rightNav={<MiniDownloadButtonGroup />}>
+  <BasicLayout
+    logo={<Logo />}
+    nav={[
+      { name: "Download", link: "#download" },
+      { name: "Features", link: "#features" }
+    ]}
+    rightNav={<MiniDownloadButtonGroup />}>
     <NextSeo
       title="The Local AI Playground"
       description="Experiment with AI models locally with zero technical setup, powered by a native app designed to simplify the whole process. No GPU required!"
@@ -123,11 +137,12 @@ const IndexPage: NextPage = () => (
     </section>
 
     {/* <!-- Features Section --> */}
+
     <section className="bg-mauve-1 py-20 px-8" id="features">
       <div
         className={clsx(
           "container mx-auto",
-          "flex flex-col md:flex-row md:flex-wrap md:justify-center",
+          "flex flex-col-reverse md:flex-row md:justify-center md:items-center",
           "gap-8 md:gap-0"
         )}>
         <FeatureCard Icon={ListSelect} title="Model Management">
@@ -146,7 +161,43 @@ const IndexPage: NextPage = () => (
             />
           </div>
         </FeatureCard>
+        <div className="flex md:w-2/3">
+          <Image
+            className="rounded-lg"
+            src={"/screenshots/download.png"}
+            alt="Model downloader"
+            width={2146}
+            height={1374}
+          />
+        </div>
+      </div>
+    </section>
 
+    <section className="bg-mauve-2 py-20 px-8">
+      <div
+        className={clsx(
+          "container mx-auto",
+          "flex flex-col md:flex-row md:justify-center md:items-center",
+          "gap-8 md:gap-0"
+        )}>
+        <div className="flex md:w-2/3 relative">
+          <div className="flex flex-col gap-2 z-1">
+            <Image
+              className="rounded-lg"
+              src={"/screenshots/digest-compute.png"}
+              alt="Digest Verification"
+              width={1990}
+              height={328}
+            />
+            <Image
+              className="rounded-lg"
+              src={"/screenshots/known-model.png"}
+              alt="Model downloader"
+              width={1978}
+              height={1390}
+            />
+          </div>
+        </div>
         <FeatureCard Icon={ShoppingCodeCheck} title="Digest Verification">
           <div className="flex flex-col gap-2">
             <p className="h-24">
@@ -164,7 +215,15 @@ const IndexPage: NextPage = () => (
             />
           </div>
         </FeatureCard>
-
+      </div>
+    </section>
+    <section className="bg-mauve-1 py-20 px-8">
+      <div
+        className={clsx(
+          "container mx-auto",
+          "flex flex-col-reverse md:flex-row md:justify-center md:items-center",
+          "gap-8 md:gap-0"
+        )}>
         <FeatureCard Icon={ServerConnection} title="Inferencing Server">
           <div className="flex flex-col gap-2">
             <p className="h-24">
@@ -181,7 +240,30 @@ const IndexPage: NextPage = () => (
             />
           </div>
         </FeatureCard>
+
+        <div className="flex md:w-2/3">
+          <div className="flex flex-col gap-2">
+            <Image
+              className="rounded-lg"
+              src={"/screenshots/convo.png"}
+              alt="Conversation"
+              width={2196}
+              height={1500}
+            />
+            <Image
+              className="rounded-lg"
+              src={"/screenshots/note.png"}
+              alt="Note taking"
+              width={1204}
+              height={702}
+            />
+          </div>
+        </div>
       </div>
+    </section>
+
+    <section className="w-full px-8 pb-8 flex flex-col md:flex-row md:gap-2 gap-6 items-center justify-center">
+      <DownloadButtonGroup />
     </section>
   </BasicLayout>
 )
