@@ -15,7 +15,7 @@ jobs:
         platform: [macos-latest, ubuntu-20.04, windows-latest, self-hosted]
         include:
           - platform: self-hosted
-            target: aarch64-apple-darwin
+            target: --target aarch64-apple-darwin
 
     runs-on: ${{ matrix.platform }}
 
@@ -104,4 +104,4 @@ jobs:
           releaseBody: ${{ github.event.release.body }}
           releaseId: ${{ github.event.release.id }}
           tagName: ${{ github.event.release.tag_name }}
-          args: "--target ${{ matrix.target }}"
+          args: "${{ matrix.args }}"
