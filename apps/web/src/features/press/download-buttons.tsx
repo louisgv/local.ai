@@ -122,15 +122,15 @@ export const ReleaseDownloadButton = () => (
 
 export const DownloadButtonGroup = () => (
   <>
-    <div className="flex flex-row md:flex-col gap-6 w-full md:w-40 justify-center">
+    <div className="flex flex-row lg:flex-col gap-6 w-full lg:w-40 justify-center">
       <WindowsMsiDownloadButton />
       <WindowsExeDownloadButton />
     </div>
-    <div className="flex flex-row md:flex-col gap-6 w-full md:w-40 justify-center">
+    <div className="flex flex-row lg:flex-col gap-6 w-full lg:w-40 justify-center">
       <MacArm64DownloadButton />
       <MacIntelDownloadButton />
     </div>
-    <div className="flex flex-row md:flex-col gap-6 w-full md:w-40 justify-center">
+    <div className="flex flex-row lg:flex-col gap-6 w-full lg:w-40 justify-center">
       <AppImageDownloadButton />
       <DebImageDownloadButton />
     </div>

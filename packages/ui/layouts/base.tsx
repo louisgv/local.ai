@@ -26,7 +26,7 @@ export const BasicLayout = ({
   return (
     <div className="flex flex-col bg-mauve-1 text-mauve-11 h-screen overflow-y-auto overflow-x-hidden">
       {/* <!-- Header --> */}
-      <header className="sticky top-0 p-4 backdrop-blur-md backdrop-saturate-100 bg-transparent text-mauve-11 before:bg-mauve-3 ">
+      <header className="sticky top-0 p-4 backdrop-blur-md backdrop-saturate-100 bg-transparent text-mauve-11 before:bg-mauve-3 z-50">
         <div className="container mx-auto flex justify-between items-center gap-12">
           {logo}
           <nav className="hidden md:flex flex-1">
