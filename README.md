@@ -12,6 +12,10 @@ Right now, local.ai uses the https://github.com/rustformers/llm rust crate at it
 <video src="https://github.com/louisgv/local.ai/assets/6723574/ba4a04dc-5087-4725-b619-165ad774aedd" controls="controls" style="max-width: 470px;">
 </video>
 
+
+<!-- https://github.com/louisgv/local.ai/assets/6723574/c56400b4-4520-47da-80fb-ab8552a2683b
+ -->
+
 ## 🤔 Trivia
 
 ### Why the backpack?
