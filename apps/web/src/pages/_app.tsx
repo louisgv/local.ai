@@ -8,8 +8,15 @@ import "@localai/theme/fonts.css"
 import "@localai/theme/tailwind.css"
 import "@localai/theme/scrollbar.css"
 
+import Head from "next/head"
+
 const LocalAIWebApp = ({ Component, pageProps }: AppProps) => (
   <GlobalProvider>
+    <Head>
+      {/* discord large image embed */}
+      <meta name="theme-color" content={"red"} key="theme-color" />
+      <link type="application/json+oembed" href="/oEmbed.json" />
+    </Head>
     <GlobalStyle />
     <DynamicFavIcon />
     <Component {...pageProps} />

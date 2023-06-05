@@ -56,12 +56,21 @@ const IndexPage: NextPage = () => (
   <BasicLayout logo={<Logo />} rightNav={<MiniDownloadButtonGroup />}>
     <NextSeo
       title="The Local AI Playground"
-      titleTemplate="%s – local.ai"
-      description="local.ai enables everyone to quickly test AI models locally with zero technical setup."
+      description="Experiment with AI models locally with zero technical setup, powered by a native app designed to simplify the whole process. No GPU required!"
       openGraph={{
         url: "https://www.localai.app",
         siteName: "local.ai",
-        type: "website"
+        type: "website",
+        images: [
+          {
+            url: "https://www.localai.app/seo.png"
+          }
+        ]
+      }}
+      twitter={{
+        cardType: "summary_large_image",
+        handle: "@litbid",
+        site: "https://www.localai.app"
       }}
     />
     {/* <!-- Hero Section --> */}

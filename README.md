@@ -1,4 +1,4 @@
-# 🎒 local.ai - bring your model and start the experimentation!
+# 🎒 local.ai
 
 A desktop app for local AI experimentation, model inference hosting, and note-taking.
 

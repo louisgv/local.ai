@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "type": "video",
+  "provider_name": "GitHub",
+  "provider_url": "https://www.github.com",
+  "title": "local.ai Demo",
+  "author_name": "L ❤️ ☮ ✋",
+  "author_url": "https://github.com/louisgv",
+  "html": "<iframe src='https://github.com/louisgv/local.ai/assets/6723574/900f6d83-0867-4aa1-886a-e3c59b144864' width='500' height='300' frameborder='0' allowfullscreen></iframe>",
+  "width": 500,
+  "height": 300
+}
