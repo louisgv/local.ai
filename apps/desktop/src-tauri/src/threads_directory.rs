@@ -25,6 +25,7 @@ pub fn get_current_threads_path(
 }
 
 fn sort_files(files: &mut Vec<FileInfo>) {
+  files.retain(|f| f.path.ends_with(FILE_EXTENSION));
   files.sort_unstable_by(|a, b| b.modified.cmp(&a.modified));
 }
 
@@ -38,7 +39,6 @@ pub async fn initialize_threads_dir(
 
   let mut files = crate::path::read_directory(threads_path.as_str()).await?;
 
-  files.retain(|f| f.path.ends_with(FILE_EXTENSION));
   sort_files(&mut files);
 
   Ok(DirectoryState {
@@ -58,7 +58,6 @@ pub async fn update_threads_dir(
 
   let mut files = crate::path::read_directory(dir).await?;
 
-  files.retain(|f| f.path.ends_with(FILE_EXTENSION));
   sort_files(&mut files);
 
   Ok(DirectoryState {

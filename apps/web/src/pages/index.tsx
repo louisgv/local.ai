@@ -13,6 +13,13 @@ import {
   MiniDownloadButtonGroup
 } from "~features/press/download-buttons"
 
+import faviconPic from "../../public/favicon.png"
+import convoPic from "../../public/screenshots/convo.png"
+import digestComputePic from "../../public/screenshots/digest-compute.png"
+import downloadPic from "../../public/screenshots/download.png"
+import knownModelPic from "../../public/screenshots/known-model.png"
+import notePic from "../../public/screenshots/note.png"
+
 const FeatureCard = ({
   Icon = null as typeof ListSelect,
   title = "loremipsum",
@@ -55,19 +62,18 @@ const Logo = () => (
   <QuickLink
     className="flex items-center justify-center gap-2 font-bold text-lg text-mauve-12"
     href="/">
-    <Image src={"/favicon.png"} alt="local.ai logo" width={40} height={40} />
+    <Image
+      src={faviconPic}
+      alt="local.ai logo"
+      placeholder="blur"
+      className="w-12 h-12"
+    />
     local.ai
   </QuickLink>
 )
 
 const IndexPage: NextPage = () => (
-  <BasicLayout
-    logo={<Logo />}
-    nav={[
-      { name: "Download", link: "#download" },
-      { name: "Features", link: "#features" }
-    ]}
-    rightNav={<MiniDownloadButtonGroup />}>
+  <BasicLayout logo={<Logo />} nav={[]} rightNav={<MiniDownloadButtonGroup />}>
     <NextSeo
       title="The Local AI Playground"
       description="Experiment with AI models locally with zero technical setup, powered by a native app designed to simplify the whole process. No GPU required!"
@@ -153,9 +159,9 @@ const IndexPage: NextPage = () => (
             </p>
             <FeaturesList
               available={[
-                "Resumable model downloader",
+                "Resumable, concurrent downloader",
                 "Usage-based sorting",
-                "Pick any directory"
+                "Directory agnostic"
               ]}
               upcoming={["Nested directory", "Custom Sorting and Searching"]}
             />
@@ -164,10 +170,9 @@ const IndexPage: NextPage = () => (
         <div className="flex md:w-2/3">
           <Image
             className="rounded-lg"
-            src={"/screenshots/download.png"}
+            src={downloadPic}
             alt="Model downloader"
-            width={2146}
-            height={1374}
+            placeholder="blur"
           />
         </div>
       </div>
@@ -184,17 +189,15 @@ const IndexPage: NextPage = () => (
           <div className="flex flex-col gap-2 z-1">
             <Image
               className="rounded-lg"
-              src={"/screenshots/digest-compute.png"}
+              src={digestComputePic}
               alt="Digest Verification"
-              width={1990}
-              height={328}
+              placeholder="blur"
             />
             <Image
               className="rounded-lg"
-              src={"/screenshots/known-model.png"}
-              alt="Model downloader"
-              width={1978}
-              height={1390}
+              alt="Known Model"
+              src={knownModelPic}
+              placeholder="blur"
             />
           </div>
         </div>
@@ -245,17 +248,15 @@ const IndexPage: NextPage = () => (
           <div className="flex flex-col gap-2">
             <Image
               className="rounded-lg"
-              src={"/screenshots/convo.png"}
+              src={convoPic}
               alt="Conversation"
-              width={2196}
-              height={1500}
+              placeholder="blur"
             />
             <Image
               className="rounded-lg"
-              src={"/screenshots/note.png"}
+              src={notePic}
               alt="Note taking"
-              width={1204}
-              height={702}
+              placeholder="blur"
             />
           </div>
         </div>

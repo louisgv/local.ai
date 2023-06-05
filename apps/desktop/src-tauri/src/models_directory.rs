@@ -34,6 +34,8 @@ fn sort_files(
     .load_count
   };
 
+  files.retain(|f| f.path.ends_with(".bin"));
+
   files.sort_unstable_by(|a, b| {
     let a_load_count = get_load_count(a);
     let b_load_count = get_load_count(b);
