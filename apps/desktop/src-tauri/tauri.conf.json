@@ -24,9 +24,6 @@
       },
       "window": {
         "all": false,
-<<<<<<< HEAD
-        "show": true
-=======
         "show": true,
         "maximize": true,
         "center": true,
@@ -34,7 +31,6 @@
       },
       "os": {
         "all": true
->>>>>>> e460be5 (update icons for 0.0.5)
       }
     },
     "bundle": {
