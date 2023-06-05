@@ -9,6 +9,7 @@ import type { ReactNode } from "react"
 import Balancer from "react-wrap-balancer"
 
 import {
+  DownloadButtonGroup,
   MiniDownloadButtonGroup,
   ReleaseDownloadButton
 } from "~features/press/download-buttons"
@@ -18,7 +19,7 @@ const FeatureCard = ({
   title = "loremipsum",
   children = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut suscipit consequuntur nam distinctio blanditiis. Reprehenderit unde incidunt eaque alias nam aut. Beatae magni reiciendis sapiente illum quisquam fugiat tempore neque?` as ReactNode
 }) => (
-  <div className="p-8 md:w-1/3 w-full">
+  <div className="p-2 md:p-8 md:w-1/3 w-full">
     <div className="bg-mauve-3 text-mauve-11 flex flex-col items-center p-12 rounded-lg">
       <div className="rounded-full bg-mauve-6 w-min p-4 mb-6">
         <Icon className="w-8 h-8" />
@@ -29,16 +30,35 @@ const FeatureCard = ({
   </div>
 )
 
+const FeaturesList = ({
+  available = [] as string[],
+  upcoming = [] as string[]
+}) => (
+  <>
+    <hr className="border-gray-6" />
+    <p className="text-sm font-bold">Available features:</p>
+    <ul className="list-disc text-xs">
+      {available.map((feature) => (
+        <li key={feature}>{feature}</li>
+      ))}
+    </ul>
+    <hr className="border-gray-6 border-dashed" />
+    <p className="text-sm font-bold">Upcoming features:</p>
+    <ul className="list-disc text-xs">
+      {upcoming.map((feature) => (
+        <li key={feature}>{feature}</li>
+      ))}
+    </ul>
+  </>
+)
+
 const IndexPage: NextPage = () => (
   <BasicLayout logo={<Logo />} rightNav={<MiniDownloadButtonGroup />}>
     <NextSeo
-      title="local.ai"
+      title="The Local AI Playground"
       titleTemplate="%s – local.ai"
-      description="local.ai enables developers to quickly test AI models locally."
+      description="local.ai enables everyone to quickly test AI models locally with zero technical setup."
       openGraph={{
-        title: "Quickly test AI models on your local machine.",
-        description:
-          "local.ai enables developers to quickly test AI models in their local machine.",
         url: "https://www.localai.app",
         siteName: "local.ai",
         type: "website"
@@ -89,11 +109,8 @@ const IndexPage: NextPage = () => (
       </div>
     </section>
 
-    <section className="w-full px-8 flex flex-col md:flex-row gap-4 items-center justify-center">
-      <ReleaseDownloadButton />
-      {/* <MacDownloadButton />
-      <WindowsDownloadButton />
-      <UbuntuDownloadButton /> */}
+    <section className="w-full px-8 flex flex-col md:flex-row md:gap-2 gap-6 items-center justify-center">
+      <DownloadButtonGroup />
     </section>
 
     {/* <!-- Features Section --> */}
@@ -101,7 +118,8 @@ const IndexPage: NextPage = () => (
       <div
         className={clsx(
           "container mx-auto",
-          "flex flex-col md:flex-row md:flex-wrap md:justify-center"
+          "flex flex-col md:flex-row md:flex-wrap md:justify-center",
+          "gap-8 md:gap-0"
         )}>
         <FeatureCard Icon={ListSelect} title="Model Management">
           <div className="flex flex-col gap-2">
@@ -109,45 +127,49 @@ const IndexPage: NextPage = () => (
               Keep track of your AI models in one centralized location. Pick any
               directory!
             </p>
-            <hr className="border-gray-6" />
-            <p className="text-xs font-bold">Upcoming features:</p>
-            <ul className="list-disc text-xs">
-              <li>Resumable model downloader</li>
-              <li>Nested directory</li>
-              <li>Custom Sorting and Searching</li>
-            </ul>
+            <FeaturesList
+              available={[
+                "Resumable model downloader",
+                "Usage-based sorting",
+                "Pick any directory"
+              ]}
+              upcoming={["Nested directory", "Custom Sorting and Searching"]}
+            />
           </div>
         </FeatureCard>
 
         <FeatureCard Icon={ShoppingCodeCheck} title="Digest Verification">
           <div className="flex flex-col gap-2">
             <p className="h-24">
-              {`Ensure the integrity of downloaded models with a robust MD5, SHA256, and Blake3 digest
+              {`Ensure the integrity of downloaded models with a robust BLAKE3 and SHA256 digest
               compute feature.`}
             </p>
-            <hr className="border-gray-6" />
-            <p className="text-xs font-bold">Upcoming features:</p>
-            <ul className="list-disc text-xs">
-              <li>Known-good model repository</li>
-              <li>Blake3 quick check</li>
-              <li>Model card</li>
-            </ul>
+
+            <FeaturesList
+              available={[
+                "Known-good model API",
+                "Digest compute",
+                "License and Usage tracking"
+              ]}
+              upcoming={["BLAKE3 quick check", "Model card"]}
+            />
           </div>
         </FeatureCard>
 
         <FeatureCard Icon={ServerConnection} title="Inferencing Server">
           <div className="flex flex-col gap-2">
             <p className="h-24">
-              Start a local streaming server for AI inferencing in 3 clicks:
-              Pick directory, load model, then start server.
+              Start a local streaming server for AI inferencing in 2 clicks:
+              Load model, then start server.
             </p>
-            <hr className="border-gray-6" />
-            <p className="text-xs font-bold">Upcoming features:</p>
-            <ul className="list-disc text-xs">
-              <li>Support no streaming</li>
-              <li>/audio</li>
-              <li>/image</li>
-            </ul>
+            <FeaturesList
+              available={[
+                "Streaming server",
+                "Quick Inference UI",
+                "Writes to .mdx"
+              ]}
+              upcoming={["/audio", "/image"]}
+            />
           </div>
         </FeatureCard>
       </div>

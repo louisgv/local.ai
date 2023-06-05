@@ -1,34 +1,33 @@
 #![allow(warnings, unused)]
 use digest::Digest;
 use llm::{
-    load_progress_callback_stdout, InferenceError, InferenceFeedback, InferenceRequest,
-    InferenceResponse, InferenceStats,
+  load_progress_callback_stdout, InferenceError, InferenceFeedback, InferenceRequest,
+  InferenceResponse, InferenceStats,
 };
-use md5::Md5;
 use sha2::Sha256;
 use tokio::{
-    fs::File,
-    io::{self, AsyncReadExt},
+  fs::File,
+  io::{self, AsyncReadExt},
 };
 
 use std::{convert::Infallible, io::Write, path::Path};
 
 fn handle_inference_response(r: InferenceResponse) -> Result<InferenceFeedback, Infallible> {
-    match r {
-        InferenceResponse::PromptToken(t) | InferenceResponse::InferredToken(t) => {
-            print!("{}", t);
-            std::io::stdout().flush().unwrap();
-            Ok(InferenceFeedback::Continue)
-        }
-        _ => Ok(InferenceFeedback::Continue),
+  match r {
+    InferenceResponse::PromptToken(t) | InferenceResponse::InferredToken(t) => {
+      print!("{}", t);
+      std::io::stdout().flush().unwrap();
+      Ok(InferenceFeedback::Continue)
     }
+    _ => Ok(InferenceFeedback::Continue),
+  }
 }
 
 fn handle_inference_result(result: Result<InferenceStats, InferenceError>) {
-    match result {
-        Ok(stats) => println!("\n\nInference stats:\n{}", stats),
-        Err(err) => println!("\n{}", err),
-    }
+  match result {
+    Ok(stats) => println!("\n\nInference stats:\n{}", stats),
+    Err(err) => println!("\n{}", err),
+  }
 }
 
 // Need to update the params to use vocab
@@ -153,107 +152,77 @@ fn handle_inference_result(result: Result<InferenceStats, InferenceError>) {
 
 const BUFFER_SIZE: usize = 42 * 1024 * 1024; // 42 MiB buffer
 
-async fn bench_md5(path: &str) -> Result<(), io::Error> {
-    let now = std::time::Instant::now();
-
-    let mut file = File::open(path).await?;
-    let mut buffer = vec![0u8; BUFFER_SIZE];
-    let mut hasher_md5 = Md5::new();
-    // let mut hasher_blake3 = blake3::Hasher::new();
-
-    loop {
-        let bytes_read = file.read(&mut buffer).await?;
-        if bytes_read == 0 {
-            break;
-        }
-        let chunk = &buffer[..bytes_read];
-        hasher_md5.update(chunk);
-        // hasher_sha256.update(chunk);
-        // hasher_blake3.update(chunk);
-    }
-
-    let hash_md5 = hasher_md5.finalize();
-
-    println!(
-        "MD5: {:x} computed in: {}ms",
-        hash_md5,
-        now.elapsed().as_millis()
-    );
-
-    Ok(())
-}
-
 async fn bench_sha256(path: &str) -> Result<(), io::Error> {
-    let now = std::time::Instant::now();
+  let now = std::time::Instant::now();
 
-    let mut file = File::open(path).await?;
-    let mut buffer = vec![0u8; BUFFER_SIZE];
-    let mut hasher = Sha256::new();
+  let mut file = File::open(path).await?;
+  let mut buffer = vec![0u8; BUFFER_SIZE];
+  let mut hasher = Sha256::new();
 
-    loop {
-        let bytes_read = file.read(&mut buffer).await?;
-        if bytes_read == 0 {
-            break;
-        }
-        let chunk = &buffer[..bytes_read];
-        hasher.update(chunk);
+  loop {
+    let bytes_read = file.read(&mut buffer).await?;
+    if bytes_read == 0 {
+      break;
     }
+    let chunk = &buffer[..bytes_read];
+    hasher.update(chunk);
+  }
 
-    let hash = hasher.finalize();
+  let hash = hasher.finalize();
 
-    println!(
-        "SHA256: {:x} computed in: {}ms",
-        hash,
-        now.elapsed().as_millis()
-    );
+  println!(
+    "SHA256: {:x} computed in: {}ms",
+    hash,
+    now.elapsed().as_millis()
+  );
 
-    Ok(())
+  Ok(())
 }
 
 async fn bench_blake3(path: &str) -> Result<(), std::io::Error> {
-    let now = std::time::Instant::now();
+  let now = std::time::Instant::now();
 
-    let mut file = File::open(path).await?;
-    let mut buffer = vec![0u8; BUFFER_SIZE];
-    let mut hasher = blake3::Hasher::new();
+  let mut file = File::open(path).await?;
+  let mut buffer = vec![0u8; BUFFER_SIZE];
+  let mut hasher = blake3::Hasher::new();
 
-    loop {
-        let bytes_read = file.read(&mut buffer).await?;
-        if bytes_read == 0 {
-            break;
-        }
-        let chunk = &buffer[..bytes_read];
-        hasher.update(chunk);
+  loop {
+    let bytes_read = file.read(&mut buffer).await?;
+    if bytes_read == 0 {
+      break;
     }
+    let chunk = &buffer[..bytes_read];
+    hasher.update(chunk);
+  }
 
-    let hash = hasher.finalize();
+  let hash = hasher.finalize();
 
-    println!(
-        "BLAKE3: {} computed in: {}ms",
-        hash,
-        now.elapsed().as_millis()
-    );
+  println!(
+    "BLAKE3: {} computed in: {}ms",
+    hash,
+    now.elapsed().as_millis()
+  );
 
-    Ok(())
+  Ok(())
 }
 
 async fn test_digest_benchmark(path: &str) -> Result<(), io::Error> {
-    println!("Running digest benchmark... ");
+  println!("Running digest benchmark... ");
 
-    // println!("Computing MD5");
-    // bench_md5(&path).await.unwrap();
+  // println!("Computing MD5");
+  // bench_md5(&path).await.unwrap();
 
-    // println!("Computing SHA256");
-    // bench_sha256(&path).await.unwrap();
+  // println!("Computing SHA256");
+  // bench_sha256(&path).await.unwrap();
 
-    println!("Computing BLAKE3");
-    bench_blake3(&path).await.unwrap();
+  println!("Computing BLAKE3");
+  bench_blake3(&path).await.unwrap();
 
-    Ok(())
+  Ok(())
 }
 
 #[tauri::command]
 pub async fn test_model(path: &str, model_type: &str) -> Result<(), String> {
-    test_digest_benchmark(path).await.unwrap();
-    Ok(())
+  test_digest_benchmark(path).await.unwrap();
+  Ok(())
 }

@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-20.04, windows-latest]
+        platform: [macos-latest, ubuntu-20.04, windows-latest, self-hosted]
     runs-on: ${{ matrix.platform }}
 
     steps:
@@ -35,11 +35,22 @@ jobs:
         with:
           node-version: 18
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.4
+        with:
+          version: "latest"
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
       - name: install pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 8
-          cache: "pnpm" # Set this to npm, yarn or pnpm.
 
       - uses: actions/checkout@v3
         with:
@@ -80,11 +91,12 @@ jobs:
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_PROVIDER_SHORT_NAME: ${{ secrets.APPLE_PROVIDER_SHORT_NAME }}
 
         with:
-          releaseName: "v__VERSION__" # tauri-action replaces \_\_VERSION\_\_ with the app version.
-          releaseBody: "See the assets to download and install this version."
-          releaseDraft: false
           prerelease: false
+          releaseDraft: false
+          releaseName: "v__VERSION__"
+          releaseBody: ${{ github.event.release.body }}
           releaseId: ${{ github.event.release.id }}
           tagName: ${{ github.event.release.tag_name }}

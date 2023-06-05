@@ -9,46 +9,49 @@ use tauri::Manager;
 pub struct State(pub StateBucket<String>);
 
 impl State {
-    pub fn new(app: &mut tauri::App) -> Result<(), String> {
-        let bucket = kv_bucket::get_kv_bucket(
-            app.app_handle(),
-            String::from("model_type"),
-            String::from("v1"),
-        )?;
+  pub fn new(app: &mut tauri::App) -> Result<(), String> {
+    let bucket = kv_bucket::get_kv_bucket(
+      app.app_handle(),
+      String::from("model_type"),
+      String::from("v1"),
+    )?;
 
-        app.manage(State(Arc::new(Mutex::new(bucket))));
-        Ok(())
-    }
+    app.manage(State(Arc::new(Mutex::new(bucket))));
+    Ok(())
+  }
 }
 
 #[tauri::command]
-pub fn get_model_type(state: tauri::State<'_, State>, path: &str) -> Result<String, String> {
-    let model_type_bucket = state.0.lock();
+pub fn get_model_type(
+  state: tauri::State<'_, State>,
+  path: &str,
+) -> Result<String, String> {
+  let model_type_bucket = state.0.lock();
 
-    let file_path = String::from(path);
+  let file_path = String::from(path);
 
-    match model_type_bucket.get(&file_path) {
-        Ok(Some(value)) => return Ok(value),
-        Ok(None) => Err(format!("No cached model type for {}", path)),
-        Err(e) => Err(format!("Error retrieving model type for {}: {}", path, e)),
-    }
+  match model_type_bucket.get(&file_path) {
+    Ok(Some(value)) => return Ok(value),
+    Ok(None) => Err(format!("No cached model type for {}", path)),
+    Err(e) => Err(format!("Error retrieving model type for {}: {}", path, e)),
+  }
 }
 
 #[tauri::command]
 pub async fn set_model_type(
-    state: tauri::State<'_, State>,
-    path: &str,
-    model_type: &str,
+  state: tauri::State<'_, State>,
+  path: &str,
+  model_type: &str,
 ) -> Result<(), String> {
-    let model_type_bucket = state.0.lock();
+  let model_type_bucket = state.0.lock();
 
-    let file_path = String::from(path);
+  let file_path = String::from(path);
 
-    model_type_bucket
-        .set(&file_path, &String::from(model_type))
-        .map_err(|e| format!("{}", e))?;
+  model_type_bucket
+    .set(&file_path, &String::from(model_type))
+    .map_err(|e| format!("{}", e))?;
 
-    model_type_bucket.flush().map_err(|e| format!("{}", e))?;
+  model_type_bucket.flush().map_err(|e| format!("{}", e))?;
 
-    Ok(())
+  Ok(())
 }

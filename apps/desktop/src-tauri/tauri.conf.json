@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Local AI",
-    "version": "0.0.0"
+    "version": "../package.json"
   },
   "tauri": {
     "allowlist": {
@@ -37,7 +37,7 @@
     "bundle": {
       "active": true,
       "category": "DeveloperTool",
-      "copyright": "© 2023 Louis ❤️☮️🤚",
+      "copyright": "© 2023 Plasmo Corp",
       "deb": {
         "depends": []
       },
@@ -49,7 +49,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.localai.desktop",
+      "identifier": "app.localai.desktop",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -72,9 +72,7 @@
     },
     "updater": {
       "active": true,
-      "endpoints": [
-        "https://localai.app/api/update/{{target}}/{{arch}}/{{current_version}}"
-      ],
+      "endpoints": ["https://localai.app/api/update"],
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyNTk4NUYyNTAxQjQyNQpSV1FsdEFFbFg1Z2xCNnVuL3JDd3c4bVB5Q0pYUUROd2N3QnRnN2lNblVSeDZ3VnhxL09ZSHZ3SAo="
     },

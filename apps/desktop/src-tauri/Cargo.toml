@@ -3,8 +3,8 @@ name = "local-ai-desktop"
 version = "0.0.0"
 description = "The Model Manager for local.ai"
 authors = ["❤️☮✋"]
-license = ""
-repository = ""
+license = "GNU GPLv3"
+repository = "https://github.com/louisgv/local.ai"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,9 +13,9 @@ edition = "2021"
 tauri-build = { version = "1.3.0", features = [] }
 
 [dependencies]
-# llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm" }
+llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm" }
 
-llm = { git = "https://github.com/RedBoxing/llm.git", branch = "hf-tokenizer", package = "llm" }
+# llm = { git = "https://github.com/RedBoxing/llm.git", branch = "hf-tokenizer", package = "llm" }
 sys-info = "0.9.1"
 num_cpus = "1.15.0"
 tauri-plugin-persisted-scope = { version = "0.1.0" }
@@ -49,7 +49,6 @@ libsqlite3-sys = { version = "0.26.0", features = ["bundled"] }
 rusqlite = { version = "0.29.0", features = ["bundled"] }
 
 digest = "0.10.6"
-md-5 = "0.10.5"
 sha2 = "0.10.6"
 blake3 = "1.3.3"
 
@@ -65,6 +64,11 @@ webkit2gtk = "0.18.2"
 webview2-com = "0.19.1"
 windows = "0.39.0"
 
+# For testing local tauri builder
+[patch.crates-io]
+# tauri-build = { path = "/Users/lab/Projects/tauri/core/tauri-build" }
+tauri = { path = "/Users/lab/Projects/tauri/core/tauri" }
+
 
 [features]
 # by default Tauri runs in production mode
@@ -78,4 +82,5 @@ custom-protocol = ["tauri/custom-protocol"]
 opt-level = 3
 
 [profile.release]
-debug = true
+strip = true
+# debug = true
