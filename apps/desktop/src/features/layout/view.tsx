@@ -20,13 +20,33 @@ export const ViewHeader = ({ children = null as ReactNode }) => {
     sidebarState: [isSidebarShowing, toggleSidebar]
   } = useGlobal()
   return (
-    <div className="flex items-center gap-2 bg-gray-1 w-full h-16 shrink-0 px-4 border-b border-b-gray-6 z-50">
+    <div
+      data-tauri-drag-region
+      className="flex items-center gap-2 bg-gray-1 w-full h-16 shrink-0 px-4 border-b border-b-gray-6 z-50">
       {isStarted && (
         <Button onClick={() => toggleSidebar()}>
           {isSidebarShowing ? <SidebarCollapse /> : <SidebarExpand />}
         </Button>
       )}
       {children}
+      {/* // For future maybe custom window bar
+      <div className="flex ml-auto">
+        <Button
+          className="rounded-r-none"
+          onClick={() => getWindow().minimize()}>
+          <MinusIcon />
+        </Button>
+
+        <Button
+          className="rounded-none"
+          onClick={() => getWindow().toggleMaximize()}>
+          <StopIcon />
+        </Button>
+
+        <Button className="rounded-l-none" onClick={() => getWindow().close()}>
+          <Cross1Icon />
+        </Button>
+      </div> */}
     </div>
   )
 }

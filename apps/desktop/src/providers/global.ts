@@ -1,6 +1,8 @@
 "use client"
 
+import type { WebviewWindow } from "@tauri-apps/api/window"
 import { createProvider } from "puro"
+import { useRef } from "react"
 import { useContext, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
@@ -29,9 +31,12 @@ const useGlobalProvider = () => {
   const modelsDirectoryState = useModelsDirectory()
   const threadsDirectoryState = useThreadsDirectory()
 
+  const windowRef = useRef<WebviewWindow>()
+
   useInit(async () => {
     const { getCurrent } = await import("@tauri-apps/api/window")
     const currentWindow = getCurrent()
+    windowRef.current = currentWindow
     const isVisible = await currentWindow.isVisible()
     if (!isVisible) {
       await currentWindow.center()
@@ -40,6 +45,7 @@ const useGlobalProvider = () => {
   })
 
   return {
+    getWindow: () => windowRef.current,
     portState,
     routeState,
     activeThreadState,

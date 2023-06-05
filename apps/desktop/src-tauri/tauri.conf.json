@@ -31,9 +31,7 @@
       },
       "window": {
         "all": false,
-        "show": true,
-        "maximize": true,
-        "center": true
+        "show": true
       }
     },
     "bundle": {
@@ -82,7 +80,7 @@
     },
     "windows": [
       {
-        "title": "🎒 local.ai",
+        "title": "local.ai",
         "resizable": true,
         "center": true,
         "visible": false,

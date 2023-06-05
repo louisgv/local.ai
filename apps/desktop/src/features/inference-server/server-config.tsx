@@ -15,7 +15,7 @@ export const ServerConfig = () => {
 
   const [isLoading, setIsLoading] = useState(false)
   return (
-    <div className="flex items-center justify-end w-full gap-2">
+    <div className="flex items-center justify-end gap-2">
       <Input
         className="w-24"
         disabled={isStarted}
