@@ -118,7 +118,7 @@ const IndexPage: NextPage = () => (
           controls
           className="rounded-lg w-full aspect-video">
           <source
-            src="https://github.com/louisgv/local.ai/assets/6723574/900f6d83-0867-4aa1-886a-e3c59b144864"
+            src="https://github.com/louisgv/local.ai/assets/6723574/ba4a04dc-5087-4725-b619-165ad774aedd"
             type="video/mp4"
           />
           Your browser does not support the video tag.
@@ -130,10 +130,7 @@ const IndexPage: NextPage = () => (
             href="https://github.com/nlpxucan/WizardLM">
             WizardLM 7B model
           </QuickLink>
-          . The chat interface is the sample chat app on{" "}
-          <QuickLink className="text-blue-9" href="https://windowai.io/">
-            window.ai
-          </QuickLink>
+          .
         </span>
       </div>
     </section>
