@@ -13,7 +13,7 @@
     "prop-types": "15.8.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-intersection-observer": "9.4.3",
+    "react-intersection-observer": "9.4.4",
     "react-markdown": "8.0.7",
     "remark-gfm": "3.0.1"
   },
