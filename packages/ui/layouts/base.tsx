@@ -47,7 +47,7 @@ export const BasicLayout = ({
           {rightNav}
         </div>
       </header>
-      <main className="max-w-screen-2xl self-center">{children}</main>
+      <main className="self-center">{children}</main>
 
       <footer className={clsx("bg-mauve-2 text-mauve-11", "px-8 py-12")}>
         <div
@@ -55,12 +55,12 @@ export const BasicLayout = ({
             "flex flex-col md:flex-row gap-12 items-center justify-center"
           )}>
           {/* <!-- Company Information --> */}
-          <div className="text-mauve-10 hover:text-mauve-11 hover:underline hover:underline-offset-2 transition-all">
-            All Right Reserved, © 2023{" "}
+          <div className="text-mauve-10 hover:text-mauve-11 transition-all text-center">
+            Crafted on 🌍. All Right Reserved, © 2023{" "}
             <QuickLink href="https://github.com/louisgv/">
               <code>L ❤️ ☮ ✋</code>
-            </QuickLink>{" "}
-            , GPLv3
+            </QuickLink>
+            . <br /> Source codes are licensed under GPLv3.
           </div>
 
           {/* <!-- Contact Details --> */}

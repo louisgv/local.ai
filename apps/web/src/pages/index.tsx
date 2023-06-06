@@ -121,11 +121,11 @@ const IndexPage: NextPage = () => (
     />
 
     {/* <!-- Hero Section --> */}
-    <section className="p-8 pt-16 lg:px-20 flex flex-col lg:flex-row gap-8">
+    <section className="p-8 pt-16 flex flex-col lg:flex-row gap-8">
       <div
         className={clsx(
           "container mx-auto",
-          "flex flex-col lg:flex-row lg:justify-center lg:items-center",
+          "flex flex-col lg:flex-row lg:justify-center lg:items-between",
           "gap-8 lg:gap-8"
         )}>
         <div className="flex flex-col lg:w-1/3 h-full">
@@ -152,6 +152,8 @@ const IndexPage: NextPage = () => (
             loop
             muted
             controls
+            width="1600"
+            height="900"
             className="rounded-lg w-full aspect-video">
             <source
               src="https://github.com/louisgv/local.ai/assets/6723574/ba4a04dc-5087-4725-b619-165ad774aedd"
@@ -178,7 +180,7 @@ const IndexPage: NextPage = () => (
 
     {/* <!-- Features Section --> */}
 
-    <section className="bg-mauve-2 py-20 px-8" id="features">
+    <section className="bg-mauve-2 py-20 px-8 lg:rounded-md" id="features">
       <div
         className={clsx(
           "container mx-auto",
@@ -262,7 +264,7 @@ const IndexPage: NextPage = () => (
       </div>
     </section>
 
-    <section className="bg-mauve-2 py-20 px-8">
+    <section className="bg-mauve-2 py-20 px-8 lg:rounded-md">
       <div
         className={clsx(
           "container mx-auto",
