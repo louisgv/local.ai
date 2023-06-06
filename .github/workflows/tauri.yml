@@ -84,7 +84,7 @@ jobs:
 
       - name: Build the app
         id: tauri_action
-        uses: tauri-apps/tauri-action@fix/hosted-runner
+        uses: tauri-apps/tauri-action@dev
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
