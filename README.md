@@ -12,15 +12,8 @@ Right now, local.ai uses the https://github.com/rustformers/llm rust crate at it
 <video src="https://github.com/louisgv/local.ai/assets/6723574/ba4a04dc-5087-4725-b619-165ad774aedd" controls="controls" style="max-width: 470px;">
 </video>
 
-
 <!-- https://github.com/louisgv/local.ai/assets/6723574/c56400b4-4520-47da-80fb-ab8552a2683b
  -->
-
-## 🤔 Trivia
-
-### Why the backpack?
-
-> Ties into the bring your own model concept -- Alex from window.ai
 
 ## 🧵 Development
 
@@ -60,5 +53,14 @@ pnpm dev
 
 ## 🪪 License
 
-- [GNU GPLv3](./LICENSE)
-- Why? Anything AI-related including their derivatives should be open-source for all to inspect. GPLv3 enforces this chain of open-source.
+[GNU GPLv3](./LICENSE)
+
+## 🤔 Trivia
+
+### Why the backpack?
+
+> Ties into the bring your own model concept -- Alex from window.ai
+
+### Why GPLv3?
+
+Anything AI-related including their derivatives should be open-source for all to inspect. GPLv3 enforces this chain of open-source.
