@@ -59,7 +59,8 @@ export const BasicLayout = ({
             All Right Reserved, © 2023{" "}
             <QuickLink href="https://github.com/louisgv/">
               <code>L ❤️ ☮ ✋</code>
-            </QuickLink>
+            </QuickLink>{" "}
+            , GPLv3
           </div>
 
           {/* <!-- Contact Details --> */}

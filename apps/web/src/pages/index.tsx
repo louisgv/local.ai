@@ -221,7 +221,7 @@ const IndexPage: NextPage = () => (
                 "Adapts to available threads",
                 "GGML quantization q4, 5.1, 8, f16"
               ]}
-              upcoming={["GPU Inferencing", "Parrallel session"]}
+              upcoming={["GPU Inferencing", "Parallel session"]}
             />
           </div>
         </FeatureCard>
