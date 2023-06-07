@@ -1,6 +1,5 @@
-import { dollyModelMap } from "@models/dolly"
-
 import { type ModelInfo, toList } from "./_shared"
+import { dollyModelMap } from "./dolly"
 import { gpt4AllModelMap } from "./gpt4all"
 import { guanacoModelMap } from "./guanaco"
 import { mptModelMap } from "./mpt"
