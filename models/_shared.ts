@@ -31,12 +31,15 @@ export type ModelInfo = {
   vocabulary?: string[]
   tags?: string[]
   citations?: string[]
+  disabled?: boolean
 }
 
 export type ModelMap = Record<string, ModelInfo>
 
 export const toList = (modelMap: ModelMap) =>
-  Object.entries(modelMap).map(([name, model]) => ({
-    ...model,
-    name
-  }))
+  Object.entries(modelMap)
+    .map(([name, model]) => ({
+      ...model,
+      name
+    }))
+    .filter((model) => !model.disabled)

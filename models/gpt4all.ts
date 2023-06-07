@@ -7,6 +7,7 @@ const commonCitations = [
 
 export const gpt4AllModelMap: ModelMap = {
   "GPT4All-J Groovy": {
+    disabled: true,
     size: 4541706976,
     description:
       "Current best commercially licensable model based on GPT-J and trained by Nomic AI on the latest curated GPT4All dataset.",
