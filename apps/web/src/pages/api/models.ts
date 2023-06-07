@@ -10,7 +10,7 @@ export default async function handler() {
     headers: {
       "content-type": "application/json",
       "cache-control":
-        "public, s-maxage=2592000, max-age=0, stale-while-revalidate=600"
+        "public, s-maxage=86400, max-age=0, stale-while-revalidate=600"
     }
   })
 }
