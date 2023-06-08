@@ -1,19 +1,26 @@
 use crate::kv_bucket::{self, StateBucket};
 use core::fmt;
 use parking_lot::Mutex;
-use std::{path::Path, sync::Arc};
+use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use tauri::Manager;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
 pub enum ConfigKey {
+  #[serde(rename = "models_directory")]
   ModelsDirectory,
+  #[serde(rename = "threads_directory")]
   ThreadsDirectory,
+  #[serde(rename = "onboard_state")]
+  OnboardState,
 }
+
 impl fmt::Display for ConfigKey {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
       ConfigKey::ModelsDirectory => write!(f, "models_directory"),
       ConfigKey::ThreadsDirectory => write!(f, "threads_directory"),
+      ConfigKey::OnboardState => write!(f, "onboard_state"),
     }
   }
 }
@@ -38,10 +45,10 @@ impl State {
     config_key: ConfigKey,
     value: String,
   ) -> Result<bool, String> {
-    // Check if abs_path is not empty and is an absolute path
-    if value.is_empty() || !Path::new(&value).is_absolute() {
-      return Ok(false);
+    if value.is_empty() {
+      return Err(format!("Empty value"));
     }
+
     let bucket = self.0.lock();
 
     bucket
@@ -57,7 +64,15 @@ impl State {
 
     bucket
       .get(&config_key.to_string())
-      .map_err(|e| format!("Error getting models path: {}", e))
-      .and_then(|opt| opt.ok_or_else(|| format!("Error getting models path")))
+      .map_err(|e| format!("Error config: {}", e))
+      .and_then(|opt| opt.ok_or_else(|| format!("Error getting config")))
   }
+}
+
+#[tauri::command]
+pub async fn get_config(
+  state: tauri::State<'_, State>,
+  key: ConfigKey,
+) -> Result<String, String> {
+  state.get(key)
 }

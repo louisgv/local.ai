@@ -2,13 +2,13 @@ import { LicenseType, type ModelMap, ModelType } from "./_shared"
 
 export const dollyModelMap: ModelMap = {
   "Dolly v2 3B": {
-    disabled: true, // Something's wrong with the model...
+    // disabled: true, // Something's wrong with the model...
     description:
       "An instruction-following large language model trained on the Databricks machine learning platform that is licensed for commercial use.",
     modelType: ModelType.NeoX,
     size: 2085535776,
     downloadUrl:
-      "https://huggingface.co/gexai/dolly-v2-3b-ggml/resolve/418d4cb14f3e5fb4bec243d34a1faa68db76cb3b/dolly-v2-3b-q5_1.bin",
+      "https://huggingface.co/rustformers/dolly-v2-ggml/resolve/909bf7b5f7673605cde3153850f7e19e4cc35932/dolly-v2-3b-q5_1-ggjt.bin",
     blake3: "43ff067dd77edf0d8cc13d2966d14fca710c312362783642f4ed1d4e692c9f00",
     sha256: "889535a92e45e8e120289c53768688facbdec00f2f97ee269660679bfaffd99d",
     licenses: [
@@ -22,7 +22,7 @@ export const dollyModelMap: ModelMap = {
     ]
   },
   "Dolly v2 7B": {
-    disabled: true, // Something's wrong with the model...
+    // disabled: true, // Something's wrong with the model...
     description:
       "An instruction-following large language model trained on the Databricks machine learning platform that is licensed for commercial use.",
     modelType: ModelType.NeoX,

@@ -61,12 +61,13 @@ const BottomBar = () => {
 export const Layout = ({ children = null as ReactNode }) => {
   const {
     serverStartedState: [isStarted],
-    sidebarState: [isSidebarShowing]
+    sidebarState: [isSidebarShowing],
+    onboardState: [onboardStage]
   } = useGlobal()
 
   return (
     <AppLayout
-      showSidebar={isStarted && isSidebarShowing}
+      showSidebar={isSidebarShowing && (isStarted || !!onboardStage)}
       top={<TopBar />}
       sidebar={<ChatSideBar />}
       bottom={<BottomBar />}>

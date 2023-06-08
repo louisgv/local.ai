@@ -134,7 +134,8 @@ fn spawn_inference_thread(
     let maximum_token_count = usize::MAX;
     let mut token_utf8_buf = TokenUtf8Buffer::new();
     let guard = req.model_guard.lock();
-    let model = match &*guard {
+
+    let model = match guard.as_ref() {
       Some(m) => m,
       None => {
         println!("Model locked, cannot be loaded");

@@ -43,6 +43,7 @@ fn main() {
       Ok(())
     })
     .invoke_handler(tauri::generate_handler![
+      config::get_config,
       path::read_directory,
       path::write_file,
       path::read_file,

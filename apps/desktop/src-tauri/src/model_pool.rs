@@ -4,7 +4,8 @@ use parking_lot::Mutex;
 use std::{fs, path::PathBuf, sync::Arc};
 
 use llm::{
-  load_progress_callback_stdout, InferenceParameters, ModelArchitecture, VocabularySource,
+  load_progress_callback_stdout, InferenceParameters, ModelArchitecture,
+  VocabularySource,
 };
 
 use std::path::Path;
@@ -15,7 +16,7 @@ use std::collections::VecDeque;
 pub static LOADED_MODEL_POOL: Lazy<Mutex<VecDeque<Option<ModelGuard>>>> =
   Lazy::new(|| Mutex::new(VecDeque::new()));
 
-pub static THREAD_PER_INSTANCE: Lazy<Mutex<usize>> = Lazy::new(|| Mutex::new(0));
+pub static CONCURRENCY_COUNT: Lazy<Mutex<usize>> = Lazy::new(|| Mutex::new(0));
 
 pub fn is_empty() -> bool {
   let models = LOADED_MODEL_POOL.lock();
@@ -35,7 +36,7 @@ pub fn return_model(model: Option<ModelGuard>) {
 pub fn get_inference_params() -> InferenceParameters {
   InferenceParameters {
     // n_batch: 4,
-    n_threads: *THREAD_PER_INSTANCE.lock(),
+    n_threads: num_cpus::get_physical() / (*CONCURRENCY_COUNT.lock()),
     ..Default::default()
   }
 }
@@ -58,7 +59,7 @@ pub async fn spawn_pool(
   let mut tasks = vec![];
   let original_model_path = model_path.to_path_buf();
 
-  *THREAD_PER_INSTANCE.lock() = num_cpus::get_physical() / concurrency;
+  *CONCURRENCY_COUNT.lock() = concurrency;
 
   for i in 0..concurrency {
     let cache_name = format!("run_cache_{}", i);
@@ -84,8 +85,8 @@ pub async fn spawn_pool(
         vocabulary_source.clone(),
         llm::ModelParameters {
           prefer_mmap: true,
-          context_size: 8472,
-
+          // TODO: need to figure out how to assign this properly, and automatically
+          // context_size: 8472,
           ..Default::default()
         },
         load_progress_callback_stdout,

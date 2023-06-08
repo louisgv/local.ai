@@ -163,18 +163,15 @@ pub async fn start_download(
 
   let models_path = get_current_models_path(default_path_state, config_state)?;
 
-  let output_path = Path::new(&models_path)
-    .join(format!("{}.bin", name))
-    .display()
-    .to_string();
-
-  assert_download_state(
-    &state.download_state_map.clone(),
-    &output_path,
-    DownloadState::Idle,
-  )?;
-
+  let output_path_buf = Path::new(&models_path).join(format!("{}.bin", name));
+  let output_path = output_path_buf.display().to_string();
   println!("output_path: {}", output_path);
+
+  if output_path_buf.exists() {
+    return Err(format!("File already exists: {}", output_path));
+  }
+
+  println!("output_path: {:?}", output_path);
 
   crate::model_type::set_model_type(
     model_type_state.clone(),
@@ -206,7 +203,7 @@ pub async fn start_download(
     download_progress_bucket
       .flush()
       .map_err(|e| e.to_string())?;
-  }
+  };
 
   spawn_download_threads(
     output_path,
@@ -284,6 +281,8 @@ fn spawn_download_threads(
           } else {
             DownloadState::Idle
           };
+
+          println!("Download state: {:?}", download_state);
 
           let download_progress = get_state_json(&dlpb_arc, &output_path).0;
 

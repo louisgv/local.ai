@@ -1,5 +1,5 @@
 import { cn } from "@localai/theme/utils"
-import { SpinnerButton } from "@localai/ui/button"
+import { Button, SpinnerButton } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
 import { invoke } from "@tauri-apps/api/tauri"
 import { useState } from "react"
@@ -16,6 +16,12 @@ export const ServerConfig = () => {
   const [isLoading, setIsLoading] = useState(false)
   return (
     <div className="flex items-center justify-end gap-2">
+      {/* <Button
+        onClick={async () => {
+        }}>
+        Test
+      </Button> */}
+
       <Input
         className="w-24"
         disabled={isStarted}
@@ -46,7 +52,8 @@ export const ServerConfig = () => {
             await invoke("stop_server")
             setIsStarted(false)
           } else {
-            await invoke("start_server", { port })
+            await invoke("start_server", { port }).catch((_) => null)
+
             setIsStarted(true)
           }
           setIsLoading(false)

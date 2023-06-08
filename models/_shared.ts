@@ -32,6 +32,8 @@ export type ModelInfo = {
   tags?: string[]
   citations?: string[]
   disabled?: boolean
+
+  promptTemplate?: string
 }
 
 export type ModelMap = Record<string, ModelInfo>

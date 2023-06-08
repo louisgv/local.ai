@@ -16,6 +16,7 @@ use std::sync::{
 };
 
 use crate::abort_stream::AbortStream;
+use crate::config::ConfigKey;
 use crate::inference_thread::{
   start_inference, CompletionRequest, InferenceThreadRequest,
 };
@@ -182,13 +183,16 @@ impl ModelVocabulary {
 #[tauri::command]
 pub async fn load_model<'a>(
   model_stats_bucket_state: tauri::State<'_, model_stats::State>,
+  config_state: tauri::State<'_, crate::config::State>,
   app_handle: AppHandle,
   path: &str,
   model_type: &str,
   model_vocabulary: ModelVocabulary,
   concurrency: usize,
 ) -> Result<(), String> {
+  config_state.set(ConfigKey::OnboardState, format!("done"))?;
   model_stats::increment_load_count(model_stats_bucket_state, path)?;
+
   let cache_dir =
     get_app_dir_path_buf(app_handle, String::from("inference_cache"))?;
 

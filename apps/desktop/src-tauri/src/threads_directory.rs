@@ -52,9 +52,7 @@ pub async fn update_threads_dir(
   dir: &str,
   config_bucket_state: tauri::State<'_, crate::config::State>,
 ) -> Result<DirectoryState, String> {
-  config_bucket_state
-    .set(ConfigKey::ThreadsDirectory, dir.to_string())
-    .map_err(|e| format!("Error setting models path: {}", e))?;
+  config_bucket_state.set(ConfigKey::ThreadsDirectory, dir.to_string())?;
 
   let mut files = crate::path::read_directory(dir).await?;
 

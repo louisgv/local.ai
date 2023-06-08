@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { useGlobal } from "~providers/global"
 
@@ -253,20 +253,21 @@ export const useActiveThread = () => {
         setIsResponding(false)
         return
       }
+      try {
+        const result =
+          typeof value === "string"
+            ? value
+            : decoder.decode(value, { stream: true })
 
-      const result =
-        typeof value === "string"
-          ? value
-          : decoder.decode(value, { stream: true })
+        if (!!result && result.startsWith(SSE_DATA_EVENT_PREFIX)) {
+          const eventData = result.slice(SSE_DATA_EVENT_PREFIX.length).trim()
 
-      if (!!result && result.startsWith(SSE_DATA_EVENT_PREFIX)) {
-        const eventData = result.slice(SSE_DATA_EVENT_PREFIX.length).trim()
-
-        const resp = JSON.parse(eventData) as StreamResponse
-        // pick the first for now
-        aiMessage.content += resp.choices[0].text
-        setMessages([aiMessage, ...newMessages])
-      }
+          const resp = JSON.parse(eventData) as StreamResponse
+          // pick the first for now
+          aiMessage.content += resp.choices[0].text
+          setMessages([aiMessage, ...newMessages])
+        }
+      } catch (error) {}
 
       // Read some more, and call this function again
       return reader.read().then(processToken)

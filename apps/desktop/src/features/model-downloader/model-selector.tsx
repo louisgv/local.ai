@@ -104,12 +104,16 @@ export const ModelSelector = () => {
         isSpinning={isDownloading}
         onClick={async () => {
           setIsDownloading(true)
-          await invoke("start_download", {
-            name: selectedModel.name,
-            downloadUrl: selectedModel.downloadUrl,
-            digest: selectedModel.blake3,
-            modelType: selectedModel.modelType
-          })
+          try {
+            await invoke("start_download", {
+              name: selectedModel.name,
+              downloadUrl: selectedModel.downloadUrl,
+              digest: selectedModel.blake3,
+              modelType: selectedModel.modelType
+            })
+          } catch (error) {
+            alert(error)
+          }
           setSelectedModelHash(undefined)
 
           await updateModelsDirectory()

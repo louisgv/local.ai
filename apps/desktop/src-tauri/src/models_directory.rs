@@ -76,9 +76,7 @@ pub async fn update_models_dir(
   config_bucket: tauri::State<'_, config::State>,
   model_stats_bucket_state: tauri::State<'_, model_stats::State>,
 ) -> Result<DirectoryState, String> {
-  config_bucket
-    .set(ConfigKey::ModelsDirectory, dir.to_string())
-    .map_err(|e| format!("Error setting models path: {}", e))?;
+  config_bucket.set(ConfigKey::ModelsDirectory, dir.to_string())?;
 
   let mut files = read_directory(dir).await?;
 

@@ -40,17 +40,27 @@ const useGlobalProvider = () => {
   const modelsDirectoryState = useModelsDirectory()
   const threadsDirectoryState = useThreadsDirectory()
 
+  const onboardState = useState()
+
   const windowRef = useRef<WebviewWindow>()
 
   useInit(async () => {
-    const { getCurrent } = await import("@tauri-apps/api/window")
+    const [{ getCurrent }, { invoke }] = await Promise.all([
+      import("@tauri-apps/api/window"),
+      import("@tauri-apps/api/tauri")
+    ])
     const currentWindow = getCurrent()
     windowRef.current = currentWindow
 
-    const [isVisible] = await Promise.all([
+    const [isVisible, initialOnboardState] = await Promise.all([
       currentWindow.isVisible(),
+      invoke<string>("get_config", {
+        key: "onboard_state"
+      }).catch((_) => null),
       setTitle(currentWindow)
     ])
+
+    onboardState[1](initialOnboardState)
 
     if (!isVisible) {
       await currentWindow.center()
@@ -68,7 +78,8 @@ const useGlobalProvider = () => {
     serverStartedState,
     sidebarState,
     modelsDirectoryState,
-    threadsDirectoryState
+    threadsDirectoryState,
+    onboardState
   }
 }
 
