@@ -6,8 +6,13 @@ import {
   Pencil1Icon,
   TrashIcon
 } from "@radix-ui/react-icons"
-import { MessageText, PeopleTag } from "iconoir-react"
-import { useMemo, useRef, useState } from "react"
+import {
+  MessageText,
+  PeopleTag,
+  SidebarCollapse,
+  SidebarExpand
+} from "iconoir-react"
+import { useMemo, useRef } from "react"
 
 import { NavButton } from "~features/layout/nav-button"
 import { useToggle } from "~features/layout/use-toggle"
@@ -134,5 +139,22 @@ export function ChatSideBar() {
         ))}
       </ul>
     </ViewBody>
+  )
+}
+
+export function ChatSideBarToggle() {
+  const {
+    onboardState: [onboard],
+    serverStartedState: [isStarted],
+    sidebarState: [isSidebarShowing, toggleSidebar]
+  } = useGlobal()
+
+  if (!isStarted && !onboard) {
+    return null
+  }
+  return (
+    <Button onClick={() => toggleSidebar()}>
+      {isSidebarShowing ? <SidebarCollapse /> : <SidebarExpand />}
+    </Button>
   )
 }

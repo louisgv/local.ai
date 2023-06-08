@@ -12,6 +12,7 @@ import { ModelListItem } from "~features/inference-server/model-list-item"
 import { ServerConfig } from "~features/inference-server/server-config"
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
 import { ModelSelector } from "~features/model-downloader/model-selector"
+import { ChatSideBarToggle } from "~features/thread/side-bar"
 import { useGlobal } from "~providers/global"
 
 // Flow: Pick a models directory
@@ -38,6 +39,7 @@ export function ModelManagerView() {
   return (
     <ViewContainer className="relative z-50">
       <ViewHeader>
+        <ChatSideBarToggle />
         <div className="flex w-full">
           {!!modelsDirectory && (
             <SpinnerButton

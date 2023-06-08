@@ -28,7 +28,7 @@ export const MessageBlock = ({
   const isNote = useMemo(() => from === Role.Note, [from])
 
   return (
-    <div className="flex">
+    <div className="flex group">
       <div
         className={cn(
           "px-4 py-3 rounded-md rounded-tr-none w-full transition-colors",

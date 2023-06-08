@@ -7,17 +7,31 @@ export interface TextareaProps
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => {
     return (
-      <textarea
-        className={cn(
-          "transition-colors",
-          "ring-offset-gray-2 focus-visible:ring-gray-7 placeholder:text-gray-10 border-gray-6",
-          "flex min-h-[80px] w-full rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-          "text-gray-12",
-          className
+      <div className={cn("relative", className)}>
+        {props.title && (
+          <label
+            className={cn(
+              "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-50 text-ellipsis whitespace-nowrap"
+            )}>
+            {props.title}
+          </label>
         )}
-        ref={ref}
-        {...props}
-      />
+        <textarea
+          className={cn(
+            "transition-colors",
+            "border border-gray-6 focus:border-gray-7",
+            "flex min-h-[80px] w-full rounded-md bg-transparent px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50",
+            "transition-all",
+            "placeholder:text-gray-10",
+            "outline-1 focus:ring-offset-gray-7 focus-visible:ring-gray-8",
+            "focus-visible:ring-2 focus-visible:ring-offset-2",
+            "text-gray-11 focus:text-gray-12",
+            className
+          )}
+          ref={ref}
+          {...props}
+        />
+      </div>
     )
   }
 )

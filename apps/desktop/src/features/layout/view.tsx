@@ -1,9 +1,5 @@
 import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
-import { SidebarCollapse, SidebarExpand } from "iconoir-react"
 import type { ReactNode } from "react"
-
-import { useGlobal } from "~providers/global"
 
 export const ViewContainer = ({
   children = null as ReactNode,
@@ -15,19 +11,10 @@ export const ViewContainer = ({
 )
 
 export const ViewHeader = ({ children = null as ReactNode }) => {
-  const {
-    serverStartedState: [isStarted],
-    sidebarState: [isSidebarShowing, toggleSidebar]
-  } = useGlobal()
   return (
     <div
       // data-tauri-drag-region
       className="flex items-center gap-2 bg-gray-1 w-full h-16 shrink-0 px-4 border-b border-b-gray-6 z-50">
-      {isStarted && (
-        <Button onClick={() => toggleSidebar()}>
-          {isSidebarShowing ? <SidebarCollapse /> : <SidebarExpand />}
-        </Button>
-      )}
       {children}
       {/* // For future maybe custom window bar
       <div className="flex ml-auto">

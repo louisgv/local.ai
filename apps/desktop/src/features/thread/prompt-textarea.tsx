@@ -30,16 +30,15 @@ export const PromptTextarea = ({
   return (
     <div
       className={cn(
-        "relative flex gap-2 w-full items-end justify-center",
+        "relative flex gap-3 w-full items-end justify-center",
         className
       )}>
       <Textarea
-        rows={4}
-        className="w-full bg-gray-3"
+        className="w-full h-full bg-gray-3 text-sm"
         placeholder={[
           "Pst... try using Markdown. Here're some shortcuts:",
           "\t- [CTRL/CMD + ENTER]\t\tTake note",
-          "\t- [SHIFT + ENTER]\t\t\t\t\tAdd a new line",
+          "\t- [SHIFT + ENTER]\t\t\t\tAdd a new line",
           "\t- [ENTER]\t\t\t\t\t\t\t\tStart AI inferencing"
         ].join("\n")}
         value={prompt}
@@ -61,9 +60,9 @@ export const PromptTextarea = ({
           }
         }}
       />
-      <div className="flex flex-col h-full justify-between">
+      <div className="flex flex-col h-full justify-between gap-3">
         <Button
-          className="border border-gold-9 text-gold-9 disabled:border-gold-9 disabled:text-gold-9 disabled:cursor-not-allowed"
+          className="border border-gold-9 text-gold-9 disabled:border-gray-9 disabled:text-gray-9 disabled:cursor-not-allowed"
           disabled={disabled || !prompt}
           onClick={note}>
           <Notes />
