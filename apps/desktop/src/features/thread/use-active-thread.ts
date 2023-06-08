@@ -226,53 +226,61 @@ export const useActiveThread = () => {
       role: Role.Bot,
       content: ""
     }
-
-    const fetchStream = await globalThis.fetch(
-      `http://localhost:${port}/completions`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          prompt: getQAPrompt(text, systemPrompt),
-          max_tokens: 4200,
-          temperature: 0.9,
-          stream: true
-        })
-      }
-    )
-    const reader = fetchStream.body.getReader()
-    const decoder = new TextDecoder("utf-8")
-
-    reader.read().then(async function processToken({ done, value }) {
-      // Result objects contain two properties:
-      // done  - true if the stream has already given you all its data.
-      // value - some data. Always undefined when done is true.
-      if (done) {
-        await appendMessage(aiMessage)
-        setIsResponding(false)
-        return
-      }
-      try {
-        const result =
-          typeof value === "string"
-            ? value
-            : decoder.decode(value, { stream: true })
-
-        if (!!result && result.startsWith(SSE_DATA_EVENT_PREFIX)) {
-          const eventData = result.slice(SSE_DATA_EVENT_PREFIX.length).trim()
-
-          const resp = JSON.parse(eventData) as StreamResponse
-          // pick the first for now
-          aiMessage.content += resp.choices[0].text
-          setMessages([aiMessage, ...newMessages])
+    try {
+      const fetchStream = await globalThis.fetch(
+        `http://localhost:${port}/completions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            prompt: getQAPrompt(text, systemPrompt),
+            max_tokens: 4200,
+            temperature: 0.9,
+            stream: true
+          })
         }
-      } catch (error) {}
+      )
 
-      // Read some more, and call this function again
-      return reader.read().then(processToken)
-    })
+      if (fetchStream.status !== 200) {
+        throw new Error(`Server responded with ${fetchStream.status}`)
+      }
+
+      const reader = fetchStream.body.getReader()
+      const decoder = new TextDecoder("utf-8")
+
+      reader.read().then(async function processToken({ done, value }) {
+        // Result objects contain two properties:
+        // done  - true if the stream has already given you all its data.
+        // value - some data. Always undefined when done is true.
+        if (done) {
+          await appendMessage(aiMessage)
+          setIsResponding(false)
+          return
+        }
+        try {
+          const result =
+            typeof value === "string"
+              ? value
+              : decoder.decode(value, { stream: true })
+
+          if (!!result && result.startsWith(SSE_DATA_EVENT_PREFIX)) {
+            const eventData = result.slice(SSE_DATA_EVENT_PREFIX.length).trim()
+
+            const resp = JSON.parse(eventData) as StreamResponse
+            // pick the first for now
+            aiMessage.content += resp.choices[0].text
+            setMessages([aiMessage, ...newMessages])
+          }
+        } catch (error) {}
+
+        // Read some more, and call this function again
+        return reader.read().then(processToken)
+      })
+    } catch (error) {
+      alert(`ERROR: Server was not started OR no model was loaded.`)
+    }
   }
 
   return {

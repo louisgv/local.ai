@@ -57,8 +57,8 @@ export const redpajamaModelMap: ModelMap = {
     modelType: ModelType.NeoX,
     size: 5148350464,
     downloadUrl:
-      "https://huggingface.co/rustformers/redpajama-3b-ggml/resolve/ef3021e148238890ceba93c9fe4e17d49d8b279b/RedPajama-INCITE-Instruct-3B-v1-q5_1-ggjt.bin",
-    blake3: "5c302b966b13fb314d62b6d8dea9b9e237ae1fa71be5b3f51b83935218685734",
+      "https://huggingface.co/rustformers/redpajama-3b-ggml/resolve/ef3021e148238890ceba93c9fe4e17d49d8b279b/RedPajama-INCITE-Chat-3B-v1-q5_1-ggjt.bin",
+    blake3: "xyzoil",
     sha256: "30d002d29e2e2ae942ff600d69012062af85e203e8f1f0d7e1133ad96f6ea354",
     licenses: [...commonLicenses],
     citations: [...commonCitations]

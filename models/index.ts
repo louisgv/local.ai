@@ -10,7 +10,7 @@ export type ModelInfoList = ModelInfo[]
 
 export const modelList: ModelInfoList = [
   ...toList(dollyModelMap),
-  ...toList(redpajamaModelMap),
+  // ...toList(redpajamaModelMap),
   ...toList(mptModelMap),
   ...toList(gpt4AllModelMap),
   ...toList(guanacoModelMap),
