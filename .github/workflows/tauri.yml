@@ -34,7 +34,7 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: "./app/desktop/src-tauri -> target"
+          workspaces: "./apps/desktop/src-tauri -> target"
 
       - name: install node
         uses: actions/setup-node@v3
@@ -52,11 +52,6 @@ jobs:
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
 
       - uses: actions/checkout@v3
         with:

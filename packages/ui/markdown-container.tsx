@@ -19,6 +19,7 @@ export const MarkdownContainer = ({ children = "", className = "" }) => (
       "prose-code:break-all prose-pre:break-all prose-pre:whitespace-pre-wrap",
       "prose-pre:bg-gray-5",
       "prose-code:relative prose-code:bg-gray-5",
+      "prose-p:break-words prose-p:whitespace-pre-wrap",
       className
     )}>
     {children}
