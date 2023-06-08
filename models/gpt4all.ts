@@ -1,3 +1,5 @@
+import dedent from "ts-dedent"
+
 import { LicenseType, type ModelMap, ModelType } from "./_shared"
 
 const commonCitations = [
@@ -9,8 +11,11 @@ export const gpt4AllModelMap: ModelMap = {
   "GPT4All-J Groovy": {
     // disabled: true,
     size: 4541706976,
-    description:
-      "Current best commercially licensable model based on GPT-J and trained by Nomic AI on the latest curated GPT4All dataset.",
+    description: dedent`
+      A commercially licensable model based on GPT-J and trained by Nomic AI on the latest curated GPT4All dataset.
+
+      Req: >=16GB of CPU.
+    `,
     modelType: ModelType.GptJ,
     downloadUrl:
       "https://huggingface.co/rustformers/gpt4all-j-ggml/resolve/f61973ebcc39a991aecb997a839ae4cca962dd48/gpt4all-j-q5_1-ggjt.bin",
@@ -24,8 +29,11 @@ export const gpt4AllModelMap: ModelMap = {
   },
 
   "GPT4All-J 13B Snoozy": {
-    description:
-      "Current best non-commercially licensable model based on Llama 13b and trained by Nomic AI on the latest curated GPT4All dataset.",
+    description: dedent`
+      A non-comercially licensable model based on Llama 13b and trained by Nomic AI on the latest curated GPT4All dataset.
+
+      Req: >=24GB of CPU.
+    `,
     modelType: ModelType.Llama,
     downloadUrl:
       "https://huggingface.co/TheBloke/GPT4All-13B-snoozy-GGML/resolve/1ecb0d84599229509cd4d7927a7b4a111c6cd97d/GPT4All-13B-snoozy.ggmlv3.q5_1.bin",

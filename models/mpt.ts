@@ -1,3 +1,5 @@
+import dedent from "ts-dedent"
+
 import { LicenseType, type ModelMap, ModelType } from "./_shared"
 
 const commonCitations = [
@@ -7,8 +9,11 @@ const commonCitations = [
 
 export const mptModelMap: ModelMap = {
   "MPT 7B": {
-    description:
-      "MPT-7B is a decoder-style transformer pretrained from scratch on 1T tokens of English text and code by MosaicML.",
+    description: dedent`
+      MPT-7B is a decoder-style transformer pretrained from scratch on 1T tokens of English text and code by MosaicML.
+      
+      Req: >=24GB of CPU.
+    `,
     modelType: ModelType.Mpt,
     size: 4988559744,
     downloadUrl:
@@ -23,8 +28,11 @@ export const mptModelMap: ModelMap = {
     citations: [...commonCitations, "https://huggingface.co/mosaicml/mpt-7b"]
   },
   "MPT 7B Instruct": {
-    description:
-      "MPT-7B-Instruct is a model for short-form instruction following trained by MosaicML.",
+    description: dedent`
+      MPT fine-tuned for short-form instruction following.
+      
+      Req: >=24GB of CPU.
+    `,
     modelType: ModelType.Mpt,
     size: 4988559712,
     downloadUrl:
@@ -39,8 +47,11 @@ export const mptModelMap: ModelMap = {
     ]
   },
   "MPT 7B Chat": {
-    description:
-      "MPT-7B-Chat is a chatbot-like model for dialogue generation trained by MosaicML.",
+    description: dedent`
+      MPT fine-tuned for dialogue generation.
+      
+      Req: >=24GB of CPU.
+    `,
     modelType: ModelType.Mpt,
     size: 4988559744,
     downloadUrl:
@@ -55,8 +66,13 @@ export const mptModelMap: ModelMap = {
     ]
   },
   "MPT 7B Storywriter": {
-    description:
-      "MPT-7B-StoryWriter-65k+ is a model designed to read and write fictional stories with super long context lengths. (NOTE: This model is still under development, hence its output is pretty buggy).",
+    description: dedent`
+      A model designed to read and write fictional stories with super long output context lengths. 
+      
+      Req: >=24GB of CPU.
+
+      (NOTE: This model is still under development, hence its output is pretty buggy).
+    `,
     modelType: ModelType.Mpt,
     size: 4988356608,
     downloadUrl:

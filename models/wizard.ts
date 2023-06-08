@@ -1,8 +1,14 @@
+import dedent from "ts-dedent"
+
 import { LicenseType, type ModelMap, ModelType } from "./_shared"
 
 export const wizardModelMap: ModelMap = {
   "WizardLM 7B": {
-    description: "An Instruction-following LLM Using Evol-Instruct method.",
+    description: dedent`
+      An Instruction-following LLM Using Evol-Instruct method.
+
+      Req: >=24GB of CPU.
+    `,
     modelType: ModelType.Llama,
     size: 5055134336,
     downloadUrl:
@@ -16,8 +22,11 @@ export const wizardModelMap: ModelMap = {
     ]
   },
   "Wizard Vicuna 7B Uncensored": {
-    description:
-      "Wizard's dataset + ChatGPT's conversation extension + Vicuna's tuning method.",
+    description: dedent`
+      Wizard's dataset + ChatGPT's conversation extension + Vicuna's tuning method.
+      
+      Req: >=24GB of CPU.
+    `,
     modelType: ModelType.Llama,
     size: 5055128192,
     downloadUrl:
@@ -31,8 +40,9 @@ export const wizardModelMap: ModelMap = {
     ]
   },
   "Wizard Vicuna 30B Uncensored": {
-    description:
-      "Wizard's dataset + ChatGPT's conversation extension + Vicuna's tuning method.",
+    description: dedent`
+      Req: >=64GB of CPU.
+    `,
     modelType: ModelType.Llama,
     size: 24399792512,
     downloadUrl:

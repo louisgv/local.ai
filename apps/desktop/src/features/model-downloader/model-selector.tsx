@@ -78,7 +78,9 @@ export const ModelSelector = () => {
                 </div>
                 <div className="flex flex-col gap-3">
                   <p className="max-w-screen-sm">
-                    <Balancer>{model.description}</Balancer>
+                    <pre className="whitespace-pre-wrap">
+                      <Balancer>{model.description}</Balancer>
+                    </pre>
                   </p>
                   <code className="text-gray-10 break-all max-w-screen-md">
                     <Balancer>{model.downloadUrl}</Balancer>
