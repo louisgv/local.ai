@@ -25,11 +25,11 @@ export const redpajamaModelMap: ModelMap = {
       Req: >=16GB of CPU.
     `,
     modelType: ModelType.NeoX,
-    size: 2085535776,
+    size: 2086120640,
     downloadUrl:
       "https://huggingface.co/rustformers/redpajama-3b-ggml/resolve/ef3021e148238890ceba93c9fe4e17d49d8b279b/RedPajama-INCITE-Base-3B-v1-q5_1-ggjt.bin",
     blake3: "e7d8010b8dabf3ebeb3ecd4fba9c5167fa8fae17a41d83659401f9de4a2026c5",
-    sha256: "889535a92e45e8e120289c53768688facbdec00f2f97ee269660679bfaffd99d",
+    sha256: "2ec23403eef21c908fc215886cca6434b2aa8dd9ca727dc581e763eab14f667d",
     licenses: [...commonLicenses],
     citations: [...commonCitations]
   },
@@ -40,11 +40,11 @@ export const redpajamaModelMap: ModelMap = {
       Req: >=16GB of CPU.
     `,
     modelType: ModelType.NeoX,
-    size: 5148350464,
+    size: 2086120608,
     downloadUrl:
       "https://huggingface.co/rustformers/redpajama-3b-ggml/resolve/ef3021e148238890ceba93c9fe4e17d49d8b279b/RedPajama-INCITE-Instruct-3B-v1-q5_1-ggjt.bin",
-    blake3: "5c302b966b13fb314d62b6d8dea9b9e237ae1fa71be5b3f51b83935218685734",
-    sha256: "30d002d29e2e2ae942ff600d69012062af85e203e8f1f0d7e1133ad96f6ea354",
+    blake3: "f20f7e84836320896d3a81ad52a1ba00a90ca884b2932cf170b4be049f80aea5",
+    sha256: "74c2dc835883f58fb2d1f67c8d038772b7cc5456420632724b294415fb1f3b37",
     licenses: [...commonLicenses],
     citations: [...commonCitations]
   },
@@ -55,11 +55,11 @@ export const redpajamaModelMap: ModelMap = {
       Req: >=16GB of CPU.
     `,
     modelType: ModelType.NeoX,
-    size: 5148350464,
+    size: 2086120608,
     downloadUrl:
       "https://huggingface.co/rustformers/redpajama-3b-ggml/resolve/ef3021e148238890ceba93c9fe4e17d49d8b279b/RedPajama-INCITE-Chat-3B-v1-q5_1-ggjt.bin",
-    blake3: "xyzoil",
-    sha256: "30d002d29e2e2ae942ff600d69012062af85e203e8f1f0d7e1133ad96f6ea354",
+    blake3: "03659698bb4b4902f9c55275a46373fb4a00c616b04a1440f4d04e23bba659d9",
+    sha256: "5943bc928dcaafb6e0155e5517ce00a4ae75e117b9e4e03e1575a24e883d040a",
     licenses: [...commonLicenses],
     citations: [...commonCitations]
   }
