@@ -1,4 +1,5 @@
 use crate::kv_bucket::{get_state_json, StateBucket};
+use crate::model_integrity::{compute_file_integrity, ModelIntegrity};
 use crate::{kv_bucket, models_directory::get_current_models_path};
 use kv::*;
 use parking_lot::{Mutex, RwLock};
@@ -24,8 +25,12 @@ pub enum DownloadState {
   Idle,
   #[serde(rename = "downloading")]
   Downloading,
+  #[serde(rename = "validating")]
+  Validating,
   #[serde(rename = "completed")]
   Completed,
+  #[serde(rename = "errored")]
+  Errored,
 }
 // Download path -> Download join handler
 #[derive(Clone, Serialize, Deserialize, PartialEq, Default, Debug)]
@@ -41,6 +46,8 @@ pub struct DownloadProgressData {
   download_url: String,
   #[serde(rename = "downloadState")]
   download_state: DownloadState,
+
+  error: Option<String>,
 }
 
 type DownloadProgressBucket = StateBucket<Json<DownloadProgressData>>;
@@ -127,6 +134,7 @@ pub async fn pause_download(
 pub async fn resume_download(
   window: Window,
   state: tauri::State<'_, self::State>,
+  model_integrity_state: tauri::State<'_, crate::model_integrity::State>,
   path: &str,
 ) -> Result<(), String> {
   let output_path = String::from(path);
@@ -141,6 +149,7 @@ pub async fn resume_download(
     output_path,
     state.download_progress_bucket.clone(),
     state.download_state_map.clone(),
+    model_integrity_state.0.clone(),
     Arc::new(RwLock::new(window)),
   );
   Ok(())
@@ -153,6 +162,7 @@ pub async fn start_download(
   default_path_state: tauri::State<'_, crate::path::State>,
   model_type_state: tauri::State<'_, crate::model_type::State>,
   config_state: tauri::State<'_, crate::config::State>,
+  model_integrity_state: tauri::State<'_, crate::model_integrity::State>,
   name: String,
   download_url: String,
   digest: String,
@@ -209,6 +219,7 @@ pub async fn start_download(
     output_path,
     state.download_progress_bucket.clone(),
     state.download_state_map.clone(),
+    model_integrity_state.0.clone(),
     Arc::new(RwLock::new(window)),
   );
 
@@ -219,6 +230,7 @@ fn spawn_download_threads(
   output_path: String,
   download_progress_bucket: DownloadProgressBucket,
   download_state_map: DownloadStateMap,
+  model_integrity_bucket_state: StateBucket<Json<ModelIntegrity>>,
   window_arc: Arc<RwLock<Window>>,
 ) {
   let download_state_arc = Arc::new(RwLock::new(DownloadState::Downloading));
@@ -254,8 +266,6 @@ fn spawn_download_threads(
 
     let dlpb_arc = download_progress_bucket.clone();
 
-    let window_arc = window_arc.clone();
-
     let dlp_data = get_state_json(&dlpb_arc, &output_path).0;
 
     let download_url = dlp_data.download_url;
@@ -264,8 +274,15 @@ fn spawn_download_threads(
 
     let download_state_arc = download_state_arc.clone();
 
+    let model_integrity_bucket_state = model_integrity_bucket_state.clone();
+
+    let window_arc = window_arc.clone();
+    let window_emit = move |payload| {
+      window_arc.read().emit(&event_id, payload).unwrap();
+    };
+
     async move {
-      match download_file(
+      let final_payload = match download_file(
         &download_url,
         &output_path,
         &sender,
@@ -286,29 +303,72 @@ fn spawn_download_threads(
 
           let download_progress = get_state_json(&dlpb_arc, &output_path).0;
 
-          let payload = DownloadProgressData {
+          DownloadProgressData {
             progress,
             size,
             download_state,
             ..download_progress
-          };
-
-          window_arc.read().emit(&event_id, payload.clone()).unwrap();
-
-          let download_progress_bucket = dlpb_arc.lock();
-
-          match download_progress_bucket.set(&output_path, &Json(payload)) {
-            Ok(_) => println!("Download progress updated"),
-            Err(e) => println!("Error updating download progress: {}", e),
-          };
-
-          download_progress_bucket.flush().unwrap();
+          }
         }
         Err(e) => {
           // Handle the error case, e.g., log the error
           eprintln!("Error downloading file: {}", e);
+          DownloadProgressData {
+            download_state: DownloadState::Errored,
+            error: Some(e.to_string()),
+            ..Default::default()
+          }
+        }
+      };
+
+      if final_payload.download_state != DownloadState::Errored {
+        let payload = final_payload.clone();
+        let download_progress_bucket = dlpb_arc.lock();
+
+        match download_progress_bucket.set(&output_path, &Json(payload)) {
+          Ok(_) => println!("Download progress updated"),
+          Err(e) => println!("Error updating download progress: {}", e),
+        };
+
+        download_progress_bucket.flush().unwrap();
+      }
+
+      if final_payload.download_state == DownloadState::Completed {
+        let final_payload = final_payload.clone();
+        window_emit(DownloadProgressData {
+          download_state: DownloadState::Validating,
+          ..final_payload.clone()
+        });
+
+        let model_integrity =
+          compute_file_integrity(output_path.as_str()).await.unwrap();
+
+        if model_integrity.blake3 == final_payload.digest {
+          let model_integrity_bucket: parking_lot::lock_api::MutexGuard<
+            parking_lot::RawMutex,
+            Bucket<String, Json<ModelIntegrity>>,
+          > = model_integrity_bucket_state.lock();
+
+          match model_integrity_bucket.set(&output_path, &Json(model_integrity))
+          {
+            Ok(_) => println!("Model integrity updated"),
+            Err(e) => println!("Error updating model integrity: {}", e),
+          };
+
+          model_integrity_bucket.flush().unwrap();
+        } else {
+          window_emit(DownloadProgressData {
+            download_state: DownloadState::Errored,
+            error: Some(String::from(
+              "Integrity check failed. Please remove the file and try again.",
+            )),
+            ..final_payload.clone()
+          });
+          return;
         }
       }
+
+      window_emit(final_payload.clone());
     }
   });
 

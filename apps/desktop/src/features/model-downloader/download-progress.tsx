@@ -26,11 +26,11 @@ export const DownloadProgress = () => {
       )}
 
       {(downloadState === DownloadState.Downloading ||
-        downloadState === DownloadState.Processing) && (
+        downloadState === DownloadState.Validating) && (
         <SpinnerButton
           Icon={PauseIcon}
           onClick={() => pauseDownload()}
-          isSpinning={downloadState === DownloadState.Processing}
+          isSpinning={downloadState === DownloadState.Validating}
         />
       )}
 

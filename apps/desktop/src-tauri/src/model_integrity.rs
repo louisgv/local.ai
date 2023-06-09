@@ -12,8 +12,8 @@ use tokio::io::{self, AsyncReadExt};
 
 #[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub struct ModelIntegrity {
-  sha256: String,
-  blake3: String,
+  pub sha256: String,
+  pub blake3: String,
 }
 
 #[derive(Clone)]
@@ -34,7 +34,7 @@ impl State {
 
 const BUFFER_SIZE: usize = 42 * 1024 * 1024; // 42 MiB buffer
 
-pub async fn _compute_integrity<P: AsRef<Path>>(
+pub async fn compute_file_integrity<P: AsRef<Path>>(
   path: P,
 ) -> Result<ModelIntegrity, io::Error> {
   let mut file = File::open(path).await?;
@@ -80,17 +80,16 @@ pub async fn get_cached_integrity(
 }
 
 #[tauri::command]
-pub async fn compute_integrity(
+pub async fn compute_model_integrity(
   state: tauri::State<'_, self::State>,
   path: &str,
 ) -> Result<ModelIntegrity, String> {
-  let integrity = _compute_integrity(path)
+  let integrity = compute_file_integrity(path)
     .await
     .map_err(|e| format!("{}", e))?;
 
-  let model_integrity_bucket = state.0.lock();
-
   let file_path = String::from(path);
+  let model_integrity_bucket = state.0.lock();
 
   model_integrity_bucket
     .set(&file_path, &Json(integrity.clone()))

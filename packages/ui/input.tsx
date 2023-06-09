@@ -27,10 +27,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             "border border-gray-6 focus:border-gray-7",
             "bg-transparent text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none",
             "disabled:cursor-not-allowed disabled:opacity-50",
-            "placeholder:text-gray-10",
             "transition-all",
-            "outline-1 ring-offset-gray-8 focus-visible:ring-gray-7",
-            "focus-visible:ring-2 focus-visible:ring-offset-2",
+            "outline-1 focus:ring-offset-gray-7 focus-visible:ring-gray-8",
+            "focus-visible:ring-1 focus-visible:ring-offset-2",
+            "placeholder:text-gray-10",
             "text-gray-11 focus:text-gray-12",
             className
           )}

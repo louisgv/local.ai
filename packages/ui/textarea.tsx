@@ -18,13 +18,12 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         )}
         <textarea
           className={cn(
-            "transition-colors",
             "border border-gray-6 focus:border-gray-7",
             "flex min-h-[80px] w-full rounded-md bg-transparent px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50",
             "transition-all",
-            "placeholder:text-gray-10",
             "outline-1 focus:ring-offset-gray-7 focus-visible:ring-gray-8",
-            "focus-visible:ring-2 focus-visible:ring-offset-2",
+            "focus-visible:ring-1 focus-visible:ring-offset-2",
+            "placeholder:text-gray-10",
             "text-gray-11 focus:text-gray-12",
             className
           )}

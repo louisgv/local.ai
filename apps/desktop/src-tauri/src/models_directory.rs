@@ -13,11 +13,15 @@ pub fn get_current_models_path(
   default_path_state: tauri::State<'_, crate::path::State>,
   config_bucket_state: tauri::State<'_, crate::config::State>,
 ) -> Result<String, String> {
-  let default_models_path_buf = &default_path_state.models_directory_buf;
   Ok(
     config_bucket_state
       .get(ConfigKey::ModelsDirectory)
-      .unwrap_or(default_models_path_buf.display().to_string()),
+      .unwrap_or(
+        default_path_state
+          .models_directory_buf
+          .display()
+          .to_string(),
+      ),
   )
 }
 
