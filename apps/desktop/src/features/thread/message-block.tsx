@@ -36,7 +36,9 @@ export const MessageBlock = ({
           isNote && "bg-gold-7 hover:bg-gold-8 text-gold-11 hover:text-gold-12",
           isBot && "bg-blue-7 hover:bg-blue-8 text-blue-11 hover:text-blue-12"
         )}>
-        <MarkdownContainer>{children}</MarkdownContainer>
+        <MarkdownContainer className={cn("max-w-screen-sm")}>
+          {children}
+        </MarkdownContainer>
       </div>
       <Button
         className={cn(
