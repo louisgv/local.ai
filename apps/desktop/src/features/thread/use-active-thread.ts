@@ -55,6 +55,9 @@ export const useActiveThread = () => {
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT)
   const [botIconIndex, setBotIconIndex] = useState<number>(0)
 
+  const aiMessageRef = useRef<ChatMessage>()
+  const abortRef = useRef(false)
+
   const getMdRoleLine = useCallback(
     (role: Role, id: string) => {
       switch (role) {
@@ -207,7 +210,14 @@ export const useActiveThread = () => {
     setIsResponding(false)
   }
 
+  const stopInference = () => {
+    abortRef.current = true
+  }
+
   const startInference = async (text: string) => {
+    if (isResponding) {
+      return
+    }
     const newMessages: ChatMessage[] = [
       {
         id: nanoid(),
@@ -221,7 +231,7 @@ export const useActiveThread = () => {
 
     await appendMessage(newMessages[0])
 
-    const aiMessage: ChatMessage = {
+    aiMessageRef.current = {
       id: nanoid(),
       role: Role.Bot,
       content: ""
@@ -250,12 +260,14 @@ export const useActiveThread = () => {
       const reader = fetchStream.body.getReader()
       const decoder = new TextDecoder("utf-8")
 
+      // TODO: make this whole block of code more readable
       reader.read().then(async function processToken({ done, value }) {
         // Result objects contain two properties:
         // done  - true if the stream has already given you all its data.
         // value - some data. Always undefined when done is true.
         if (done) {
-          await appendMessage(aiMessage)
+          abortRef.current = false
+          await appendMessage(aiMessageRef.current)
           setIsResponding(false)
           return
         }
@@ -270,11 +282,17 @@ export const useActiveThread = () => {
 
             const resp = JSON.parse(eventData) as StreamResponse
             // pick the first for now
-            aiMessage.content += resp.choices[0].text
-            setMessages([aiMessage, ...newMessages])
+            aiMessageRef.current.content += resp.choices[0].text
+            setMessages([aiMessageRef.current, ...newMessages])
           }
         } catch (error) {}
 
+        if (abortRef.current) {
+          abortRef.current = false
+          await appendMessage(aiMessageRef.current)
+          setIsResponding(false)
+          return reader.cancel()
+        }
         // Read some more, and call this function again
         return reader.read().then(processToken)
       })
@@ -289,6 +307,7 @@ export const useActiveThread = () => {
     botIconIndex,
     addNote,
     startInference,
+    stopInference,
     systemPrompt,
     setSystemPrompt
   }
