@@ -3,13 +3,15 @@ import { useEffect, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
+import { useGlobal } from "~providers/global"
 
 export enum DownloadState {
   None = "none",
   Idle = "idle",
   Downloading = "downloading",
-  Processing = "processing",
-  Completed = "completed"
+  Validating = "validating",
+  Completed = "completed",
+  Errored = "errored"
 }
 
 type ProgressData = {
@@ -17,9 +19,16 @@ type ProgressData = {
   progress: number
   size: number
   downloadState: DownloadState
+
+  digest?: String
+  error?: string
 }
 
 export const useModelDownload = (model: ModelMetadata) => {
+  const {
+    modelsDirectoryState: { updateModelsDirectory }
+  } = useGlobal()
+
   const [progress, setProgress] = useState(0)
   const [downloadState, setDownloadState] = useState<DownloadState>(
     DownloadState.None
@@ -58,10 +67,19 @@ export const useModelDownload = (model: ModelMetadata) => {
           setProgress(payload.progress)
           setModelSize(payload.size)
 
-          if (payload.downloadState !== DownloadState.Downloading) {
-            setDownloadState(payload.downloadState)
-            unlisten?.()
+          if (
+            payload.downloadState === DownloadState.Downloading ||
+            payload.downloadState === DownloadState.Validating
+          ) {
+            return
           }
+
+          if (payload.downloadState === DownloadState.Errored) {
+            alert(payload.error)
+          }
+
+          setDownloadState(payload.downloadState)
+          unlisten?.()
         }
       )
     }
@@ -69,7 +87,7 @@ export const useModelDownload = (model: ModelMetadata) => {
     return () => {
       unlisten?.()
     }
-  }, [downloadState, model.path, eventId])
+  }, [downloadState, model.path, eventId, updateModelsDirectory])
 
   const resumeDownload = async () => {
     await invoke<ProgressData>("resume_download", {
@@ -80,7 +98,7 @@ export const useModelDownload = (model: ModelMetadata) => {
   }
 
   const pauseDownload = async () => {
-    setDownloadState(DownloadState.Processing)
+    setDownloadState(DownloadState.Validating)
     await invoke<ProgressData>("pause_download", {
       path: model.path
     })

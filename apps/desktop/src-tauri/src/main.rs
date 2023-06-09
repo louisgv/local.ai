@@ -62,7 +62,7 @@ fn main() {
       downloader::pause_download,
       downloader::resume_download,
       model_integrity::get_cached_integrity,
-      model_integrity::compute_integrity,
+      model_integrity::compute_model_integrity,
       model_stats::get_model_stats,
       inference_server::start_server,
       inference_server::stop_server,

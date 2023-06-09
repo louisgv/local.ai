@@ -19,7 +19,7 @@ import { useGlobal } from "~providers/global"
 
 export const ModelSelector = () => {
   const {
-    modelsDirectoryState: { updateModelsDirectory }
+    modelsDirectoryState: { updateModelsDirectory, modelsSet }
   } = useGlobal()
 
   const { models, modelMap } = useModelsApi()
@@ -55,48 +55,53 @@ export const ModelSelector = () => {
           </SelectValue>
         </SelectTrigger>
         <SelectContent className="flex h-96 w-full">
-          {models.map((model) => (
-            <SelectItem key={model.downloadUrl} value={model.blake3}>
-              <div className={cn("flex flex-col gap-2 text-md w-full text-xs")}>
-                <div className="flex items-center justify-between w-full">
-                  <span
-                    className={cn(
-                      "w-full text-lg",
-                      selectedModelHash === model.blake3 ? "text-gray-12" : null
-                    )}>
-                    {model.name}
-                  </span>
+          {models
+            .filter((model) => !modelsSet.has(model.name))
+            .map((model) => (
+              <SelectItem key={model.downloadUrl} value={model.blake3}>
+                <div
+                  className={cn("flex flex-col gap-2 text-md w-full text-xs")}>
+                  <div className="flex items-center justify-between w-full">
+                    <span
+                      className={cn(
+                        "w-full text-lg",
+                        selectedModelHash === model.blake3
+                          ? "text-gray-12"
+                          : null
+                      )}>
+                      {model.name}
+                    </span>
 
-                  <span className="flex flex-col items-end">
-                    <code className="text-ellipsis text-gray-10">
-                      {getTruncatedHash(model.blake3)}
+                    <span className="flex flex-col items-end">
+                      <code className="text-ellipsis text-gray-10">
+                        {getTruncatedHash(model.blake3)}
+                      </code>
+                      <div className="italic">
+                        {toGB(model.size).toFixed(2)} GB
+                      </div>
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <pre className="max-w-screen-sm whitespace-pre-wrap">
+                      <Balancer>{model.description}</Balancer>
+                    </pre>
+
+                    <code className="text-gray-10 break-all max-w-screen-md">
+                      <Balancer>{model.downloadUrl}</Balancer>
                     </code>
-                    <div className="italic">
-                      {toGB(model.size).toFixed(2)} GB
+                    <div className="flex flex-wrap gap-2 justify-end">
+                      {model.licenses.map((license) => (
+                        <span
+                          key={license}
+                          className="px-2 py-1 rounded-lg bg-gray-6">
+                          {license}
+                        </span>
+                      ))}
                     </div>
-                  </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <pre className="max-w-screen-sm whitespace-pre-wrap">
-                    <Balancer>{model.description}</Balancer>
-                  </pre>
-
-                  <code className="text-gray-10 break-all max-w-screen-md">
-                    <Balancer>{model.downloadUrl}</Balancer>
-                  </code>
-                  <div className="flex flex-wrap gap-2 justify-end">
-                    {model.licenses.map((license) => (
-                      <span
-                        key={license}
-                        className="px-2 py-1 rounded-lg bg-gray-6">
-                        {license}
-                      </span>
-                    ))}
                   </div>
                 </div>
-              </div>
-            </SelectItem>
-          ))}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
       <SpinnerButton

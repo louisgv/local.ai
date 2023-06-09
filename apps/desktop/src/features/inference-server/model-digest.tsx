@@ -3,7 +3,7 @@ import { SpinnerButton } from "@localai/ui/button"
 import { CrossCircledIcon, ReloadIcon } from "@radix-ui/react-icons"
 import { invoke } from "@tauri-apps/api/tauri"
 import { ShoppingCodeCheck } from "iconoir-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { InitState, useInit } from "~features/inference-server/use-init"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
@@ -45,11 +45,17 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
     setDigestHash(resp)
   }, [model])
 
+  useEffect(() => {
+    if (downloadState === DownloadState.Completed) {
+      getCachedIntegrity(model.path).then(setDigestHash)
+    }
+  }, [model, downloadState])
+
   async function computeDigest() {
     setDigestHash(null)
     setIsCalculating(true)
     try {
-      const resp = await invoke<ModelDigest>("compute_integrity", {
+      const resp = await invoke<ModelDigest>("compute_model_integrity", {
         path: model.path
       })
       setDigestHash(resp)

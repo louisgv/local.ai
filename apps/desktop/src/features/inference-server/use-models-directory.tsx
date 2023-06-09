@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
 import type {
@@ -36,8 +36,19 @@ export const useModelsDirectory = () => {
     [modelsDirectory]
   )
 
+  // For shallow check of downloaded models - it will do for now. In the future, we would wanna check their hash
+  const modelsSet = useMemo(
+    () =>
+      models.reduce((acc, model) => {
+        acc.add(model.name)
+        return acc
+      }, new Set()),
+    [models]
+  )
+
   return {
     models,
+    modelsSet,
     modelsDirectory,
     isRefreshing,
     updateModelsDirectory
