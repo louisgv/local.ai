@@ -260,44 +260,41 @@ export const useActiveThread = () => {
       const reader = fetchStream.body.getReader()
       const decoder = new TextDecoder("utf-8")
 
-      // TODO: make this whole block of code more readable
-      reader.read().then(async function processToken({ done, value }) {
-        // Result objects contain two properties:
-        // done  - true if the stream has already given you all its data.
-        // value - some data. Always undefined when done is true.
-        if (done) {
-          abortRef.current = false
-          await appendMessage(aiMessageRef.current)
-          setIsResponding(false)
-          return
+      async function processToken() {
+        let readingBuffer = await reader.read()
+        while (!readingBuffer.done && !abortRef.current) {
+          try {
+            const result =
+              typeof readingBuffer.value === "string"
+                ? readingBuffer.value
+                : decoder.decode(readingBuffer.value, { stream: true })
+
+            if (result?.startsWith(SSE_DATA_EVENT_PREFIX)) {
+              const eventData = result
+                .slice(SSE_DATA_EVENT_PREFIX.length)
+                .trim()
+              const resp = JSON.parse(eventData) as StreamResponse
+
+              aiMessageRef.current.content += resp.choices[0].text
+              setMessages([aiMessageRef.current, ...newMessages])
+            }
+          } catch (_) {}
+
+          readingBuffer = await reader.read()
         }
-        try {
-          const result =
-            typeof value === "string"
-              ? value
-              : decoder.decode(value, { stream: true })
 
-          if (!!result && result.startsWith(SSE_DATA_EVENT_PREFIX)) {
-            const eventData = result.slice(SSE_DATA_EVENT_PREFIX.length).trim()
-
-            const resp = JSON.parse(eventData) as StreamResponse
-            // pick the first for now
-            aiMessageRef.current.content += resp.choices[0].text
-            setMessages([aiMessageRef.current, ...newMessages])
-          }
-        } catch (error) {}
-
-        if (abortRef.current) {
-          abortRef.current = false
-          await appendMessage(aiMessageRef.current)
-          setIsResponding(false)
-          return reader.cancel()
+        abortRef.current = false
+        await appendMessage(aiMessageRef.current)
+        setIsResponding(false)
+        if (!readingBuffer.done) {
+          await reader.cancel()
         }
-        // Read some more, and call this function again
-        return reader.read().then(processToken)
-      })
+      }
+
+      await processToken()
     } catch (error) {
       alert(`ERROR: Server was not started OR no model was loaded.`)
+      setIsResponding(false)
     }
   }
 
