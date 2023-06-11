@@ -1,21 +1,26 @@
 import { cn } from "@localai/theme/utils"
 import { Button } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
+import { Spinner } from "@localai/ui/spinner"
 import { Textarea } from "@localai/ui/textarea"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  GearIcon
+  GearIcon,
+  PauseIcon,
+  StopIcon
 } from "@radix-ui/react-icons"
 import {
   BasketballAlt,
   BreadSlice,
+  Cancel,
   CoffeeCup,
   Cpu,
   ElectronicsChip,
   ElectronicsTransistor,
   FavouriteBook,
   Palette,
+  Pause,
   Pokeball
 } from "iconoir-react"
 import { useMemo } from "react"
@@ -44,6 +49,7 @@ export const ChatView = () => {
     messages,
     addNote,
     startInference,
+    stopInference,
     systemPrompt,
     setSystemPrompt,
     isResponding,
@@ -92,14 +98,19 @@ export const ChatView = () => {
               </MessageBlock>
             ))}
           </ViewBody>
+          <div className="flex flex-col sticky bottom-0 max-w-screen-md pr-4 self-center w-full gap-3">
+            <div className="h-12 flex items-center justify-center w-full">
+              {isResponding && <Spinner className="h-8 w-8 text-blue-9" />}
+            </div>
 
-          <PromptTextarea
-            className="sticky bottom-0 max-w-screen-md pr-4 self-center"
-            disabled={isResponding}
-            clearInput
-            onNote={addNote}
-            onSubmit={startInference}
-          />
+            <PromptTextarea
+              isResponding={isResponding}
+              clearInput
+              onNote={addNote}
+              onSubmit={startInference}
+              onStop={stopInference}
+            />
+          </div>
         </ViewBody>
       </ViewContainer>
       <ViewContainer

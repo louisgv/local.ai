@@ -4,7 +4,7 @@ import { MarkdownContainer } from "@localai/ui/markdown-container"
 import { Notes, User } from "iconoir-react"
 import { useMemo } from "react"
 
-import { Role } from "~features/thread/use-active-thread"
+import { Role } from "~features/thread/_shared"
 
 const defaultMessage = `
 # h1 Occaecat exercitation
@@ -42,6 +42,7 @@ export const MessageBlock = ({
       </div>
       <Button
         className={cn(
+          "w-12 h-12 p-0 justify-center",
           "transition-colors rounded-l-none",
           isUser && "bg-gray-3 hover:bg-gray-4",
           isNote && "bg-gold-6 hover:bg-gold-7 text-gold-11 hover:text-gold-12",

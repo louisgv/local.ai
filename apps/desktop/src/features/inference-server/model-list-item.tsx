@@ -28,7 +28,7 @@ export const ModelListItem = ({ model }: { model: ModelMetadata }) => {
     <ModelProvider model={model}>
       <div
         className={cn(
-          "flex flex-col gap-4 rounded-md p-4",
+          "flex flex-col gap-4 rounded-md p-2 pl-3",
           "text-gray-11 hover:text-gray-12",
           "transition-colors group",
           activeModel?.path === model.path
