@@ -14,6 +14,8 @@ import { useGlobal } from "~providers/global"
 
 export const QuickModelLoaderSelector = () => {
   const {
+    serverStartedState: [serverStarted],
+    startServer,
     activeModelState: [activeModel],
     modelsDirectoryState: { models, modelsMap },
     loadModel
@@ -34,6 +36,9 @@ export const QuickModelLoaderSelector = () => {
         try {
           const modelType = (await getModelType(model)) || ModelType.Llama
           await loadModel(model, modelType)
+          if (!serverStarted) {
+            await startServer()
+          }
         } catch (error) {
           alert(error)
         }
