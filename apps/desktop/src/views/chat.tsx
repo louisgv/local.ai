@@ -6,21 +6,17 @@ import { Textarea } from "@localai/ui/textarea"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  GearIcon,
-  PauseIcon,
-  StopIcon
+  GearIcon
 } from "@radix-ui/react-icons"
 import {
   BasketballAlt,
   BreadSlice,
-  Cancel,
   CoffeeCup,
   Cpu,
   ElectronicsChip,
   ElectronicsTransistor,
   FavouriteBook,
   Palette,
-  Pause,
   Pokeball
 } from "iconoir-react"
 import { useMemo } from "react"
@@ -29,6 +25,7 @@ import { useToggle } from "~features/layout/use-toggle"
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
 import { MessageBlock } from "~features/thread/message-block"
 import { PromptTextarea } from "~features/thread/prompt-textarea"
+import { QuickModelLoaderSelector } from "~features/thread/quick-model-loader-selector"
 import { ChatSideBarToggle } from "~features/thread/side-bar"
 import { useActiveThread } from "~features/thread/use-active-thread"
 
@@ -68,6 +65,7 @@ export const ChatView = () => {
       <ViewContainer>
         <ViewHeader>
           <ChatSideBarToggle />
+          <QuickModelLoaderSelector />
           <Input
             className="w-full"
             placeholder="System Message"
@@ -91,11 +89,10 @@ export const ChatView = () => {
           <ViewBody className="p-4 pl-0 flex flex-col-reverse gap-4 h-full overflow-auto max-w-screen-md mx-auto">
             {messages.map((message) => (
               <MessageBlock
-                from={message.role}
+                key={message.id}
                 BotIcon={botIconClass}
-                key={message.id}>
-                {message.content}
-              </MessageBlock>
+                message={message}
+              />
             ))}
           </ViewBody>
           <div className="flex flex-col sticky bottom-0 max-w-screen-md pr-4 self-center w-full gap-3">

@@ -19,7 +19,7 @@ import { useGlobal } from "~providers/global"
 
 export const ModelSelector = () => {
   const {
-    modelsDirectoryState: { updateModelsDirectory, modelsSet }
+    modelsDirectoryState: { updateModelsDirectory, modelsMap }
   } = useGlobal()
 
   const { models, modelMap } = useModelsApi()
@@ -56,7 +56,7 @@ export const ModelSelector = () => {
         </SelectTrigger>
         <SelectContent className="flex h-96 w-full">
           {models
-            .filter((model) => !modelsSet.has(model.name))
+            .filter((model) => !modelsMap.has(model.name))
             .map((model) => (
               <SelectItem key={model.downloadUrl} value={model.blake3}>
                 <div

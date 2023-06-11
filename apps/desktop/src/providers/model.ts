@@ -22,7 +22,7 @@ export enum ModelLoadState {
 const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   const {
     activeModelState: [activeModel, setActiveModel],
-    concurrencyState: [concurrency]
+    loadModel: _loadModel
   } = useGlobal()
   // TODO: Cache the model type in a kv later
   const [modelLoadState, setModelLoadState] = useState<ModelLoadState>(
@@ -47,19 +47,8 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   const loadModel = async () => {
     setModelLoadState(ModelLoadState.Loading)
     try {
-      await invoke("load_model", {
-        ...model,
-        modelType,
-        modelVocabulary: {},
-        concurrency
-      })
+      await _loadModel(model, modelType)
 
-      const integrity = await getCachedIntegrity(model.path)
-
-      setActiveModel({
-        ...model,
-        digest: integrity?.blake3
-      })
       setModelLoadState(ModelLoadState.Loaded)
     } catch (error) {
       alert(error)
