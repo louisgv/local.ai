@@ -19,6 +19,11 @@ export enum Route {
   Chat = "chat"
 }
 
+export async function invoke<T = any>(cmd: string, args?: Record<string, any>) {
+  const { invoke: _invoke } = await import("@tauri-apps/api/tauri")
+  return _invoke<T>(cmd, args)
+}
+
 async function setTitle(window: WebviewWindow) {
   const { platform } = await import("@tauri-apps/api/os")
 
@@ -102,6 +107,16 @@ const useGlobalProvider = () => {
     if (!serverStartedState[0]) {
       await startServer()
     }
+  }
+
+  const startServer = async () => {
+    await invoke("start_server", { port: portState[0] }).catch((_) => null)
+    serverStartedState[1](true)
+  }
+
+  const stopServer = async () => {
+    await invoke("stop_server")
+    serverStartedState[1](false)
   }
 
   return {
