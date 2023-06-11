@@ -3,10 +3,7 @@ use parking_lot::Mutex;
 
 use std::{fs, path::PathBuf, sync::Arc};
 
-use llm::{
-  load_progress_callback_stdout, InferenceParameters, ModelArchitecture,
-  VocabularySource,
-};
+use llm::{load_progress_callback_stdout, ModelArchitecture, VocabularySource};
 
 use std::path::Path;
 
@@ -33,12 +30,8 @@ pub fn return_model(model: Option<ModelGuard>) {
   models.push_back(model);
 }
 
-pub fn get_inference_params() -> InferenceParameters {
-  InferenceParameters {
-    // n_batch: 4,
-    n_threads: num_cpus::get_physical() / (*CONCURRENCY_COUNT.lock()),
-    ..Default::default()
-  }
+pub fn get_n_threads() -> usize {
+  num_cpus::get_physical() / (*CONCURRENCY_COUNT.lock())
 }
 
 pub async fn spawn_pool(

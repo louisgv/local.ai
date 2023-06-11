@@ -30,6 +30,12 @@ export async function processSseStream(
       if (result?.startsWith(SSE_DATA_EVENT_PREFIX)) {
         const eventData = result.slice(SSE_DATA_EVENT_PREFIX.length).trim()
 
+        if (eventData === "[DONE]") {
+          // Handle early termination here if needed. This is the final value event emitted by the server before closing the connection.
+
+          break
+        }
+
         await onData(JSON.parse(eventData))
       }
     } catch (_) {}

@@ -3,10 +3,8 @@ use actix_web::dev::ServerHandle;
 use actix_web::web::{Bytes, Json};
 
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
-use once_cell::sync::Lazy;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::path::PathBuf;
 use tauri::AppHandle;
 
@@ -23,10 +21,7 @@ use crate::inference_thread::{
 use crate::model_pool::{self, spawn_pool};
 use crate::model_stats;
 use crate::path::get_app_dir_path_buf;
-use llm::{Model, VocabularySource};
-
-static _LOADED_MODELMAP: Lazy<Mutex<HashMap<String, Box<dyn Model>>>> =
-  Lazy::new(|| Mutex::new(HashMap::new()));
+use llm::VocabularySource;
 
 #[derive(Default)]
 pub struct State {
