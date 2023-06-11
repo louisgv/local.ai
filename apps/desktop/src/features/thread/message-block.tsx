@@ -4,7 +4,7 @@ import { MarkdownContainer } from "@localai/ui/markdown-container"
 import { Notes, User } from "iconoir-react"
 import { useMemo } from "react"
 
-import { type ChatMessage, Role } from "~features/thread/_shared"
+import { Role, type ThreadMessage } from "~features/thread/_shared"
 
 const defaultMessage = `
 # h1 Occaecat exercitation
@@ -23,7 +23,7 @@ export const MessageBlock = ({
   message = {
     role: Role.User,
     content: defaultMessage
-  } as ChatMessage
+  } as ThreadMessage
 }) => {
   const isUser = useMemo(() => message.role === Role.User, [message])
   const isBot = useMemo(() => message.role === Role.Bot, [message])
@@ -43,7 +43,7 @@ export const MessageBlock = ({
         </MarkdownContainer>
 
         {message.model && (
-          <pre className="flex text-xs justify-end">{message.model}</pre>
+          <pre className="flex text-xs justify-end mt-4">{message.model}</pre>
         )}
       </div>
       <Button

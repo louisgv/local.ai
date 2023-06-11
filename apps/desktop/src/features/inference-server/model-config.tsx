@@ -9,9 +9,9 @@ import {
 } from "@localai/ui/select"
 import { modelTypeList } from "@models/index"
 import { TrashIcon } from "@radix-ui/react-icons"
-import { invoke } from "@tauri-apps/api/tauri"
 import { useState } from "react"
 
+import { InvokeCommand, invoke } from "~features/invoke"
 import { DownloadProgress } from "~features/model-downloader/download-progress"
 import { DownloadState } from "~features/model-downloader/use-model-download"
 import { useGlobal } from "~providers/global"
@@ -28,7 +28,7 @@ const TestModelButton = () => {
       isSpinning={isTesting}
       onClick={async () => {
         setIsTesting(true)
-        await invoke("test_model", {
+        await invoke(InvokeCommand.TestModel, {
           ...model,
           modelType
         })
@@ -70,7 +70,7 @@ export const ModelConfig = () => {
           )}
           Icon={TrashIcon}
           onClick={async () => {
-            await invoke("delete_model_file", {
+            await invoke(InvokeCommand.DeleteModelFile, {
               path: model.path
             })
 

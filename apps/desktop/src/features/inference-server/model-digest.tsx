@@ -1,20 +1,15 @@
 import { cn } from "@localai/theme/utils"
 import { SpinnerButton } from "@localai/ui/button"
 import { CrossCircledIcon, ReloadIcon } from "@radix-ui/react-icons"
-import { invoke } from "@tauri-apps/api/tauri"
 import { ShoppingCodeCheck } from "iconoir-react"
 import { useEffect, useState } from "react"
 
 import { InitState, useInit } from "~features/inference-server/use-init"
+import { InvokeCommand, invoke } from "~features/invoke"
+import type { ModelIntegrity } from "~features/invoke/model-integrity"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 import { DownloadState } from "~features/model-downloader/use-model-download"
 import { useModel } from "~providers/model"
-
-type ModelDigest = {
-  md5: string
-  sha256: string
-  blake3: string
-}
 
 export const getTruncatedHash = (hashValue: string) =>
   `${hashValue.slice(0, 4)}...${hashValue.slice(-7)}`
@@ -31,13 +26,13 @@ const HashDisplay = ({ hashType = "", hashValue = "", truncated = false }) => {
 }
 
 export const getCachedIntegrity = async (path: string) =>
-  invoke<ModelDigest>("get_cached_integrity", {
+  invoke(InvokeCommand.GetCachedIntegrity, {
     path
-  }).catch<ModelDigest>(() => null)
+  }).catch<ModelIntegrity>(() => null)
 
 export function ModelDigest({ model }: { model: ModelMetadata }) {
   const { downloadState } = useModel()
-  const [digestHash, setDigestHash] = useState<ModelDigest>(null)
+  const [digestHash, setDigestHash] = useState<ModelIntegrity>(null)
   const [isCalculating, setIsCalculating] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
   const { initState } = useInit(async () => {
@@ -55,7 +50,7 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
     setDigestHash(null)
     setIsCalculating(true)
     try {
-      const resp = await invoke<ModelDigest>("compute_model_integrity", {
+      const resp = await invoke(InvokeCommand.ComputeModelIntegrity, {
         path: model.path
       })
       setDigestHash(resp)

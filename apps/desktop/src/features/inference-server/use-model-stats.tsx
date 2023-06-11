@@ -1,12 +1,8 @@
-import { invoke } from "@tauri-apps/api/tauri"
 import { useReducer } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
+import { InvokeCommand, invoke } from "~features/invoke"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
-
-export type ModelStats = {
-  loadCount: number
-}
 
 type LaunchCountAction = { type: "initialize" | "increment"; payload?: number }
 
@@ -24,7 +20,7 @@ export const useModelStats = (model: ModelMetadata) => {
   const [launchCount, dispatch] = useReducer(launchCounter, 0)
 
   useInit(async () => {
-    const resp = await invoke<ModelStats>("get_model_stats", {
+    const resp = await invoke(InvokeCommand.GetModelStats, {
       path: model.path
     }).catch<null>(() => null)
     if (resp) {

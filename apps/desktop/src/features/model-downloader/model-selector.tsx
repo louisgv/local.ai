@@ -8,11 +8,11 @@ import {
   SelectValue
 } from "@localai/ui/select"
 import { DownloadIcon } from "@radix-ui/react-icons"
-import { invoke } from "@tauri-apps/api/tauri"
 import { useMemo, useState } from "react"
 import Balancer from "react-wrap-balancer"
 
 import { getTruncatedHash } from "~features/inference-server/model-digest"
+import { InvokeCommand, invoke } from "~features/invoke"
 import { toGB } from "~features/model-downloader/model-file"
 import { useModelsApi } from "~features/model-downloader/use-models-api"
 import { useGlobal } from "~providers/global"
@@ -111,11 +111,11 @@ export const ModelSelector = () => {
         onClick={async () => {
           setIsDownloading(true)
           try {
-            await invoke("start_download", {
+            await invoke(InvokeCommand.StartDownload, {
               name: selectedModel.name,
               downloadUrl: selectedModel.downloadUrl,
-              digest: selectedModel.blake3,
-              modelType: selectedModel.modelType
+              modelType: selectedModel.modelType,
+              digest: selectedModel.blake3
             })
           } catch (error) {
             alert(error)

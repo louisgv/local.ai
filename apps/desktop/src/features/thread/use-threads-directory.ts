@@ -1,10 +1,8 @@
 import { useCallback, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
-import type {
-  DirectoryState,
-  FileInfo
-} from "~features/model-downloader/model-file"
+import { InvokeCommand, invoke } from "~features/invoke"
+import type { FileInfo } from "~features/model-downloader/model-file"
 
 export const useThreadsDirectory = () => {
   const [threadsDirectory, setThreadsDirectory] = useState("")
@@ -13,8 +11,7 @@ export const useThreadsDirectory = () => {
 
   useInit(async () => {
     // get the models directory saved in config
-    const { invoke } = await import("@tauri-apps/api/tauri")
-    const resp = await invoke<DirectoryState>("initialize_threads_dir")
+    const resp = await invoke(InvokeCommand.InitializeThreadsDir)
     if (!resp) {
       return
     }
@@ -25,8 +22,7 @@ export const useThreadsDirectory = () => {
   const updateThreadsDirectory = useCallback(
     async (dir = threadsDirectory) => {
       setIsRefreshing(true)
-      const { invoke } = await import("@tauri-apps/api/tauri")
-      const resp = await invoke<DirectoryState>("update_threads_dir", {
+      const resp = await invoke(InvokeCommand.UpdateThreadsDir, {
         dir
       })
       setThreadsDirectory(resp.path)
@@ -38,16 +34,14 @@ export const useThreadsDirectory = () => {
   )
 
   const removeThread = useCallback(async (thread: FileInfo) => {
-    const { invoke } = await import("@tauri-apps/api/tauri")
-    await invoke<DirectoryState>("delete_thread_file", {
+    await invoke(InvokeCommand.DeleteThreadFile, {
       path: thread.path
     })
   }, [])
 
   const renameThread = useCallback(
     async (thread: FileInfo, newName: string) => {
-      const { invoke } = await import("@tauri-apps/api/tauri")
-      return invoke<string>("rename_thread_file", {
+      return invoke(InvokeCommand.RenameThreadFile, {
         path: thread.path,
         newName
       })
@@ -56,8 +50,7 @@ export const useThreadsDirectory = () => {
   )
 
   const createThread = useCallback(async () => {
-    const { invoke } = await import("@tauri-apps/api/tauri")
-    return invoke<string>("create_thread_file")
+    return invoke(InvokeCommand.CreateThreadFile)
   }, [])
 
   return {

@@ -1,11 +1,10 @@
 export enum Role {
-  Metadata = "metadata",
   User = "user",
   Bot = "bot",
   Note = "note"
 }
 
-export type ChatMessage = {
+export type ThreadMessage = {
   id: string
   content: string
   role: Role

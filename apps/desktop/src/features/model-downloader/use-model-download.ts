@@ -1,28 +1,15 @@
-import { invoke } from "@tauri-apps/api/tauri"
 import { useEffect, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
+import { InvokeCommand, invoke } from "~features/invoke"
+import {
+  DownloadState,
+  type ProgressData
+} from "~features/invoke/model-downloader"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 import { useGlobal } from "~providers/global"
 
-export enum DownloadState {
-  None = "none",
-  Idle = "idle",
-  Downloading = "downloading",
-  Validating = "validating",
-  Completed = "completed",
-  Errored = "errored"
-}
-
-type ProgressData = {
-  eventId: string
-  progress: number
-  size: number
-  downloadState: DownloadState
-
-  digest?: String
-  error?: string
-}
+export { DownloadState, type ProgressData }
 
 export const useModelDownload = (model: ModelMetadata) => {
   const {
@@ -38,7 +25,7 @@ export const useModelDownload = (model: ModelMetadata) => {
   const [modelSize, setModelSize] = useState(model.size)
 
   const syncDownloadState = async () => {
-    const resp = await invoke<ProgressData>("get_download_progress", {
+    const resp = await invoke(InvokeCommand.GetDownloadProgress, {
       path: model.path
     }).catch<null>((_) => null)
 
@@ -90,7 +77,7 @@ export const useModelDownload = (model: ModelMetadata) => {
   }, [downloadState, model.path, eventId, updateModelsDirectory])
 
   const resumeDownload = async () => {
-    await invoke<ProgressData>("resume_download", {
+    await invoke(InvokeCommand.ResumeDownload, {
       path: model.path
     })
 
@@ -99,7 +86,7 @@ export const useModelDownload = (model: ModelMetadata) => {
 
   const pauseDownload = async () => {
     setDownloadState(DownloadState.Validating)
-    await invoke<ProgressData>("pause_download", {
+    await invoke(InvokeCommand.PauseDownload, {
       path: model.path
     })
     setDownloadState(DownloadState.Idle)

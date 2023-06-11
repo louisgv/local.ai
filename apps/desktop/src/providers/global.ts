@@ -9,6 +9,7 @@ import { useContext, useState } from "react"
 import { getCachedIntegrity } from "~features/inference-server/model-digest"
 import { useInit } from "~features/inference-server/use-init"
 import { useModelsDirectory } from "~features/inference-server/use-models-directory"
+import { InvokeCommand, invoke } from "~features/invoke"
 import { useToggle } from "~features/layout/use-toggle"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 import { useThreadsDirectory } from "~features/thread/use-threads-directory"
@@ -16,11 +17,6 @@ import { useThreadsDirectory } from "~features/thread/use-threads-directory"
 export enum Route {
   ModelManager = "model-manager",
   Chat = "chat"
-}
-
-export async function invoke<T = any>(cmd: string, args?: Record<string, any>) {
-  const { invoke: _invoke } = await import("@tauri-apps/api/tauri")
-  return _invoke<T>(cmd, args)
 }
 
 async function setTitle(window: WebviewWindow) {
@@ -47,7 +43,7 @@ const useGlobalProvider = () => {
   const modelsDirectoryState = useModelsDirectory()
   const threadsDirectoryState = useThreadsDirectory()
 
-  const onboardState = useState()
+  const onboardState = useState("")
 
   const windowRef = useRef<WebviewWindow>()
 
@@ -58,9 +54,9 @@ const useGlobalProvider = () => {
 
     const [isVisible, initialOnboardState] = await Promise.all([
       currentWindow.isVisible(),
-      invoke<string>("get_config", {
+      invoke(InvokeCommand.GetConfig, {
         key: "onboard_state"
-      }).catch((_) => null),
+      }).catch<null>((_) => null),
       setTitle(currentWindow)
     ])
 
@@ -72,12 +68,24 @@ const useGlobalProvider = () => {
     }
   })
 
+  const startServer = async () => {
+    await invoke(InvokeCommand.StartServer, { port: portState[0] }).catch(
+      (_) => null
+    )
+    serverStartedState[1](true)
+  }
+
+  const stopServer = async () => {
+    await invoke(InvokeCommand.StopServer)
+    serverStartedState[1](false)
+  }
+
   const loadModel = async (
     model: ModelMetadata,
     modelType: ModelType,
     modelVocabulary = {}
   ) => {
-    await invoke("load_model", {
+    await invoke(InvokeCommand.LoadModel, {
       ...model,
       modelType,
       modelVocabulary,
@@ -90,16 +98,10 @@ const useGlobalProvider = () => {
       ...model,
       digest: integrity?.blake3
     })
-  }
 
-  const startServer = async () => {
-    await invoke("start_server", { port: portState[0] }).catch((_) => null)
-    serverStartedState[1](true)
-  }
-
-  const stopServer = async () => {
-    await invoke("stop_server")
-    serverStartedState[1](false)
+    if (!serverStartedState[0]) {
+      await startServer()
+    }
   }
 
   return {
