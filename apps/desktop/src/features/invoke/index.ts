@@ -11,7 +11,7 @@ import { InvokeCommand, type InvokeIO } from "./_shared"
 export { InvokeCommand }
 
 type InvokeCommandMap = {
-  [command in InvokeCommand]: InvokeIO
+  [commands in InvokeCommand]: InvokeIO
 } & {
   [InvokeCommand.OpenDirectory]: InvokeIO<{ path: string }>
   [InvokeCommand.GetConfig]: InvokeIO<{ key: string }, string>
@@ -21,6 +21,7 @@ type InvokeCommandMap = {
   [InvokeCommand.DeleteModelFile]: InvokeIO<{ path: string }>
 
   [InvokeCommand.GetModelType]: InvokeIO<{ path: string }, ModelType>
+  [InvokeCommand.SetModelType]: InvokeIO<{ path: string; modelType: ModelType }>
 
   [InvokeCommand.StartServer]: InvokeIO<{ port: number }, string>
   [InvokeCommand.StopServer]: InvokeIO<never, string>

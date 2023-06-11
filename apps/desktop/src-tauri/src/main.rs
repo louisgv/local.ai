@@ -42,6 +42,7 @@ fn main() {
 
       Ok(())
     })
+    // NOTE: New cmd should be added to invoke/_shared.ts
     .invoke_handler(tauri::generate_handler![
       config::get_config,
       path::read_directory,

@@ -3,6 +3,7 @@ export type InvokeIO<Input = Record<string, any>, Output = any> = {
   output: Output
 }
 
+// This should match up with the list of command in apps/desktop/src-tauri/src/main.rs
 export enum InvokeCommand {
   GetConfig = "get_config",
   ReadDirectory = "read_directory",
