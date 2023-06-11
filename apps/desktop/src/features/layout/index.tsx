@@ -2,10 +2,10 @@ import { Button } from "@localai/ui/button"
 import { AppLayout } from "@localai/ui/layouts/app"
 import { DotsHorizontalIcon, OpenInNewWindowIcon } from "@radix-ui/react-icons"
 import { open as dialogOpen } from "@tauri-apps/api/dialog"
-import { invoke } from "@tauri-apps/api/tauri"
 import { Home } from "iconoir-react"
 import type { ReactNode } from "react"
 
+import { InvokeCommand, invoke } from "~features/invoke"
 import { NavButton } from "~features/layout/nav-button"
 import { NewThreadButton } from "~features/thread/new-thread"
 import { ChatSideBar } from "~features/thread/side-bar"
@@ -38,7 +38,7 @@ const TopBar = () => {
         title="Open threads directory"
         className="rounded-l-none"
         onClick={() => {
-          invoke("open_directory", {
+          invoke(InvokeCommand.OpenDirectory, {
             path: threadsDirectory
           })
         }}>

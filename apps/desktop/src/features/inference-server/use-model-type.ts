@@ -1,19 +1,19 @@
 import { ModelType } from "@models/index"
-import { invoke } from "@tauri-apps/api/tauri"
 import { useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
+import { InvokeCommand, invoke } from "~features/invoke"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 
 export function setModelType(model: ModelMetadata, modelType: ModelType) {
-  return invoke("set_model_type", {
+  return invoke(InvokeCommand.SetModelType, {
     path: model.path,
     modelType
   })
 }
 
 export async function getModelType(model: ModelMetadata) {
-  return invoke<ModelType>("get_model_type", {
+  return invoke(InvokeCommand.GetModelType, {
     path: model.path
   }).catch<null>(() => null)
 }

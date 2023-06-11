@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid"
 import { useRef, useState } from "react"
 
-import { type ChatMessage, Role } from "~features/thread/_shared"
+import { Role, type ThreadMessage } from "~features/thread/_shared"
 import { processSseStream } from "~features/thread/process-token-stream"
 import { useThreadMdx } from "~features/thread/use-thread-mdx"
 import { useGlobal } from "~providers/global"
@@ -12,6 +12,7 @@ const getQAPrompt = (text: string, systemPrompt: string) =>
 
 export const useActiveThread = () => {
   const {
+    activeModelState: [activeModel],
     portState: [port]
   } = useGlobal()
 
@@ -26,12 +27,12 @@ export const useActiveThread = () => {
     botIconIndex
   } = useThreadMdx()
 
-  const aiMessageRef = useRef<ChatMessage>()
+  const aiMessageRef = useRef<ThreadMessage>()
   const abortRef = useRef(false)
 
   const addNote = async (text: string) => {
     setIsResponding(true)
-    const newMessage: ChatMessage = {
+    const newMessage: ThreadMessage = {
       id: nanoid(),
       role: Role.Note,
       content: text
@@ -52,7 +53,7 @@ export const useActiveThread = () => {
       return
     }
 
-    const newMessages: ChatMessage[] = [
+    const newMessages: ThreadMessage[] = [
       {
         id: nanoid(),
         role: Role.User,
@@ -69,6 +70,7 @@ export const useActiveThread = () => {
     aiMessageRef.current = {
       id: nanoid(),
       role: Role.Bot,
+      model: activeModel.name,
       content: ""
     }
 

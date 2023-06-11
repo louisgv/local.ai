@@ -1,10 +1,11 @@
 import { nanoid } from "nanoid"
 import { useCallback, useEffect, useState } from "react"
 
+import { InvokeCommand, invoke } from "~features/invoke"
 import {
-  type ChatMessage,
   DEFAULT_SYSTEM_PROMPT,
-  Role
+  Role,
+  type ThreadMessage
 } from "~features/thread/_shared"
 import { useGlobal } from "~providers/global"
 
@@ -39,12 +40,12 @@ export const useThreadMdx = () => {
     activeThreadState: [activeThread]
   } = useGlobal()
 
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [messages, setMessages] = useState<ThreadMessage[]>([])
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT)
   const [botIconIndex, setBotIconIndex] = useState<number>(0)
 
   const getMdRoleLine = useCallback(
-    (role: Role, id: string) => {
+    ({ role, id }: ThreadMessage) => {
       switch (role) {
         case Role.User:
           return `${USER_TAG} id="${id}" />`
@@ -62,12 +63,11 @@ export const useThreadMdx = () => {
     let unlisten: () => void
 
     async function init() {
-      const { invoke } = await import("@tauri-apps/api/tauri")
       const { appWindow } = await import("@tauri-apps/api/window")
 
       const eventId = `read_thread_file:${nanoid()}`
 
-      const messagesBuffer: ChatMessage[] = []
+      const messagesBuffer: ThreadMessage[] = []
       let metadataIndicatorCount = 1
       let lastSystemPrompt = DEFAULT_SYSTEM_PROMPT
       let tagBuffer = ""
@@ -150,7 +150,7 @@ export const useThreadMdx = () => {
         }
       )
 
-      await invoke<string>("read_thread_file", {
+      await invoke(InvokeCommand.ReadThreadFile, {
         path: activeThread,
         eventId
       })
@@ -161,17 +161,16 @@ export const useThreadMdx = () => {
     }
   }, [activeThread])
 
-  const appendMessage = async (message: ChatMessage) => {
+  const appendMessage = async (message: ThreadMessage) => {
     const content = [
       "\n",
-      getMdRoleLine(message.role, message.id),
+      getMdRoleLine(message),
       "\n\n",
       message.content,
       "\n"
     ].join("")
 
-    const { invoke } = await import("@tauri-apps/api/tauri")
-    return invoke<string>("append_thread_content", {
+    return invoke(InvokeCommand.AppendThreadContent, {
       path: activeThread,
       content
     })

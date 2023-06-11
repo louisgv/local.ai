@@ -6,10 +6,10 @@ import {
   ReloadIcon
 } from "@radix-ui/react-icons"
 import { open as dialogOpen } from "@tauri-apps/api/dialog"
-import { invoke } from "@tauri-apps/api/tauri"
 
 import { ModelListItem } from "~features/inference-server/model-list-item"
 import { ServerConfig } from "~features/inference-server/server-config"
+import { InvokeCommand, invoke } from "~features/invoke"
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
 import { ModelSelector } from "~features/model-downloader/model-selector"
 import { ChatSideBarToggle } from "~features/thread/side-bar"
@@ -80,7 +80,7 @@ export function ModelManagerView() {
             title="Open models directory"
             className="w-10 p-3 rounded-l-none"
             onClick={() => {
-              invoke("open_directory", {
+              invoke(InvokeCommand.OpenDirectory, {
                 path: modelsDirectory
               })
             }}>
