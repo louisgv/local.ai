@@ -18,6 +18,11 @@ export enum Route {
   Chat = "chat"
 }
 
+export async function invoke<T = any>(cmd: string, args?: Record<string, any>) {
+  const { invoke: _invoke } = await import("@tauri-apps/api/tauri")
+  return _invoke<T>(cmd, args)
+}
+
 async function setTitle(window: WebviewWindow) {
   const { platform } = await import("@tauri-apps/api/os")
 
@@ -47,10 +52,7 @@ const useGlobalProvider = () => {
   const windowRef = useRef<WebviewWindow>()
 
   useInit(async () => {
-    const [{ getCurrent }, { invoke }] = await Promise.all([
-      import("@tauri-apps/api/window"),
-      import("@tauri-apps/api/tauri")
-    ])
+    const { getCurrent } = await import("@tauri-apps/api/window")
     const currentWindow = getCurrent()
     windowRef.current = currentWindow
 
@@ -75,8 +77,6 @@ const useGlobalProvider = () => {
     modelType: ModelType,
     modelVocabulary = {}
   ) => {
-    const { invoke } = await import("@tauri-apps/api/tauri")
-
     await invoke("load_model", {
       ...model,
       modelType,
@@ -92,9 +92,23 @@ const useGlobalProvider = () => {
     })
   }
 
+  const startServer = async () => {
+    await invoke("start_server", { port: portState[0] }).catch((_) => null)
+    serverStartedState[1](true)
+  }
+
+  const stopServer = async () => {
+    await invoke("stop_server")
+    serverStartedState[1](false)
+  }
+
   return {
     getWindow: () => windowRef.current,
     loadModel,
+
+    startServer,
+    stopServer,
+
     portState,
     routeState,
     activeThreadState,

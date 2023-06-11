@@ -1,7 +1,6 @@
 import { cn } from "@localai/theme/utils"
-import { Button, SpinnerButton } from "@localai/ui/button"
+import { SpinnerButton } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
-import { invoke } from "@tauri-apps/api/tauri"
 import { useState } from "react"
 
 import { useGlobal } from "~providers/global"
@@ -9,7 +8,9 @@ import { useGlobal } from "~providers/global"
 export const ServerConfig = () => {
   const {
     concurrencyState: [concurrency, setConcurrency],
-    serverStartedState: [isStarted, setIsStarted],
+    serverStartedState: [isStarted],
+    startServer,
+    stopServer,
     portState: [port, setPort]
   } = useGlobal()
 
@@ -49,12 +50,9 @@ export const ServerConfig = () => {
         onClick={async () => {
           setIsLoading(true)
           if (isStarted) {
-            await invoke("stop_server")
-            setIsStarted(false)
+            await stopServer()
           } else {
-            await invoke("start_server", { port }).catch((_) => null)
-
-            setIsStarted(true)
+            await startServer()
           }
           setIsLoading(false)
         }}>
