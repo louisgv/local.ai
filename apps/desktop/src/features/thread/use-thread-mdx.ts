@@ -90,8 +90,6 @@ export const useThreadMdx = () => {
         eventId,
         ({ payload: { line, done } }) => {
           if (done) {
-            console.log("done", messagesBuffer)
-
             setMessages([...messagesBuffer.reverse()])
             setSystemPrompt(lastSystemPrompt)
             unlisten?.()
@@ -141,6 +139,7 @@ export const useThreadMdx = () => {
           if (botRegex.test(tagBuffer)) {
             const { match } = addMessage(botRegex, Role.Bot)
             lastSystemPrompt = match.groups.system
+            messagesBuffer[bufferIndex].model = match.groups.model
             return
           }
 

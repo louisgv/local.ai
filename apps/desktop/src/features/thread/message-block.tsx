@@ -4,7 +4,7 @@ import { MarkdownContainer } from "@localai/ui/markdown-container"
 import { Notes, User } from "iconoir-react"
 import { useMemo } from "react"
 
-import { Role } from "~features/thread/_shared"
+import { type ChatMessage, Role } from "~features/thread/_shared"
 
 const defaultMessage = `
 # h1 Occaecat exercitation
@@ -19,13 +19,15 @@ Enim ad laboris sunt deserunt id nostrud aliquip. Tempor do anim pariatur esse p
 
 // TODO: A bit convoluted atm, need refactor to make it simpler.
 export const MessageBlock = ({
-  children = defaultMessage,
-  from = Role.User,
-  BotIcon = User
+  BotIcon = User,
+  message = {
+    role: Role.User,
+    content: defaultMessage
+  } as ChatMessage
 }) => {
-  const isUser = useMemo(() => from === Role.User, [from])
-  const isBot = useMemo(() => from === Role.Bot, [from])
-  const isNote = useMemo(() => from === Role.Note, [from])
+  const isUser = useMemo(() => message.role === Role.User, [message])
+  const isBot = useMemo(() => message.role === Role.Bot, [message])
+  const isNote = useMemo(() => message.role === Role.Note, [message])
 
   return (
     <div className="flex group">
@@ -37,8 +39,12 @@ export const MessageBlock = ({
           isBot && "bg-blue-7 hover:bg-blue-8 text-blue-11 hover:text-blue-12"
         )}>
         <MarkdownContainer className={cn("max-w-screen-sm")}>
-          {children}
+          {message.content}
         </MarkdownContainer>
+
+        {message.model && (
+          <pre className="flex text-xs justify-end">{message.model}</pre>
+        )}
       </div>
       <Button
         className={cn(

@@ -9,6 +9,8 @@ export type ChatMessage = {
   id: string
   content: string
   role: Role
+
+  model?: string
 }
 
 export const DEFAULT_SYSTEM_PROMPT =

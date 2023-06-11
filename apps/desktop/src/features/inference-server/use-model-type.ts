@@ -12,12 +12,17 @@ export function setModelType(model: ModelMetadata, modelType: ModelType) {
   })
 }
 
+export async function getModelType(model: ModelMetadata) {
+  return invoke<ModelType>("get_model_type", {
+    path: model.path
+  }).catch<null>(() => null)
+}
+
 export const useModelType = (model: ModelMetadata) => {
   const [modelType, _setModelType] = useState<ModelType>(ModelType.Llama)
+
   useInit(async () => {
-    const resp = await invoke<string>("get_model_type", {
-      path: model.path
-    }).catch(() => null)
+    const resp = await getModelType(model)
 
     if (!!resp) {
       _setModelType(resp)

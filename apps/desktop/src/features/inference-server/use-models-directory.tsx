@@ -37,18 +37,18 @@ export const useModelsDirectory = () => {
   )
 
   // For shallow check of downloaded models - it will do for now. In the future, we would wanna check their hash
-  const modelsSet = useMemo(
+  const modelsMap = useMemo(
     () =>
       models.reduce((acc, model) => {
-        acc.add(model.name)
+        acc.set(model.name, model)
         return acc
-      }, new Set()),
+      }, new Map<string, ModelMetadata>()),
     [models]
   )
 
   return {
     models,
-    modelsSet,
+    modelsMap,
     modelsDirectory,
     isRefreshing,
     updateModelsDirectory

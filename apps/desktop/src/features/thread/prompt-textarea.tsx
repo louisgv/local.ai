@@ -1,5 +1,5 @@
 import { cn } from "@localai/theme/utils"
-import { Button, SpinnerButton } from "@localai/ui/button"
+import { Button } from "@localai/ui/button"
 import { Textarea } from "@localai/ui/textarea"
 import { Notes, Pause, Send } from "iconoir-react"
 import { useCallback, useState } from "react"
@@ -37,10 +37,10 @@ export const PromptTextarea = ({
       <Textarea
         className="w-full h-full bg-gray-3"
         placeholder={[
-          "Pst... try using Markdown. Here're some shortcuts:",
-          "\t- [CTRL/CMD + ENTER]\t\tTake note",
-          "\t- [SHIFT + ENTER]\t\t\t\t\tAdd a new line",
-          "\t- [ENTER]\t\t\t\t\t\t\t\tStart AI inferencing"
+          "Markdown is supported",
+          "[CTRL/CMD + ENTER]\t\t\tTake note",
+          "[SHIFT + ENTER]\t\t\t\t\tAdd a new line",
+          "[ENTER]\t\t\t\t\t\t\t\t\tStart AI inferencing"
         ].join("\n")}
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}

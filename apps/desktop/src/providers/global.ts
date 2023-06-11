@@ -1,10 +1,12 @@
 "use client"
 
+import type { ModelType } from "@models/_shared"
 import type { WebviewWindow } from "@tauri-apps/api/window"
 import { createProvider } from "puro"
 import { useRef } from "react"
 import { useContext, useState } from "react"
 
+import { getCachedIntegrity } from "~features/inference-server/model-digest"
 import { useInit } from "~features/inference-server/use-init"
 import { useModelsDirectory } from "~features/inference-server/use-models-directory"
 import { useToggle } from "~features/layout/use-toggle"
@@ -68,8 +70,31 @@ const useGlobalProvider = () => {
     }
   })
 
+  const loadModel = async (
+    model: ModelMetadata,
+    modelType: ModelType,
+    modelVocabulary = {}
+  ) => {
+    const { invoke } = await import("@tauri-apps/api/tauri")
+
+    await invoke("load_model", {
+      ...model,
+      modelType,
+      modelVocabulary,
+      concurrency: concurrencyState[0]
+    })
+
+    const integrity = await getCachedIntegrity(model.path)
+
+    activeModelState[1]({
+      ...model,
+      digest: integrity?.blake3
+    })
+  }
+
   return {
     getWindow: () => windowRef.current,
+    loadModel,
     portState,
     routeState,
     activeThreadState,
