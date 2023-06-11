@@ -4,7 +4,7 @@ import { MarkdownContainer } from "@localai/ui/markdown-container"
 import { Notes, User } from "iconoir-react"
 import { useMemo } from "react"
 
-import { Role } from "~features/thread/use-active-thread"
+import { Role } from "~features/thread/_shared"
 
 const defaultMessage = `
 # h1 Occaecat exercitation
