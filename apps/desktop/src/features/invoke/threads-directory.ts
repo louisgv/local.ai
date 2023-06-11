@@ -1,7 +1,7 @@
 import type { InvokeCommand, InvokeIO } from "~features/invoke/_shared"
 import type { DirectoryState } from "~features/model-downloader/model-file"
 
-export type ThreadCommandMap = {
+export type ThreadsDirectoryCommandMap = {
   [InvokeCommand.AppendThreadContent]: InvokeIO<
     {
       path: string

@@ -2,7 +2,7 @@ import { nanoid } from "nanoid"
 import { useRef, useState } from "react"
 
 import { Role, type ThreadMessage } from "~features/thread/_shared"
-import { processSseStream } from "~features/thread/process-token-stream"
+import { processSseStream } from "~features/thread/process-sse-stream"
 import { useThreadMdx } from "~features/thread/use-thread-mdx"
 import { useGlobal } from "~providers/global"
 
