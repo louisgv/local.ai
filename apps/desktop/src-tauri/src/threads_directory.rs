@@ -1,3 +1,4 @@
+/// Thread as in chat/conversation thread
 use chrono::Utc;
 use rand::Rng;
 use serde::{Deserialize, Serialize};

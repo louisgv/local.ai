@@ -17,7 +17,7 @@ import { toGB } from "~features/model-downloader/model-file"
 import { useModelsApi } from "~features/model-downloader/use-models-api"
 import { useGlobal } from "~providers/global"
 
-export const ModelSelector = () => {
+export const ModelSelector = ({ className = "" }) => {
   const {
     modelsDirectoryState: { updateModelsDirectory, modelsMap }
   } = useGlobal()
@@ -34,7 +34,7 @@ export const ModelSelector = () => {
   )
 
   return (
-    <div className="flex gap-2 w-full">
+    <div className={cn("flex gap-2 w-full", className)}>
       <Select value={selectedModelHash} onValueChange={setSelectedModelHash}>
         <SelectTrigger
           className={cn(

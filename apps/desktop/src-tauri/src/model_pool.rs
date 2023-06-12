@@ -7,7 +7,7 @@ use llm::{load_progress_callback_stdout, ModelArchitecture, VocabularySource};
 
 use std::path::Path;
 
-use crate::inference_thread::ModelGuard;
+use crate::inference::thread::ModelGuard;
 use std::collections::VecDeque;
 
 pub static LOADED_MODEL_POOL: Lazy<Mutex<VecDeque<Option<ModelGuard>>>> =

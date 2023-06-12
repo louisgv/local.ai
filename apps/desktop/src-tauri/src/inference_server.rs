@@ -15,7 +15,7 @@ use std::sync::{
 
 use crate::abort_stream::AbortStream;
 use crate::config::ConfigKey;
-use crate::inference_thread::{
+use crate::inference::thread::{
   start_inference, CompletionRequest, InferenceThreadRequest,
 };
 use crate::model_pool::{self, spawn_pool};

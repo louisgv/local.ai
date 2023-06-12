@@ -19,7 +19,7 @@ export const NewThreadButton = ({ className = "" }) => {
         setActiveThread(newThread)
         setCurrentRoute(Route.Chat)
       }}>
-      <FilePlusIcon /> New Thread
+      <FilePlusIcon className="w-4 h-4 shrink-0" /> New Thread
     </Button>
   )
 }
