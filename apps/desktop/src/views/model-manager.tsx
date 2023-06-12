@@ -90,26 +90,27 @@ export function ModelManagerView() {
 
         <ServerConfig />
       </ViewHeader>
-      <ViewBody className="flex flex-col p-8 gap-6">
-        <ModelSelector />
+      <ViewBody className="flex flex-col p-4 gap-2">
+        <ModelSelector className="sticky top-0 z-10 shadow-sm p-1 rounded-lg bg-gray-1 shadow-gray-6" />
         {models.length === 0 && (
           <p className="text-gray-9 italic pointer-events-none text-center">
             {`To start, download a model or change the models directory by
             clicking the "..." button.`}
           </p>
         )}
-
-        {models
-          .sort((a, b) =>
-            activeModel?.path === a.path
-              ? -1
-              : activeModel?.path === b.path
-              ? 1
-              : 0
-          )
-          .map((model) => (
-            <ModelListItem key={model.name} model={model} />
-          ))}
+        <div className="flex flex-col p-2 gap-6">
+          {models
+            .sort((a, b) =>
+              activeModel?.path === a.path
+                ? -1
+                : activeModel?.path === b.path
+                ? 1
+                : 0
+            )
+            .map((model) => (
+              <ModelListItem key={model.name} model={model} />
+            ))}
+        </div>
       </ViewBody>
     </ViewContainer>
   )

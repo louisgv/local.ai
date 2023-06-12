@@ -84,7 +84,7 @@ export const useActiveThread = () => {
           },
           body: JSON.stringify({
             prompt: getQAPrompt(text, systemPrompt),
-            max_tokens: 4200,
+            max_tokens: undefined,
             temperature: 0.9,
             stream: true
           })

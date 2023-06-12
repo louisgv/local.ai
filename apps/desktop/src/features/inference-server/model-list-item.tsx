@@ -32,8 +32,8 @@ export const ModelListItem = ({ model }: { model: ModelMetadata }) => {
           "text-gray-11 hover:text-gray-12",
           "transition-colors group",
           activeModel?.path === model.path
-            ? "ring ring-green-7 hover:ring-green-8"
-            : "ring ring-gray-7 hover:ring-gray-8"
+            ? "border border-green-7 hover:border-green-8"
+            : "border border-gray-7 hover:border-gray-8"
         )}>
         <div className="flex items-center justify-between w-full">
           <ModelLabel />

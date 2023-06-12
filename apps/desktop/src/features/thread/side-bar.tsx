@@ -1,17 +1,14 @@
 import { Button } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
 import {
+  ChatBubbleIcon,
   CheckIcon,
   Cross2Icon,
+  FileTextIcon,
   Pencil1Icon,
   TrashIcon
 } from "@radix-ui/react-icons"
-import {
-  MessageText,
-  PeopleTag,
-  SidebarCollapse,
-  SidebarExpand
-} from "iconoir-react"
+import { PeopleTag, SidebarCollapse, SidebarExpand } from "iconoir-react"
 import { useMemo, useRef } from "react"
 
 import { NavButton } from "~features/layout/nav-button"
@@ -21,7 +18,7 @@ import type { FileInfo } from "~features/model-downloader/model-file"
 import { Route, useGlobal } from "~providers/global"
 
 const iconMap = {
-  chat: MessageText,
+  chat: FileTextIcon,
   agent: PeopleTag
 } as const
 
@@ -30,7 +27,7 @@ export type ChatType = keyof typeof iconMap
 function ChatIcon({ type = undefined as ChatType }) {
   const Icon = useMemo(() => iconMap[type], [type])
 
-  return <Icon className="h-6 w-6 shrink-0" aria-hidden="true" />
+  return <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
 }
 
 function ThreadItem({ item = null as FileInfo, index = 0 }) {

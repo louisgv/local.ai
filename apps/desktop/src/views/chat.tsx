@@ -20,6 +20,7 @@ import {
   Pokeball
 } from "iconoir-react"
 import { useMemo } from "react"
+import dedent from "ts-dedent"
 
 import { useToggle } from "~features/layout/use-toggle"
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
@@ -120,10 +121,11 @@ export const ChatView = () => {
           <Textarea
             rows={8}
             title="Prompt template (WIP)"
-            defaultValue={`
-<BOT>: {SYSTEM}
-<HUMAN>: {PROMPT}
-<BOT>:`}
+            defaultValue={dedent`
+                      <BOT>: {SYSTEM}
+                      <HUMAN>: {PROMPT}
+                      <BOT>:
+                    `}
           />
           <Input placeholder="Temperature (WIP)" defaultValue={0.47} />
           <Input placeholder="Max Tokens (WIP)" defaultValue={0.47} />

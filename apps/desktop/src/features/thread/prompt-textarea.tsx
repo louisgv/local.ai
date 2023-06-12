@@ -76,7 +76,7 @@ export const PromptTextarea = ({
           className={cn(
             "w-12 h-12 justify-center p-0",
             "disabled:cursor-not-allowed",
-            "bg-blue-9 hover:bg-blue-10 text-blue-12 disabled:bg-gray-9 disabled:text-gray-11"
+            "bg-blue-9 hover:bg-blue-10 text-blue-12 disabled:bg-gray-3 disabled:text-gray-9"
           )}
           disabled={!isResponding && !prompt}
           onClick={isResponding ? onStop : submit}>

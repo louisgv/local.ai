@@ -1,3 +1,4 @@
+/// Inference thread as in Machine Physical Thread
 use std::{convert::Infallible, sync::Arc};
 
 use actix_web::web::Bytes;
@@ -15,11 +16,9 @@ use serde::{Deserialize, Serialize};
 use tokio::task::JoinHandle;
 
 use crate::{
-  inference_thread::stop_handler::StopHandler,
+  inference::stop_handler::StopHandler,
   model_pool::{self, get_n_threads},
 };
-
-mod stop_handler;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CompletionRequest {
