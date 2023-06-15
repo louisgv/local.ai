@@ -9,7 +9,7 @@ export const wizardModelMap: ModelMap = {
 
       Req: >=32GB of CPU.
     `,
-    modelType: ModelType.Llama,
+    modelType: ModelType.gpt2,
     size: 5055134336,
     downloadUrl:
       "https://huggingface.co/TheBloke/WizardCoder-15B-1.0-GGML/resolve/dbbd1178c703672d16e7785f9685200f5a497c8b/WizardCoder-15B-1.0.ggmlv3.q5_1.bin",
