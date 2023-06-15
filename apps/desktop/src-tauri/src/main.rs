@@ -11,6 +11,7 @@ mod inference;
 mod inference_server;
 mod kv_bucket;
 mod macros;
+mod model_config;
 mod model_integrity;
 mod model_pool;
 mod model_stats;
@@ -28,6 +29,7 @@ fn main() {
       path::State::new(app)?;
       config::State::new(app)?;
       downloader::State::new(app)?;
+      model_config::State::new(app)?;
       model_type::State::new(app)?;
       model_integrity::State::new(app)?;
       model_stats::State::new(app)?;
