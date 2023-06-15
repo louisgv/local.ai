@@ -282,7 +282,7 @@ fn spawn_download_threads(
     };
 
     async move {
-      let final_payload = match download_file(
+      let mut final_payload = match download_file(
         &download_url,
         &output_path,
         &sender,
@@ -321,23 +321,11 @@ fn spawn_download_threads(
         }
       };
 
-      if final_payload.download_state != DownloadState::Errored {
-        let payload = final_payload.clone();
-        let download_progress_bucket = dlpb_arc.lock();
-
-        match download_progress_bucket.set(&output_path, &Json(payload)) {
-          Ok(_) => println!("Download progress updated"),
-          Err(e) => println!("Error updating download progress: {}", e),
-        };
-
-        download_progress_bucket.flush().unwrap();
-      }
-
       if final_payload.download_state == DownloadState::Completed {
-        let final_payload = final_payload.clone();
+        let tmp_final_payload = final_payload.clone();
         window_emit(DownloadProgressData {
           download_state: DownloadState::Validating,
-          ..final_payload.clone()
+          ..tmp_final_payload.clone()
         });
 
         let model_integrity =
@@ -357,20 +345,28 @@ fn spawn_download_threads(
 
         model_integrity_bucket.flush().unwrap();
 
-        if model_integrity.blake3 != final_payload.digest
-          && final_payload.digest.starts_with("PENCIL | ")
+        if model_integrity.blake3 != tmp_final_payload.digest
+          && tmp_final_payload.digest.starts_with("PENCIL | ")
         // PENCIL indicates the model is experimental
         {
-          window_emit(DownloadProgressData {
-            download_state: DownloadState::Errored,
-            error: Some(String::from(
-              "Integrity check failed. Please remove the file and try again.",
-            )),
-            ..final_payload.clone()
-          });
-          return;
+          final_payload.download_state = DownloadState::Errored;
+          final_payload.error = Some(format!(
+            "Integrity check failed, expected {}, received {}. Please remove the file and try again.",
+            model_integrity.blake3, tmp_final_payload.digest
+
+          ));
         }
       }
+
+      let payload = final_payload.clone();
+      let download_progress_bucket = dlpb_arc.lock();
+
+      match download_progress_bucket.set(&output_path, &Json(payload)) {
+        Ok(_) => println!("Download progress updated"),
+        Err(e) => println!("Error updating download progress: {}", e),
+      };
+
+      download_progress_bucket.flush().unwrap();
 
       window_emit(final_payload.clone());
     }

@@ -1,7 +1,7 @@
 import { cn } from "@localai/theme/utils"
 import { Button, SpinnerButton } from "@localai/ui/button"
 import { PauseIcon, ResumeIcon } from "@radix-ui/react-icons"
-import { CloudCheck } from "iconoir-react"
+import { CloudCheck, ShoppingCodeError } from "iconoir-react"
 
 import { DownloadState } from "~features/model-downloader/use-model-download"
 import { useModel } from "~providers/model"
@@ -23,6 +23,10 @@ export const DownloadProgress = () => {
       )}>
       {downloadState === DownloadState.Completed && (
         <CloudCheck className="h-4 w-4" />
+      )}
+
+      {downloadState === DownloadState.Errored && (
+        <ShoppingCodeError className="h-4 w-4 text-red-9" />
       )}
 
       {(downloadState === DownloadState.Downloading ||

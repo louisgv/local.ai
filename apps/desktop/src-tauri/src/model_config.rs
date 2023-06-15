@@ -32,13 +32,13 @@ impl State {
 pub fn get_model_config(
   state: tauri::State<'_, State>,
   path: &str,
-) -> Result<String, String> {
+) -> Result<ModelConfig, String> {
   let file_path = String::from(path);
   let bucket = state.0.lock();
 
   match bucket.get(&file_path) {
-    Ok(Some(value)) => return Ok(value),
-    Ok(None) => Err(format!("No cached model type for {}", path)),
+    Ok(Some(value)) => return Ok(value.0),
+    Ok(None) => Err(format!("No model config for {}", path)),
     Err(e) => Err(format!("Error retrieving model type for {}: {}", path, e)),
   }
 }
@@ -47,13 +47,13 @@ pub fn get_model_config(
 pub async fn set_model_config(
   state: tauri::State<'_, State>,
   path: &str,
-  model_type: &str,
+  data: ModelConfig,
 ) -> Result<(), String> {
   let file_path = String::from(path);
   let bucket = state.0.lock();
 
   bucket
-    .set(&file_path, &String::from(model_type))
+    .set(&file_path, &Json(data))
     .map_err(|e| format!("{}", e))?;
 
   bucket.flush().map_err(|e| format!("{}", e))?;
