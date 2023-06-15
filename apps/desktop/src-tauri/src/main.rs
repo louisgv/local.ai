@@ -67,6 +67,8 @@ fn main() {
       model_integrity::get_cached_integrity,
       model_integrity::compute_model_integrity,
       model_stats::get_model_stats,
+      model_config::get_model_config,
+      model_config::set_model_config,
       inference_server::start_server,
       inference_server::stop_server,
       inference_server::load_model,
