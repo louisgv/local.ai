@@ -29,9 +29,11 @@ jobs:
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev librsvg2-dev
 
       - name: Rust setup
+        if: matrix.platform != 'self-hosted'
         uses: dtolnay/rust-toolchain@stable
 
       - name: Rust cache
+        if: matrix.platform != 'self-hosted'
         uses: swatinem/rust-cache@v2
         with:
           workspaces: "./apps/desktop/src-tauri -> target"
