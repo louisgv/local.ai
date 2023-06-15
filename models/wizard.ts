@@ -9,16 +9,18 @@ export const wizardModelMap: ModelMap = {
 
       Req: >=32GB of CPU.
     `,
-    modelType: ModelType.Llama,
+    modelType: ModelType.gpt2,
     size: 5055134336,
     downloadUrl:
       "https://huggingface.co/TheBloke/WizardCoder-15B-1.0-GGML/resolve/dbbd1178c703672d16e7785f9685200f5a497c8b/WizardCoder-15B-1.0.ggmlv3.q5_1.bin",
-    blake3:
-      "PENCIL | Esse eiusmod minim sint ipsum ut occaecat enim duis deserunt fugiat cillum.",
-    sha256: "xxx",
+    blake3: "ad50b6d69146ed7c710395c8a51aa8a04b8eff6d972f4867a5c792879262f38e",
+    sha256: "1219d9fc6d51901d9a1e58e3cb7f03818d02a1d0ab2d070b4cbabdefeb7d0363",
     vocabulary: ["WizardLM/WizardCoder-15B-V1.0"],
     licenses: [LicenseType.NonCommercial, LicenseType.Academic],
-    citations: ["https://huggingface.co/WizardLM/WizardCoder-15B-V1.0"]
+    citations: [
+      "https://huggingface.co/TheBloke/WizardCoder-15B-1.0-GGML",
+      "https://huggingface.co/WizardLM/WizardCoder-15B-V1.0"
+    ]
   },
   "WizardLM 7B": {
     description: dedent`
