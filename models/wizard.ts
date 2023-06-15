@@ -3,6 +3,23 @@ import dedent from "ts-dedent"
 import { LicenseType, type ModelMap, ModelType } from "./_shared"
 
 export const wizardModelMap: ModelMap = {
+  "WizardCoder 15B 1.0": {
+    description: dedent`
+      StarCoder fine-tuned using Evol-Instruct method. Good for code generation.
+
+      Req: >=32GB of CPU.
+    `,
+    modelType: ModelType.Llama,
+    size: 5055134336,
+    downloadUrl:
+      "https://huggingface.co/TheBloke/WizardCoder-15B-1.0-GGML/resolve/dbbd1178c703672d16e7785f9685200f5a497c8b/WizardCoder-15B-1.0.ggmlv3.q5_1.bin",
+    blake3:
+      "PENCIL | Esse eiusmod minim sint ipsum ut occaecat enim duis deserunt fugiat cillum.",
+    sha256: "xxx",
+    vocabulary: ["WizardLM/WizardCoder-15B-V1.0"],
+    licenses: [LicenseType.NonCommercial, LicenseType.Academic],
+    citations: ["https://huggingface.co/WizardLM/WizardCoder-15B-V1.0"]
+  },
   "WizardLM 7B": {
     description: dedent`
       An Instruction-following LLM Using Evol-Instruct method.
