@@ -343,20 +343,24 @@ fn spawn_download_threads(
         let model_integrity =
           compute_file_integrity(output_path.as_str()).await.unwrap();
 
-        if model_integrity.blake3 == final_payload.digest {
-          let model_integrity_bucket: parking_lot::lock_api::MutexGuard<
-            parking_lot::RawMutex,
-            Bucket<String, Json<ModelIntegrity>>,
-          > = model_integrity_bucket_state.lock();
+        let model_integrity_bucket: parking_lot::lock_api::MutexGuard<
+          parking_lot::RawMutex,
+          Bucket<String, Json<ModelIntegrity>>,
+        > = model_integrity_bucket_state.lock();
 
-          match model_integrity_bucket.set(&output_path, &Json(model_integrity))
-          {
-            Ok(_) => println!("Model integrity updated"),
-            Err(e) => println!("Error updating model integrity: {}", e),
-          };
+        match model_integrity_bucket
+          .set(&output_path, &Json(model_integrity.clone()))
+        {
+          Ok(_) => println!("Model integrity updated"),
+          Err(e) => println!("Error updating model integrity: {}", e),
+        };
 
-          model_integrity_bucket.flush().unwrap();
-        } else {
+        model_integrity_bucket.flush().unwrap();
+
+        if model_integrity.blake3 != final_payload.digest
+          && final_payload.digest.starts_with("PENCIL | ")
+        // PENCIL indicates the model is experimental
+        {
           window_emit(DownloadProgressData {
             download_state: DownloadState::Errored,
             error: Some(String::from(

@@ -25,6 +25,7 @@ export const mptModelMap: ModelMap = {
       LicenseType.OpenSource,
       LicenseType.Apache2
     ],
+    vocabulary: ["mosaicml/mpt-7b"],
     citations: [...commonCitations, "https://huggingface.co/mosaicml/mpt-7b"]
   },
   "MPT 7B Instruct": {
@@ -40,6 +41,7 @@ export const mptModelMap: ModelMap = {
     blake3: "2331ea1208288cd52bcaaae555f231f9a51a264f4b8548a7998da43573e6935a",
     sha256: "ab4825853856833ee2d9626c231079509d7f5f1f048e874b15ca9da263a01b13",
     tags: ["instruct"],
+    vocabulary: ["mosaicml/mpt-7b-instruct"],
     licenses: [LicenseType.Commercial, LicenseType.OpenSource, "CC-By-SA-3.0"],
     citations: [
       ...commonCitations,
@@ -59,6 +61,7 @@ export const mptModelMap: ModelMap = {
     blake3: "5e4f603682116735773b977d54dc74522da22f899c1609376be5e723782fdacd",
     sha256: "63b1e4ca828d00a808284fa50f5a02c31a536e79af18914549ce9bb85dfec3d7",
     tags: ["chat"],
+    vocabulary: ["mosaicml/mpt-7b-chat"],
     licenses: [LicenseType.NonCommercial, "CC-By-NC-SA-4.0"],
     citations: [
       ...commonCitations,
@@ -75,6 +78,7 @@ export const mptModelMap: ModelMap = {
     `,
     modelType: ModelType.Mpt,
     size: 4988356608,
+    vocabulary: ["mosaicml/mpt-7b-storywriter"],
     downloadUrl:
       "https://huggingface.co/TheBloke/MPT-7B-Storywriter-GGML/resolve/8ba65dc5e6cd9f40317c9ec12a900f3b88f9d7ca/mpt-7b-storywriter.ggmlv3.q5_1.bin",
     blake3: "e8652cc6ff9faec96cba8a43ad966a9191fd954be3182bfd0e78e2fe45b55bbe",

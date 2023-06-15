@@ -26,6 +26,7 @@ export const redpajamaModelMap: ModelMap = {
     `,
     modelType: ModelType.NeoX,
     size: 2086120640,
+    vocabulary: ["togethercomputer/RedPajama-INCITE-Base-3B-v1"],
     downloadUrl:
       "https://huggingface.co/rustformers/redpajama-3b-ggml/resolve/ef3021e148238890ceba93c9fe4e17d49d8b279b/RedPajama-INCITE-Base-3B-v1-q5_1-ggjt.bin",
     blake3: "e7d8010b8dabf3ebeb3ecd4fba9c5167fa8fae17a41d83659401f9de4a2026c5",
@@ -41,6 +42,7 @@ export const redpajamaModelMap: ModelMap = {
     `,
     modelType: ModelType.NeoX,
     size: 2086120608,
+    vocabulary: ["togethercomputer/RedPajama-INCITE-Instruct-3B-v1"],
     downloadUrl:
       "https://huggingface.co/rustformers/redpajama-3b-ggml/resolve/ef3021e148238890ceba93c9fe4e17d49d8b279b/RedPajama-INCITE-Instruct-3B-v1-q5_1-ggjt.bin",
     blake3: "f20f7e84836320896d3a81ad52a1ba00a90ca884b2932cf170b4be049f80aea5",
@@ -56,6 +58,7 @@ export const redpajamaModelMap: ModelMap = {
     `,
     modelType: ModelType.NeoX,
     size: 2086120608,
+    vocabulary: ["togethercomputer/RedPajama-INCITE-Chat-3B-v1"],
     downloadUrl:
       "https://huggingface.co/rustformers/redpajama-3b-ggml/resolve/ef3021e148238890ceba93c9fe4e17d49d8b279b/RedPajama-INCITE-Chat-3B-v1-q5_1-ggjt.bin",
     blake3: "03659698bb4b4902f9c55275a46373fb4a00c616b04a1440f4d04e23bba659d9",
