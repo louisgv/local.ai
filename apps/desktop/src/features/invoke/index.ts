@@ -1,5 +1,6 @@
 import type { ModelType } from "@models/_shared"
 
+import type { ModelConfigCommandMap } from "~features/invoke/model-config"
 import type { ModelDownloaderCommandMap } from "~features/invoke/model-downloader"
 import type { ModelIntegrityCommandMap } from "~features/invoke/model-integrity"
 import type { ModelStatsCommandMap } from "~features/invoke/model-stats"
@@ -11,8 +12,9 @@ import { InvokeCommand, type InvokeIO } from "./_shared"
 export { InvokeCommand }
 
 type InvokeCommandMap = {
-  [commands in InvokeCommand]: InvokeIO
-} & {
+  [InvokeCommand.TestModel]: InvokeIO
+  [InvokeCommand.LoadModel]: InvokeIO
+
   [InvokeCommand.OpenDirectory]: InvokeIO<{ path: string }>
   [InvokeCommand.GetConfig]: InvokeIO<{ key: string }, string>
 
@@ -25,9 +27,10 @@ type InvokeCommandMap = {
   ModelStatsCommandMap &
   ModelDownloaderCommandMap &
   ThreadsDirectoryCommandMap &
-  ModelsDirectoryCommandMap
+  ModelsDirectoryCommandMap &
+  ModelConfigCommandMap
 
-export async function invoke<T extends InvokeCommand>(
+export async function invoke<T extends keyof InvokeCommandMap>(
   cmd: T,
   ...[args]: InvokeCommandMap[T]["input"] extends never
     ? []

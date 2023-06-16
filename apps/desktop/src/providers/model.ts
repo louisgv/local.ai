@@ -3,6 +3,7 @@
 import { createProvider } from "puro"
 import { useContext, useEffect, useState } from "react"
 
+import { useModelConfig } from "~features/inference-server/use-model-config"
 import { useModelStats } from "~features/inference-server/use-model-stats"
 import { useModelType } from "~features/inference-server/use-model-type"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
@@ -19,7 +20,7 @@ export enum ModelLoadState {
  */
 const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   const {
-    activeModelState: [activeModel, setActiveModel],
+    activeModelState: [activeModel],
     loadModel: _loadModel
   } = useGlobal()
   // TODO: Cache the model type in a kv later
@@ -28,6 +29,8 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   )
 
   const { modelType, updateModelType } = useModelType(model)
+
+  const { modelConfig, updateModelConfig } = useModelConfig(model)
 
   const { downloadState, pauseDownload, progress, resumeDownload, modelSize } =
     useModelDownload(model)
@@ -45,7 +48,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   const loadModel = async () => {
     setModelLoadState(ModelLoadState.Loading)
     try {
-      await _loadModel(model, modelType)
+      await _loadModel(model)
 
       setModelLoadState(ModelLoadState.Loaded)
     } catch (error) {
@@ -60,6 +63,8 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
     modelLoadState,
     modelType,
     updateModelType,
+    modelConfig,
+    updateModelConfig,
     loadModel,
     downloadState,
     progress,

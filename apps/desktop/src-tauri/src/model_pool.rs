@@ -1,5 +1,6 @@
 use once_cell::sync::Lazy;
 use parking_lot::Mutex;
+use tauri::AppHandle;
 
 use std::{fs, path::PathBuf, sync::Arc};
 
@@ -7,8 +8,11 @@ use llm::{load_progress_callback_stdout, ModelArchitecture, VocabularySource};
 
 use std::path::Path;
 
-use crate::inference::thread::ModelGuard;
+use crate::{inference::thread::ModelGuard, model_stats};
 use std::collections::VecDeque;
+
+use crate::config::ConfigKey;
+use crate::path::get_app_dir_path_buf;
 
 pub static LOADED_MODEL_POOL: Lazy<Mutex<VecDeque<Option<ModelGuard>>>> =
   Lazy::new(|| Mutex::new(VecDeque::new()));
@@ -113,4 +117,48 @@ pub async fn spawn_pool(
   *LOADED_MODEL_POOL.lock() = VecDeque::from(models);
 
   Ok(())
+}
+
+fn get_vocab_source(vocab: String) -> VocabularySource {
+  match vocab {
+    v if {
+      let path = Path::new(&v);
+      path.is_absolute() && path.exists() && path.is_file()
+    } =>
+    {
+      VocabularySource::HuggingFaceTokenizerFile(PathBuf::from(v))
+    }
+    v if v.len() > 0 => VocabularySource::HuggingFaceRemote(v),
+    _ => VocabularySource::Model,
+  }
+}
+
+#[tauri::command]
+pub async fn load_model<'a>(
+  model_stats_bucket_state: tauri::State<'_, model_stats::State>,
+  config_state: tauri::State<'_, crate::config::State>,
+  model_type_bucket_state: tauri::State<'_, crate::model_type::State>,
+  model_config_bucket_state: tauri::State<'_, crate::model_config::State>,
+  app_handle: AppHandle,
+  path: &str,
+  concurrency: usize,
+) -> Result<(), String> {
+  config_state.set(ConfigKey::OnboardState, format!("done"))?;
+  model_stats_bucket_state.increment_load_count(path)?;
+
+  let cache_dir =
+    get_app_dir_path_buf(app_handle, String::from("inference_cache"))?;
+
+  let model_type = model_type_bucket_state.get(path)?;
+
+  let model_config = model_config_bucket_state.get(path)?;
+
+  spawn_pool(
+    path,
+    model_type.as_str(),
+    &get_vocab_source(model_config.tokenizer),
+    concurrency,
+    &cache_dir,
+  )
+  .await
 }

@@ -19,6 +19,31 @@ impl State {
     app.manage(State(Arc::new(Mutex::new(bucket))));
     Ok(())
   }
+
+  pub fn get(&self, path: &str) -> Result<String, String> {
+    let bucket = self.0.lock();
+
+    let file_path = String::from(path);
+
+    match bucket.get(&file_path) {
+      Ok(Some(value)) => Ok(value),
+      _ => Ok("llama".to_string()),
+    }
+  }
+
+  pub fn set(&self, path: &str, model_type: &str) -> Result<(), String> {
+    let model_type_bucket = self.0.lock();
+
+    let file_path = String::from(path);
+
+    model_type_bucket
+      .set(&file_path, &String::from(model_type))
+      .map_err(|e| format!("{}", e))?;
+
+    model_type_bucket.flush().map_err(|e| format!("{}", e))?;
+
+    Ok(())
+  }
 }
 
 #[tauri::command]
@@ -26,15 +51,7 @@ pub fn get_model_type(
   state: tauri::State<'_, State>,
   path: &str,
 ) -> Result<String, String> {
-  let model_type_bucket = state.0.lock();
-
-  let file_path = String::from(path);
-
-  match model_type_bucket.get(&file_path) {
-    Ok(Some(value)) => return Ok(value),
-    Ok(None) => Err(format!("No cached model type for {}", path)),
-    Err(e) => Err(format!("Error retrieving model type for {}: {}", path, e)),
-  }
+  state.get(path)
 }
 
 #[tauri::command]
@@ -43,15 +60,5 @@ pub async fn set_model_type(
   path: &str,
   model_type: &str,
 ) -> Result<(), String> {
-  let model_type_bucket = state.0.lock();
-
-  let file_path = String::from(path);
-
-  model_type_bucket
-    .set(&file_path, &String::from(model_type))
-    .map_err(|e| format!("{}", e))?;
-
-  model_type_bucket.flush().map_err(|e| format!("{}", e))?;
-
-  Ok(())
+  state.set(path, model_type)
 }

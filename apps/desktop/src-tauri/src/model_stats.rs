@@ -27,28 +27,39 @@ impl State {
     app.manage(State(Arc::new(Mutex::new(bucket))));
     Ok(())
   }
-}
 
-pub fn increment_load_count(
-  state: tauri::State<'_, State>,
-  path: &str,
-) -> Result<(), String> {
-  let current_value = get_model_stats(state.clone(), path)?;
+  pub fn increment_load_count(&self, path: &str) -> Result<(), String> {
+    let current_value = self.get(path)?;
+    let bucket = self.0.lock();
+    let file_path = String::from(path);
 
-  let bucket = state.0.lock();
-  let file_path = String::from(path);
+    bucket
+      .set(
+        &file_path,
+        &Json(ModelStats {
+          load_count: current_value.load_count + 1,
+        }),
+      )
+      .map_err(|e| format!("{}", e))?;
 
-  bucket
-    .set(
-      &file_path,
-      &Json(ModelStats {
-        load_count: current_value.load_count + 1,
-      }),
-    )
-    .map_err(|e| format!("{}", e))?;
+    bucket.flush().map_err(|e| format!("{}", e))?;
+    Ok(())
+  }
 
-  bucket.flush().map_err(|e| format!("{}", e))?;
-  Ok(())
+  pub fn get(&self, path: &str) -> Result<ModelStats, String> {
+    let bucket = self.0.lock();
+
+    let file_path = String::from(path);
+
+    match bucket.get(&file_path) {
+      Ok(Some(value)) => Ok(value.0),
+      Ok(None) => Ok(Default::default()),
+      Err(e) => {
+        println!("Error retrieving model stats for {}: {}", path, e);
+        return Ok(Default::default());
+      }
+    }
+  }
 }
 
 #[tauri::command]
@@ -56,17 +67,5 @@ pub fn get_model_stats(
   state: tauri::State<'_, State>,
   path: &str,
 ) -> Result<ModelStats, String> {
-  let bucket = state.0.lock();
-
-  let file_path = String::from(path);
-
-  match bucket.get(&file_path) {
-    Ok(Some(value)) => Ok(value.0),
-    Ok(None) => Ok(Default::default()),
-    Err(e) => {
-      println!("Error retrieving model stats for {}: {}", path, e);
-      bucket.clear().unwrap();
-      return Ok(Default::default());
-    }
-  }
+  state.get(path)
 }

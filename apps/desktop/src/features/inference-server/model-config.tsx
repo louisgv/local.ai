@@ -1,5 +1,6 @@
 import { cn } from "@localai/theme/utils"
 import { SpinnerButton } from "@localai/ui/button"
+import { Input } from "@localai/ui/input"
 import {
   Select,
   SelectContent,
@@ -52,8 +53,14 @@ export const ModelConfig = () => {
     incrementLaunchCount,
     updateModelType,
     loadModel,
-    downloadState
+    downloadState,
+    modelConfig,
+    updateModelConfig
   } = useModel()
+
+  if (!modelConfig) {
+    return null
+  }
 
   return (
     <div className="flex items-center justify-between w-full gap-2 group">
@@ -80,8 +87,19 @@ export const ModelConfig = () => {
         />
         <DownloadProgress />
       </div>
-      <div className="flex items-center justify-end w-96 gap-2">
+      <div className="flex items-center justify-end gap-2">
         {/* <TestModelButton /> */}
+        <Input
+          className="w-40"
+          placeholder="Tokenizer"
+          value={modelConfig.tokenizer}
+          onChange={(e) =>
+            updateModelConfig({
+              tokenizer: e.target.value
+            })
+          }
+        />
+
         <Select value={modelType} onValueChange={updateModelType}>
           <SelectTrigger className={cn("text-gray-11", "w-24")}>
             <SelectValue aria-label={modelType}>{modelType}</SelectValue>

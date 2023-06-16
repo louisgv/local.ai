@@ -26,6 +26,8 @@ export enum InvokeCommand {
   GetCachedIntegrity = "get_cached_integrity",
   ComputeModelIntegrity = "compute_model_integrity",
   GetModelStats = "get_model_stats",
+  GetModelConfig = "get_model_config",
+  SetModelConfig = "set_model_config",
   StartServer = "start_server",
   StopServer = "stop_server",
   LoadModel = "load_model",

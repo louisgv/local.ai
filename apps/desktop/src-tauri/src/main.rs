@@ -71,7 +71,7 @@ fn main() {
       model_config::set_model_config,
       inference_server::start_server,
       inference_server::stop_server,
-      inference_server::load_model,
+      model_pool::load_model,
       model_type::get_model_type,
       model_type::set_model_type,
       test::test_model,

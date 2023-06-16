@@ -9,6 +9,7 @@ import { InvokeCommand, invoke } from "~features/invoke"
 import type { ModelIntegrity } from "~features/invoke/model-integrity"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 import { DownloadState } from "~features/model-downloader/use-model-download"
+import { useGlobal } from "~providers/global"
 import { useModel } from "~providers/model"
 
 export const getTruncatedHash = (hashValue: string) =>
@@ -31,29 +32,50 @@ export const getCachedIntegrity = async (path: string) =>
   }).catch<ModelIntegrity>(() => null)
 
 export function ModelDigest({ model }: { model: ModelMetadata }) {
-  const { downloadState } = useModel()
-  const [digestHash, setDigestHash] = useState<ModelIntegrity>(null)
+  const {
+    knownModels: { modelMap }
+  } = useGlobal()
+
+  const { downloadState, updateModelConfig, updateModelType } = useModel()
+  const [integrity, setIntegrity] = useState<ModelIntegrity>(null)
   const [isCalculating, setIsCalculating] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
   const { initState } = useInit(async () => {
     const resp = await getCachedIntegrity(model.path)
-    setDigestHash(resp)
+    setIntegrity(resp)
   }, [model])
 
   useEffect(() => {
     if (downloadState === DownloadState.Completed) {
-      getCachedIntegrity(model.path).then(setDigestHash)
+      getCachedIntegrity(model.path).then(setIntegrity)
     }
   }, [model, downloadState])
 
   async function computeDigest() {
-    setDigestHash(null)
+    setIntegrity(null)
     setIsCalculating(true)
     try {
       const resp = await invoke(InvokeCommand.ComputeModelIntegrity, {
         path: model.path
       })
-      setDigestHash(resp)
+      setIntegrity(resp)
+
+      const knownModelMetadata = modelMap[resp.blake3]
+      if (!!knownModelMetadata) {
+        alert(
+          "Known model metadata found, updating model config:\n\n" +
+            JSON.stringify(knownModelMetadata, null, 2)
+        )
+        updateModelType(knownModelMetadata.modelType)
+        updateModelConfig({
+          tokenizer: knownModelMetadata.tokenizers?.[0] || "", // Pick the first one for now
+          defaultPromptTemplate: knownModelMetadata.promptTemplate || ""
+        })
+      } else {
+        alert(
+          "No known model metadata found. The model might need manual configuration."
+        )
+      }
     } catch (error) {
       alert(error)
     }
@@ -63,7 +85,7 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
 
   return (
     <div className="flex justify-end text-gray-10 w-64 relative">
-      {digestHash ? (
+      {integrity ? (
         <>
           <div
             className={cn(
@@ -89,7 +111,7 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
                 <HashDisplay
                   key={hashType}
                   hashType={hashType.toUpperCase()}
-                  hashValue={digestHash[hashType]}
+                  hashValue={integrity[hashType]}
                 />
               ))}
             </div>
@@ -111,7 +133,7 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
                   key={hashType}
                   truncated
                   hashType={hashType.toUpperCase()}
-                  hashValue={digestHash[hashType]}
+                  hashValue={integrity[hashType]}
                 />
               ))}
             </button>
@@ -126,7 +148,7 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
           isSpinning={isCalculating || initState === InitState.Initializing}
           onClick={computeDigest}
           Icon={ShoppingCodeCheck}>
-          {isCalculating ? "Computing" : "Get Hashes"}
+          {isCalculating ? "Computing" : "Check Model"}
         </SpinnerButton>
       )}
     </div>
