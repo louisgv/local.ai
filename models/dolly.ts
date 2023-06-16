@@ -22,7 +22,7 @@ export const dollyModelMap: ModelMap = {
     blake3: "43ff067dd77edf0d8cc13d2966d14fca710c312362783642f4ed1d4e692c9f00",
     sha256: "889535a92e45e8e120289c53768688facbdec00f2f97ee269660679bfaffd99d",
     licenses: [...commonLicenses],
-    vocabulary: ["databricks/dolly-v2-3b"],
+    tokenizers: ["databricks/dolly-v2-3b"],
     citations: [
       "https://huggingface.co/databricks/dolly-v2-3b",
       "https://huggingface.co/rustformers/dolly-v2-ggml"
@@ -43,6 +43,6 @@ export const dollyModelMap: ModelMap = {
       "https://huggingface.co/databricks/dolly-v2-7b",
       "https://huggingface.co/rustformers/dolly-v2-ggml"
     ],
-    vocabulary: ["databricks/dolly-v2-7b"]
+    tokenizers: ["databricks/dolly-v2-7b"]
   }
 }

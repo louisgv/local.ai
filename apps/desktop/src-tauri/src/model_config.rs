@@ -7,9 +7,10 @@ use std::sync::Arc;
 
 use tauri::Manager;
 
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Default)]
 pub struct ModelConfig {
-  pub vocabulary: String,
+  pub tokenizer: String,
+  pub default_prompt_template: String,
 }
 
 #[derive(Clone)]
@@ -26,6 +27,30 @@ impl State {
     app.manage(State(Arc::new(Mutex::new(bucket))));
     Ok(())
   }
+
+  pub fn get(&self, path: &str) -> Result<ModelConfig, String> {
+    let file_path = String::from(path);
+    let bucket = self.0.lock();
+
+    match bucket.get(&file_path) {
+      Ok(Some(value)) => return Ok(value.0),
+      Ok(None) => Ok(ModelConfig::default()),
+      Err(e) => Err(format!("Error retrieving model type for {}: {}", path, e)),
+    }
+  }
+
+  pub fn set(&self, path: &str, data: ModelConfig) -> Result<(), String> {
+    let file_path = String::from(path);
+    let bucket = self.0.lock();
+
+    bucket
+      .set(&file_path, &Json(data))
+      .map_err(|e| format!("{}", e))?;
+
+    bucket.flush().map_err(|e| format!("{}", e))?;
+
+    Ok(())
+  }
 }
 
 #[tauri::command]
@@ -33,30 +58,14 @@ pub fn get_model_config(
   state: tauri::State<'_, State>,
   path: &str,
 ) -> Result<ModelConfig, String> {
-  let file_path = String::from(path);
-  let bucket = state.0.lock();
-
-  match bucket.get(&file_path) {
-    Ok(Some(value)) => return Ok(value.0),
-    Ok(None) => Err(format!("No model config for {}", path)),
-    Err(e) => Err(format!("Error retrieving model type for {}: {}", path, e)),
-  }
+  state.get(path)
 }
 
 #[tauri::command]
 pub async fn set_model_config(
   state: tauri::State<'_, State>,
   path: &str,
-  data: ModelConfig,
+  config: ModelConfig,
 ) -> Result<(), String> {
-  let file_path = String::from(path);
-  let bucket = state.0.lock();
-
-  bucket
-    .set(&file_path, &Json(data))
-    .map_err(|e| format!("{}", e))?;
-
-  bucket.flush().map_err(|e| format!("{}", e))?;
-
-  Ok(())
+  state.set(path, config)
 }

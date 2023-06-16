@@ -29,7 +29,7 @@ export type ModelInfo = {
   description: string
   licenses: (LicenseType | string)[]
   modelType: ModelType
-  vocabulary?: string[]
+  tokenizers?: string[]
   tags?: string[]
   citations?: string[]
   disabled?: boolean

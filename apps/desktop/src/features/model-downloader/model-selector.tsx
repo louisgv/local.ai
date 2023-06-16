@@ -14,15 +14,13 @@ import Balancer from "react-wrap-balancer"
 import { getTruncatedHash } from "~features/inference-server/model-digest"
 import { InvokeCommand, invoke } from "~features/invoke"
 import { toGB } from "~features/model-downloader/model-file"
-import { useModelsApi } from "~features/model-downloader/use-models-api"
 import { useGlobal } from "~providers/global"
 
 export const ModelSelector = ({ className = "" }) => {
   const {
-    modelsDirectoryState: { updateModelsDirectory, modelsMap }
+    modelsDirectoryState: { updateModelsDirectory, modelsMap },
+    knownModels: { models, modelMap }
   } = useGlobal()
-
-  const { models, modelMap } = useModelsApi()
 
   const [selectedModelHash, setSelectedModelHash] = useState<string>()
 

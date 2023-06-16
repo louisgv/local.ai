@@ -19,7 +19,7 @@ export enum ModelLoadState {
  */
 const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   const {
-    activeModelState: [activeModel, setActiveModel],
+    activeModelState: [activeModel],
     loadModel: _loadModel
   } = useGlobal()
   // TODO: Cache the model type in a kv later
@@ -45,7 +45,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   const loadModel = async () => {
     setModelLoadState(ModelLoadState.Loading)
     try {
-      await _loadModel(model, modelType)
+      await _loadModel(model)
 
       setModelLoadState(ModelLoadState.Loaded)
     } catch (error) {

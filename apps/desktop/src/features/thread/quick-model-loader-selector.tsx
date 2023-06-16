@@ -6,10 +6,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@localai/ui/select"
-import { ModelType } from "@models/_shared"
 import { useState } from "react"
 
-import { getModelType } from "~features/inference-server/use-model-type"
 import { useGlobal } from "~providers/global"
 
 export const QuickModelLoaderSelector = () => {
@@ -32,8 +30,7 @@ export const QuickModelLoaderSelector = () => {
         setSelectedModel(model)
 
         try {
-          const modelType = (await getModelType(model)) || ModelType.Llama
-          await loadModel(model, modelType)
+          await loadModel(model)
         } catch (error) {
           alert(error)
         }

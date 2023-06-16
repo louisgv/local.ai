@@ -1,5 +1,6 @@
 import type { ModelType } from "@models/_shared"
 
+import type { ModelConfigCommandMap } from "~features/invoke/model-config"
 import type { ModelDownloaderCommandMap } from "~features/invoke/model-downloader"
 import type { ModelIntegrityCommandMap } from "~features/invoke/model-integrity"
 import type { ModelStatsCommandMap } from "~features/invoke/model-stats"
@@ -25,7 +26,8 @@ type InvokeCommandMap = {
   ModelStatsCommandMap &
   ModelDownloaderCommandMap &
   ThreadsDirectoryCommandMap &
-  ModelsDirectoryCommandMap
+  ModelsDirectoryCommandMap &
+  ModelConfigCommandMap
 
 export async function invoke<T extends InvokeCommand>(
   cmd: T,

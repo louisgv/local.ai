@@ -12,6 +12,7 @@ import { useModelsDirectory } from "~features/inference-server/use-models-direct
 import { InvokeCommand, invoke } from "~features/invoke"
 import { useToggle } from "~features/layout/use-toggle"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
+import { useModelsApi } from "~features/model-downloader/use-models-api"
 import { useThreadsDirectory } from "~features/thread/use-threads-directory"
 
 export enum Route {
@@ -47,6 +48,8 @@ const useGlobalProvider = () => {
 
   const windowRef = useRef<WebviewWindow>()
 
+  const knownModels = useModelsApi()
+
   useInit(async () => {
     const { getCurrent } = await import("@tauri-apps/api/window")
     const currentWindow = getCurrent()
@@ -80,15 +83,9 @@ const useGlobalProvider = () => {
     serverStartedState[1](false)
   }
 
-  const loadModel = async (
-    model: ModelMetadata,
-    modelType: ModelType,
-    modelVocabulary = {}
-  ) => {
+  const loadModel = async (model: ModelMetadata) => {
     await invoke(InvokeCommand.LoadModel, {
       ...model,
-      modelType,
-      modelVocabulary,
       concurrency: concurrencyState[0]
     })
 
@@ -110,6 +107,8 @@ const useGlobalProvider = () => {
 
     startServer,
     stopServer,
+
+    knownModels,
 
     portState,
     routeState,
