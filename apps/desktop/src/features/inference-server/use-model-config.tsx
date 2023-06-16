@@ -5,7 +5,7 @@ import { InvokeCommand, invoke } from "~features/invoke"
 import type { ModelConfig } from "~features/invoke/model-config"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 
-export function setModelType(model: ModelMetadata, config: ModelConfig) {
+export function setModelConfig(model: ModelMetadata, config: ModelConfig) {
   return invoke(InvokeCommand.SetModelConfig, {
     path: model.path,
     config
@@ -29,14 +29,14 @@ export const useModelConfig = (model: ModelMetadata) => {
     }
   }, [model])
 
-  const updateModelType = useCallback(
+  const updateModelConfig = useCallback(
     async (config: Partial<ModelConfig>) => {
       _setModelConfig((cc) => ({
         ...cc,
         ...config
       }))
 
-      await setModelType(model, {
+      await setModelConfig(model, {
         ...modelConfig,
         ...config
       })
@@ -46,6 +46,6 @@ export const useModelConfig = (model: ModelMetadata) => {
 
   return {
     modelConfig,
-    updateModelType
+    updateModelConfig
   }
 }

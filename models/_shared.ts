@@ -42,7 +42,7 @@ export type ModelMap = Record<string, ModelInfo>
 export const toList = (modelMap: ModelMap) =>
   Object.entries(modelMap)
     .map(([name, model]) => ({
-      ...model,
-      name
+      name,
+      ...model
     }))
     .filter((model) => !model.disabled)

@@ -10,6 +10,8 @@ use tauri::Manager;
 #[derive(Serialize, Deserialize, PartialEq, Clone, Default)]
 pub struct ModelConfig {
   pub tokenizer: String,
+
+  #[serde(rename = "defaultPromptTemplate")]
   pub default_prompt_template: String,
 }
 

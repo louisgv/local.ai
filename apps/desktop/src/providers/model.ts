@@ -3,6 +3,7 @@
 import { createProvider } from "puro"
 import { useContext, useEffect, useState } from "react"
 
+import { useModelConfig } from "~features/inference-server/use-model-config"
 import { useModelStats } from "~features/inference-server/use-model-stats"
 import { useModelType } from "~features/inference-server/use-model-type"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
@@ -28,6 +29,8 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   )
 
   const { modelType, updateModelType } = useModelType(model)
+
+  const { modelConfig, updateModelConfig } = useModelConfig(model)
 
   const { downloadState, pauseDownload, progress, resumeDownload, modelSize } =
     useModelDownload(model)
@@ -60,6 +63,8 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
     modelLoadState,
     modelType,
     updateModelType,
+    modelConfig,
+    updateModelConfig,
     loadModel,
     downloadState,
     progress,

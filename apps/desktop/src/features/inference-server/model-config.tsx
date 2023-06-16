@@ -53,9 +53,14 @@ export const ModelConfig = () => {
     incrementLaunchCount,
     updateModelType,
     loadModel,
-    downloadState
+    downloadState,
+    modelConfig,
+    updateModelConfig
   } = useModel()
-  const [tokenizer, setTokenizer] = useState("")
+
+  if (!modelConfig) {
+    return null
+  }
 
   return (
     <div className="flex items-center justify-between w-full gap-2 group">
@@ -85,9 +90,14 @@ export const ModelConfig = () => {
       <div className="flex items-center justify-end gap-2">
         {/* <TestModelButton /> */}
         <Input
+          className="w-40"
           placeholder="Tokenizer"
-          value={tokenizer}
-          onChange={(e) => setTokenizer(e.target.value)}
+          value={modelConfig.tokenizer}
+          onChange={(e) =>
+            updateModelConfig({
+              tokenizer: e.target.value
+            })
+          }
         />
 
         <Select value={modelType} onValueChange={updateModelType}>

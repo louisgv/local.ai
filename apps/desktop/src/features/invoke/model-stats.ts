@@ -5,5 +5,5 @@ export type ModelStats = {
 }
 
 export type ModelStatsCommandMap = {
-  [InvokeCommand.GetModelStats]: InvokeIO<{ path: string }, number>
+  [InvokeCommand.GetModelStats]: InvokeIO<{ path: string }, ModelStats>
 }

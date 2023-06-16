@@ -12,8 +12,9 @@ import { InvokeCommand, type InvokeIO } from "./_shared"
 export { InvokeCommand }
 
 type InvokeCommandMap = {
-  [commands in InvokeCommand]: InvokeIO
-} & {
+  [InvokeCommand.TestModel]: InvokeIO
+  [InvokeCommand.LoadModel]: InvokeIO
+
   [InvokeCommand.OpenDirectory]: InvokeIO<{ path: string }>
   [InvokeCommand.GetConfig]: InvokeIO<{ key: string }, string>
 
@@ -29,7 +30,7 @@ type InvokeCommandMap = {
   ModelsDirectoryCommandMap &
   ModelConfigCommandMap
 
-export async function invoke<T extends InvokeCommand>(
+export async function invoke<T extends keyof InvokeCommandMap>(
   cmd: T,
   ...[args]: InvokeCommandMap[T]["input"] extends never
     ? []

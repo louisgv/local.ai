@@ -9,6 +9,7 @@ import { InvokeCommand, invoke } from "~features/invoke"
 import type { ModelIntegrity } from "~features/invoke/model-integrity"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 import { DownloadState } from "~features/model-downloader/use-model-download"
+import { useGlobal } from "~providers/global"
 import { useModel } from "~providers/model"
 
 export const getTruncatedHash = (hashValue: string) =>
@@ -31,7 +32,11 @@ export const getCachedIntegrity = async (path: string) =>
   }).catch<ModelIntegrity>(() => null)
 
 export function ModelDigest({ model }: { model: ModelMetadata }) {
-  const { downloadState } = useModel()
+  const {
+    knownModels: { modelMap }
+  } = useGlobal()
+
+  const { downloadState, updateModelConfig, updateModelType } = useModel()
   const [integrity, setIntegrity] = useState<ModelIntegrity>(null)
   const [isCalculating, setIsCalculating] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
@@ -54,6 +59,23 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
         path: model.path
       })
       setIntegrity(resp)
+
+      const knownModelMetadata = modelMap[resp.blake3]
+      if (!!knownModelMetadata) {
+        alert(
+          "Known model metadata found, updating model config:\n\n" +
+            JSON.stringify(knownModelMetadata, null, 2)
+        )
+        updateModelType(knownModelMetadata.modelType)
+        updateModelConfig({
+          tokenizer: knownModelMetadata.tokenizers?.[0] || "", // Pick the first one for now
+          defaultPromptTemplate: knownModelMetadata.promptTemplate || ""
+        })
+      } else {
+        alert(
+          "No known model metadata found. The model might need manual configuration."
+        )
+      }
     } catch (error) {
       alert(error)
     }
