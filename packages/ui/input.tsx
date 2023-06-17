@@ -10,7 +10,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {(props.title || props.placeholder) && (
           <label
             className={cn(
-              "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-50 text-ellipsis whitespace-nowrap",
+              "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-10 text-ellipsis whitespace-nowrap",
               props.title || props.value || props.defaultValue
                 ? "opacity-100"
                 : "opacity-0"
