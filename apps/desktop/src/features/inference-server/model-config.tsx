@@ -10,6 +10,7 @@ import {
 } from "@localai/ui/select"
 import { modelTypeList } from "@models/index"
 import { TrashIcon } from "@radix-ui/react-icons"
+import { confirm } from "@tauri-apps/api/dialog"
 import { useState } from "react"
 
 import { InvokeCommand, invoke } from "~features/invoke"
@@ -69,14 +70,19 @@ export const ModelConfig = () => {
         value={label}
         onChange={(e) => setLabel(e.target.value)}
       /> */}
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         <SpinnerButton
           className={cn(
+            "w-10 p-1 justify-center",
             "group-hover:opacity-100 opacity-0 transition-opacity",
-            downloadState === DownloadState.Downloading ? "hidden" : "block"
+            downloadState === DownloadState.Downloading ? "hidden" : "flex"
           )}
           Icon={TrashIcon}
           onClick={async () => {
+            if (!(await confirm(`Deleting ${model.name}?`))) {
+              return
+            }
+
             await invoke(InvokeCommand.DeleteModelFile, {
               path: model.path
             })

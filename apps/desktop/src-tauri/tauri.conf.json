@@ -20,7 +20,8 @@
       "dialog": {
         "all": false,
         "open": true,
-        "message": true
+        "message": true,
+        "confirm": true
       },
       "window": {
         "all": false,

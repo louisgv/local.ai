@@ -91,7 +91,7 @@ export function ModelManagerView() {
         <ServerConfig />
       </ViewHeader>
       <ViewBody className="flex flex-col p-4 gap-2">
-        <ModelSelector className="sticky top-0 z-10 shadow-sm p-1 rounded-lg bg-gray-1 shadow-gray-6" />
+        <ModelSelector className="sticky top-0 z-50 shadow-sm p-1 rounded-lg bg-gray-1 shadow-gray-6" />
         {models.length === 0 && (
           <p className="text-gray-9 italic pointer-events-none text-center">
             {`To start, download a model or change the models directory by

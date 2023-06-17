@@ -2,14 +2,10 @@ import { cn } from "@localai/theme/utils"
 import { SpinnerButton } from "@localai/ui/button"
 import { CrossCircledIcon, ReloadIcon } from "@radix-ui/react-icons"
 import { ShoppingCodeCheck } from "iconoir-react"
-import { useEffect, useState } from "react"
 
-import { InitState, useInit } from "~features/inference-server/use-init"
-import { InvokeCommand, invoke } from "~features/invoke"
-import type { ModelIntegrity } from "~features/invoke/model-integrity"
-import type { ModelMetadata } from "~features/model-downloader/model-file"
+import { InitState } from "~features/inference-server/use-init"
+import { useOverlayPopup } from "~features/inference-server/use-overlay-popup"
 import { DownloadState } from "~features/model-downloader/use-model-download"
-import { useGlobal } from "~providers/global"
 import { useModel } from "~providers/model"
 
 export const getTruncatedHash = (hashValue: string) =>
@@ -26,71 +22,24 @@ const HashDisplay = ({ hashType = "", hashValue = "", truncated = false }) => {
   )
 }
 
-export const getCachedIntegrity = async (path: string) =>
-  invoke(InvokeCommand.GetCachedIntegrity, {
-    path
-  }).catch<ModelIntegrity>(() => null)
-
-export function ModelDigest({ model }: { model: ModelMetadata }) {
+export function ModelDigest() {
+  const overlayPopup = useOverlayPopup()
   const {
-    knownModels: { modelMap }
-  } = useGlobal()
-
-  const { downloadState, updateModelConfig, updateModelType } = useModel()
-  const [integrity, setIntegrity] = useState<ModelIntegrity>(null)
-  const [isCalculating, setIsCalculating] = useState(false)
-  const [showDetail, setShowDetail] = useState(false)
-  const { initState } = useInit(async () => {
-    const resp = await getCachedIntegrity(model.path)
-    setIntegrity(resp)
-  }, [model])
-
-  useEffect(() => {
-    if (downloadState === DownloadState.Completed) {
-      getCachedIntegrity(model.path).then(setIntegrity)
-    }
-  }, [model, downloadState])
-
-  async function computeDigest() {
-    setIntegrity(null)
-    setIsCalculating(true)
-    try {
-      const resp = await invoke(InvokeCommand.ComputeModelIntegrity, {
-        path: model.path
-      })
-      setIntegrity(resp)
-
-      const knownModelMetadata = modelMap[resp.blake3]
-      if (!!knownModelMetadata) {
-        alert(
-          "Known model metadata found, updating model config:\n\n" +
-            JSON.stringify(knownModelMetadata, null, 2)
-        )
-        updateModelType(knownModelMetadata.modelType)
-        updateModelConfig({
-          tokenizer: knownModelMetadata.tokenizers?.[0] || "", // Pick the first one for now
-          defaultPromptTemplate: knownModelMetadata.promptTemplate || ""
-        })
-      } else {
-        alert(
-          "No known model metadata found. The model might need manual configuration."
-        )
-      }
-    } catch (error) {
-      alert(error)
-    }
-
-    setIsCalculating(false)
-  }
-
+    integrity,
+    isChecking: isCalculating,
+    checkModel: computeDigest,
+    downloadState,
+    integrityInit: { initState }
+  } = useModel()
   return (
     <div className="flex justify-end text-gray-10 w-64 relative">
       {integrity ? (
         <>
           <div
+            ref={overlayPopup.popupRef}
             className={cn(
-              showDetail
-                ? "z-10 opacity-100 pointer-events-auto"
+              overlayPopup.isVisible
+                ? "z-40 opacity-100 pointer-events-auto"
                 : "z-0 opacity-0 pointer-events-none",
               "absolute right-0 top-0",
               "transition-opacity",
@@ -104,7 +53,7 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
               )}>
               <button
                 className="absolute right-1 top-1"
-                onClick={() => setShowDetail(false)}>
+                onClick={() => overlayPopup.setIsVisible(false)}>
                 <CrossCircledIcon />
               </button>
               {["blake3", "sha256"].map((hashType) => (
@@ -124,10 +73,9 @@ export function ModelDigest({ model }: { model: ModelMetadata }) {
               onClick={computeDigest}
             />
             <button
+              ref={overlayPopup.buttonRef}
               className="text-xs hover:bg-gray-4 p-2 rounded-md"
-              onClick={() => {
-                setShowDetail(true)
-              }}>
+              onClick={() => overlayPopup.setIsVisible(true)}>
               {["blake3", "sha256"].map((hashType) => (
                 <HashDisplay
                   key={hashType}
