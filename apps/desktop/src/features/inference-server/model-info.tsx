@@ -1,46 +1,48 @@
-import { CrossCircledIcon } from "@radix-ui/react-icons";
-import { useState, useRef, useEffect } from "react";
-import { cn } from "@localai/theme/utils";
-import { useModel } from "~providers/model";
-import { toGB } from "~features/model-downloader/model-file";
-import { useToggle } from "~features/layout/use-toggle";
-import { useModelType } from "./use-model-type";
+import { cn } from "@localai/theme/utils"
+import { CrossCircledIcon } from "@radix-ui/react-icons"
+import { useEffect, useRef, useState } from "react"
+
+import { useToggle } from "~features/layout/use-toggle"
+import { toGB } from "~features/model-downloader/model-file"
+import { useModel } from "~providers/model"
+
+import { useModelType } from "./use-model-type"
 
 const InfoMenu = () => {
-  const [showMenu, setShowMenu] = useState(false);
-  const { model, modelSize } = useModel();
-  const [showByte, toggleShowByte] = useToggle();
-  const menuRef = useRef(null);
-  const buttonRef = useRef(null);
-  const { modelType } = useModelType(model);
+  const [showMenu, setShowMenu] = useState(false)
+  const { model, modelSize } = useModel()
+  const [showByte, toggleShowByte] = useToggle()
+  const menuRef = useRef(null)
+  const buttonRef = useRef(null)
+  const { modelType } = useModelType(model)
 
   useEffect(() => {
     const handleResize = () => {
       if (menuRef.current) {
-        const menuWidth = menuRef.current.offsetWidth;
-        const contentWidth = menuRef.current.firstChild.offsetWidth;
+        const menuWidth = menuRef.current.offsetWidth
+        const contentWidth = menuRef.current.firstChild.offsetWidth
         if (contentWidth > menuWidth) {
-          menuRef.current.classList.add("overflow-x-scroll");
+          menuRef.current.classList.add("overflow-x-scroll")
         } else {
-          menuRef.current.classList.remove("overflow-x-scroll");
+          menuRef.current.classList.remove("overflow-x-scroll")
         }
       }
-    };
+    }
 
-    handleResize();
+    handleResize()
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+      window.removeEventListener("resize", handleResize)
+    }
+  }, [])
 
   const formatModelSize = (size) => {
-    return isNaN(size) ? "N/A" : `${toGB(size).toFixed(2)} GB`;
-  };
+    return isNaN(size) ? "N/A" : `${toGB(size).toFixed(2)} GB`
+  }
 
   const handleClick = () => {
-    toggleShowByte();
-  };
+    toggleShowByte()
+  }
 
   const handleDocumentClick = (event) => {
     if (
@@ -48,49 +50,47 @@ const InfoMenu = () => {
       !menuRef.current.contains(event.target) &&
       !buttonRef.current.contains(event.target)
     ) {
-      setShowMenu(false);
+      setShowMenu(false)
     }
-  };
+  }
 
   useEffect(() => {
-    document.addEventListener("click", handleDocumentClick);
+    document.addEventListener("click", handleDocumentClick)
 
     return () => {
-      document.removeEventListener("click", handleDocumentClick);
-    };
-  }, []);
+      document.removeEventListener("click", handleDocumentClick)
+    }
+  }, [])
 
   return (
     <div className="relative">
       <button
         ref={buttonRef}
         className={cn(
-          "px-3 py-2 text-gray-500 hover:text-gray-700 focus:text-gray-700"
+          "px-3 py-2 text-gray-10 hover:text-gray-11 focus:text-gray-11"
         )}
-        onClick={() => setShowMenu(!showMenu)}
-      >
+        onClick={() => setShowMenu(!showMenu)}>
         <span className="text-sm">Info</span>
       </button>
 
       {showMenu && (
         <div
           className={cn(
-            "absolute top-8 left-0 bg-gray-4 border border-gray-6 rounded-md shadow-md"
+            "absolute top-8 left-0 bg-gray-3 border border-gray-6 rounded-md shadow-md"
           )}
           ref={menuRef}
-          style={{ minWidth: "225px" }}
-        >
+          style={{ minWidth: "225px" }}>
           <div className={cn("px-3 py-2")}>
             <div
               className={cn("flex items-center justify-between mb-4")}
-              style={{ whiteSpace: "nowrap" }}
-            >
-              <h4 className={cn("text-lg text-gray-10 font-semibold")}>Model Information</h4>
+              style={{ whiteSpace: "nowrap" }}>
+              <h4 className={cn("text-lg text-gray-10 font-semibold")}>
+                Model Information
+              </h4>
               <button
                 className={cn("absolute right-1 top-1")}
-                onClick={() => setShowMenu(false)}
-              >
-                <CrossCircledIcon/>
+                onClick={() => setShowMenu(false)}>
+                <CrossCircledIcon />
               </button>
             </div>
 
@@ -109,8 +109,7 @@ const InfoMenu = () => {
               </div>
               <button
                 className={cn("text-xs text-gray-10 hover:text-gray-11")}
-                onClick={handleClick}
-              >
+                onClick={handleClick}>
                 {showByte ? "Show in GB" : "Show in Bytes"}
               </button>
             </div>
@@ -118,7 +117,7 @@ const InfoMenu = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export { InfoMenu };
+export { InfoMenu }
