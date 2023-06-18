@@ -34,7 +34,7 @@ fn main() {
       model_stats::State::new(app)?;
 
       // A hack to make MacOS window show up in dev mode...
-      #[cfg(all(debug_assertions, target_os = "macos"))]
+      #[cfg(all(debug_assertions, not(target_os = "windows")))]
       {
         use tauri::Manager;
         let window = app.get_window("main").unwrap();
