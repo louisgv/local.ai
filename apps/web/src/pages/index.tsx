@@ -1,3 +1,4 @@
+import { cn } from "@localai/theme/utils"
 import { BasicLayout } from "@localai/ui/layouts/base"
 import { QuickLink } from "@localai/ui/link"
 import { clsx } from "clsx"
@@ -65,7 +66,11 @@ const FeaturesList = ({
 
 const Logo = () => (
   <QuickLink
-    className="flex items-center justify-center gap-2 font-bold text-lg text-mauve-12"
+    className={cn(
+      "flex items-center justify-between gap-2 font-bold text-lg pr-3 rounded-xl transition-colors",
+      "bg-mauve-1/60 text-mauve-12",
+      "hover:bg-mauve-4 hover:shadow-inner"
+    )}
     href="/">
     <Image
       src={faviconPic}

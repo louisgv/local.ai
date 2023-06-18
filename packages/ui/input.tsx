@@ -6,7 +6,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {}
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, children, ...props }, ref) => {
     return (
-      <div className={cn("relative flex h-10 rounded-md", className)}>
+      <div className={cn("relative flex h-10 rounded-md w-full", className)}>
         {(props.title || props.placeholder) && (
           <label
             className={cn(

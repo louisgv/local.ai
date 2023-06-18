@@ -23,11 +23,11 @@ use crate::{
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CompletionRequest {
   prompt: String,
+  stream: Option<bool>,
+
   max_tokens: Option<usize>,
-  stream: bool,
 
   pub seed: Option<u64>,
-
   pub temperature: Option<f32>,
   pub top_p: Option<f32>,
   pub frequency_penalty: Option<f32>,
