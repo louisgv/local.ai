@@ -151,7 +151,7 @@ export const useThreadMdx = () => {
       )
 
       await invoke(InvokeCommand.ReadThreadFile, {
-        path: activeThread,
+        path: activeThread.path,
         eventId
       })
     }
@@ -171,7 +171,7 @@ export const useThreadMdx = () => {
     ].join("")
 
     return invoke(InvokeCommand.AppendThreadContent, {
-      path: activeThread,
+      path: activeThread.path,
       content
     })
   }

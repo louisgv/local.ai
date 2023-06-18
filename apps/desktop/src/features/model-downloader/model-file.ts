@@ -1,7 +1,8 @@
 export type FileInfo = {
   name: string
-  size: number
   path: string
+  size?: number
+  modified?: any
 }
 
 export type ModelMetadata = FileInfo & {

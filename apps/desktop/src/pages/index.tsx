@@ -13,7 +13,7 @@ function IndexPage() {
 
   return useMemo(() => {
     switch (currentRoute) {
-      case Route.Chat:
+      case Route.Thread:
         return <ChatView />
       case Route.ModelManager:
       default:

@@ -1,32 +1,44 @@
 "use client"
 
-import type { ModelType } from "@models/_shared"
 import type { WebviewWindow } from "@tauri-apps/api/window"
 import { createProvider } from "puro"
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 import { useContext, useState } from "react"
 
-import { getCachedIntegrity } from "~features/inference-server/model-digest"
 import { useInit } from "~features/inference-server/use-init"
 import { useModelsDirectory } from "~features/inference-server/use-models-directory"
 import { InvokeCommand, invoke } from "~features/invoke"
 import { useToggle } from "~features/layout/use-toggle"
-import type { ModelMetadata } from "~features/model-downloader/model-file"
+import type {
+  FileInfo,
+  ModelMetadata
+} from "~features/model-downloader/model-file"
 import { useModelsApi } from "~features/model-downloader/use-models-api"
 import { useThreadsDirectory } from "~features/thread/use-threads-directory"
+import { getCachedIntegrity } from "~providers/model"
 
 export enum Route {
   ModelManager = "model-manager",
-  Chat = "chat"
+  Thread = "thread"
 }
 
-async function setTitle(window: WebviewWindow) {
-  const { platform } = await import("@tauri-apps/api/os")
+let _prefix: string
+let _window: WebviewWindow
 
-  const currentPlatform = await platform()
-  const prefix = currentPlatform === "darwin" ? "🎒 " : ""
+async function setTitle(title = "") {
+  if (_prefix === undefined) {
+    const { platform } = await import("@tauri-apps/api/os")
+    const currentPlatform = await platform()
+    _prefix = currentPlatform === "win32" ? "" : "🎒 "
+  }
+  let window = _window
+  if (!window) {
+    const { getCurrent } = await import("@tauri-apps/api/window")
+    window = getCurrent()
+  }
+  const suffix = `${title ? ` - ` : ""}local.ai`
 
-  await window.setTitle(`${prefix}local.ai`)
+  await window.setTitle(`${_prefix}${title}${suffix}`)
 }
 
 const useGlobalProvider = () => {
@@ -34,7 +46,7 @@ const useGlobalProvider = () => {
 
   const activeModelState = useState<ModelMetadata>(null)
   const concurrencyState = useState(1)
-  const activeThreadState = useState<string>()
+  const activeThreadState = useState<FileInfo>()
 
   const portState = useState(8000)
 
@@ -54,13 +66,14 @@ const useGlobalProvider = () => {
     const { getCurrent } = await import("@tauri-apps/api/window")
     const currentWindow = getCurrent()
     windowRef.current = currentWindow
+    _window = currentWindow
 
     const [isVisible, initialOnboardState] = await Promise.all([
       currentWindow.isVisible(),
       invoke(InvokeCommand.GetConfig, {
         key: "onboard_state"
       }).catch<null>((_) => null),
-      setTitle(currentWindow)
+      setTitle()
     ])
 
     onboardState[1](initialOnboardState)
@@ -89,7 +102,7 @@ const useGlobalProvider = () => {
       concurrency: concurrencyState[0]
     })
 
-    const integrity = await getCachedIntegrity(model.path)
+    const integrity = await getCachedIntegrity(model)
 
     activeModelState[1]({
       ...model,
@@ -101,10 +114,17 @@ const useGlobalProvider = () => {
     }
   }
 
+  useEffect(() => {
+    if (routeState[0] === Route.ModelManager) {
+      setTitle("Model Manager")
+    } else if (activeThreadState[0]) {
+      setTitle(activeThreadState[0].name.slice(0, -2))
+    }
+  }, [activeThreadState[0], routeState[0]])
+
   return {
     getWindow: () => windowRef.current,
     loadModel,
-
     startServer,
     stopServer,
 

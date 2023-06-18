@@ -117,7 +117,7 @@ export const ChatView = () => {
           isConfigVisible ? "w-1/4 opacity-100" : "w-0 opacity-0",
           "border-l border-l-gray-6"
         )}>
-        <ViewBody className="p-4 flex flex-col gap-6 overflow-auto items-start">
+        <ViewBody className="p-4 flex flex-col gap-6 overflow-auto items-start w-full">
           <Textarea
             rows={8}
             title="Prompt template (WIP)"

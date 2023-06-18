@@ -33,33 +33,10 @@ export const useThreadsDirectory = () => {
     [threadsDirectory]
   )
 
-  const removeThread = useCallback(async (thread: FileInfo) => {
-    await invoke(InvokeCommand.DeleteThreadFile, {
-      path: thread.path
-    })
-  }, [])
-
-  const renameThread = useCallback(
-    async (thread: FileInfo, newName: string) => {
-      return invoke(InvokeCommand.RenameThreadFile, {
-        path: thread.path,
-        newName
-      })
-    },
-    []
-  )
-
-  const createThread = useCallback(async () => {
-    return invoke(InvokeCommand.CreateThreadFile)
-  }, [])
-
   return {
     threads,
     threadsDirectory,
     isRefreshing,
-    updateThreadsDirectory,
-    removeThread,
-    createThread,
-    renameThread
+    updateThreadsDirectory
   }
 }

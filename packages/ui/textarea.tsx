@@ -7,7 +7,7 @@ export interface TextareaProps
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => {
     return (
-      <div className={cn("relative", className)}>
+      <div className={cn("relative w-full", className)}>
         {props.title && (
           <label
             className={cn(

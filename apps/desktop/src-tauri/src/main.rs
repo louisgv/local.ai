@@ -8,7 +8,6 @@ mod config;
 mod db;
 mod downloader;
 mod inference;
-mod inference_server;
 mod kv_bucket;
 mod macros;
 mod model_config;
@@ -23,7 +22,7 @@ mod threads_directory;
 mod utils;
 fn main() {
   tauri::Builder::default()
-    .manage(inference_server::State::default())
+    .manage(inference::server::State::default())
     .plugin(tauri_plugin_persisted_scope::init())
     .setup(|app| {
       path::State::new(app)?;
@@ -35,7 +34,7 @@ fn main() {
       model_stats::State::new(app)?;
 
       // A hack to make MacOS window show up in dev mode...
-      #[cfg(all(debug_assertions, target_os = "macos"))]
+      #[cfg(all(debug_assertions, not(target_os = "windows")))]
       {
         use tauri::Manager;
         let window = app.get_window("main").unwrap();
@@ -69,8 +68,8 @@ fn main() {
       model_stats::get_model_stats,
       model_config::get_model_config,
       model_config::set_model_config,
-      inference_server::start_server,
-      inference_server::stop_server,
+      inference::server::start_server,
+      inference::server::stop_server,
       model_pool::load_model,
       model_type::get_model_type,
       model_type::set_model_type,

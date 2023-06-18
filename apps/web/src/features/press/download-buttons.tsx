@@ -7,7 +7,8 @@ import { AppleMac, Linux, Windows } from "iconoir-react"
 import { baseUrl } from "~pages/api/_constants"
 import { useGlobal } from "~providers/global"
 
-const buttonClass = "rounded-full transition-all font-bold w-36"
+const buttonClass = "rounded-full transition-all font-bold w-36 hover:shadow-lg"
+const buttonTextClass = "text-whiteA-11 hover:text-whiteA-12"
 
 export const WindowsMsiDownloadButton = () => {
   const { version } = useGlobal()
@@ -16,7 +17,8 @@ export const WindowsMsiDownloadButton = () => {
       <Button
         className={cn(
           buttonClass,
-          "bg-blue-12 hover:bg-blue-9 text-blue-1 hover:text-blue-12 "
+          "bg-blue-9 hover:bg-blue-10",
+          buttonTextClass
         )}>
         <Windows />
         .MSI
@@ -32,7 +34,8 @@ export const WindowsExeDownloadButton = () => {
       <Button
         className={cn(
           buttonClass,
-          "bg-indigo-12 hover:bg-indigo-9 text-indigo-1 hover:text-indigo-12 "
+          "bg-indigo-9 hover:bg-indigo-10",
+          buttonTextClass
         )}>
         <Windows />
         .EXE
@@ -49,7 +52,8 @@ export const MacArm64DownloadButton = () => {
       <Button
         className={cn(
           buttonClass,
-          "bg-violet-12 hover:bg-violet-9 text-violet-1 hover:text-violet-12 "
+          "bg-violet-9 hover:bg-violet-10",
+          buttonTextClass
         )}>
         <AppleMac />
         M1/M2
@@ -66,7 +70,8 @@ export const MacIntelDownloadButton = () => {
       <Button
         className={cn(
           buttonClass,
-          "bg-purple-12 hover:bg-purple-9 text-purple-1 hover:text-purple-12"
+          "bg-purple-9 hover:bg-purple-10",
+          buttonTextClass
         )}>
         <AppleMac />
         Intel
@@ -83,7 +88,8 @@ export const AppImageDownloadButton = () => {
       <Button
         className={cn(
           buttonClass,
-          "bg-plum-12 hover:bg-plum-9 text-plum-1 hover:text-plum-12"
+          "bg-plum-9 hover:bg-plum-10",
+          buttonTextClass
         )}>
         <Linux />
         AppImage
@@ -100,7 +106,8 @@ export const DebImageDownloadButton = () => {
       <Button
         className={cn(
           buttonClass,
-          "bg-pink-12 hover:bg-pink-9 text-pink-1 hover:text-pink-12"
+          "bg-pink-9 hover:bg-pink-10",
+          buttonTextClass
         )}>
         <Linux />
         .deb
@@ -140,8 +147,8 @@ export const DownloadButtonGroup = () => (
 export const MiniDownloadButtonGroup = () => (
   <div className="rounded-full overflow-hidden">
     <QuickLink external href={"https://github.com/louisgv/local.ai"}>
-      <Button>
-        <GitHubLogoIcon />
+      <Button className="w-10 h-10 p-2 justify-center hover:shadow-inner bg-mauve-1/60 hover:bg-mauve-4">
+        <GitHubLogoIcon className="w-8 h-8" />
       </Button>
     </QuickLink>
     {/* <QuickLink external>

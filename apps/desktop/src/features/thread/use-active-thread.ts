@@ -27,6 +27,10 @@ export const useActiveThread = () => {
     botIconIndex
   } = useThreadMdx()
 
+  const [maxTokens, setMaxTokens] = useState(4200)
+  const [temperature, setTemperature] = useState(0)
+  const [topP, setTopP] = useState(1)
+
   const aiMessageRef = useRef<ThreadMessage>()
   const abortRef = useRef(false)
 
@@ -84,8 +88,8 @@ export const useActiveThread = () => {
           },
           body: JSON.stringify({
             prompt: getQAPrompt(text, systemPrompt),
-            max_tokens: undefined,
-            temperature: 0.9,
+            max_tokens: maxTokens,
+            temperature,
             stream: true
           })
         }

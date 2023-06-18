@@ -45,12 +45,12 @@ pub fn get_app_dir_path_buf(
   Ok(ns_dir)
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct FileInfo {
-  pub size: u64,
   pub path: String,
   pub name: String,
-  pub modified: SystemTime,
+  pub size: Option<u64>,
+  pub modified: Option<SystemTime>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -72,13 +72,15 @@ pub async fn read_directory(dir: &str) -> Result<Vec<FileInfo>, String> {
       let name = entry
         .path()
         .file_stem()
-        .unwrap()
+        .unwrap_or(std::ffi::OsStr::new(""))
         .to_str()
-        .unwrap()
+        .unwrap_or("")
         .to_string();
-      let metadata = entry.metadata().unwrap();
-      let size = metadata.len();
-      let modified = metadata.modified().unwrap();
+
+      let (size, modified) = match entry.metadata() {
+        Ok(metadata) => (Some(metadata.len()), metadata.modified().ok()),
+        Err(_) => (None, None),
+      };
 
       FileInfo {
         path,

@@ -74,7 +74,7 @@ icon: {icon}
 pub async fn create_thread_file(
   default_path_state: tauri::State<'_, crate::path::State>,
   config_bucket_state: tauri::State<'_, crate::config::State>,
-) -> Result<String, String> {
+) -> Result<FileInfo, String> {
   let date = Utc::now();
 
   let threads_path =
@@ -95,7 +95,11 @@ pub async fn create_thread_file(
 
   // attempt to create the file
   match tokio::fs::write(&full_path, header_content).await {
-    Ok(_) => Ok(full_path.display().to_string()),
+    Ok(_) => Ok(FileInfo {
+      path: full_path.display().to_string(),
+      name: full_path.file_stem().unwrap().to_str().unwrap().to_string(),
+      ..Default::default()
+    }),
     Err(e) => Err(e.to_string()),
   }
 }
@@ -115,7 +119,7 @@ pub async fn delete_thread_file(path: &str) -> Result<(), String> {
 pub async fn rename_thread_file(
   path: &str,
   new_name: &str,
-) -> Result<String, String> {
+) -> Result<FileInfo, String> {
   let path = std::path::Path::new(path);
 
   if let Some(parent) = path.parent() {
@@ -123,7 +127,12 @@ pub async fn rename_thread_file(
 
     std::fs::rename(&path, &new_path)
       .map_err(|e| format!("Failed to rename file: {}", e))?;
-    Ok(new_path.display().to_string())
+
+    Ok(FileInfo {
+      path: new_path.display().to_string(),
+      name: new_path.file_stem().unwrap().to_str().unwrap().to_string(),
+      ..Default::default()
+    })
   } else {
     Err(String::from("Invalid file path"))
   }
