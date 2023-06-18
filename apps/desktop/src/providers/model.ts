@@ -22,7 +22,7 @@ export enum ModelLoadState {
   Loaded
 }
 
-const getCachedIntegrity = (model: ModelMetadata) =>
+export const getCachedIntegrity = (model: ModelMetadata) =>
   invoke(InvokeCommand.GetCachedIntegrity, {
     path: model.path
   }).catch<ModelIntegrity>(() => null)

@@ -14,10 +14,16 @@ module.exports = {
       serif: ["Georgia", "serif"]
     },
     extend: {
+      keyframes: {
+        "k-scroll-x": {
+          "0%": { transform: "translateX(0%)" },
+          "42%": { transform: "translateX(-100%)" },
+          "69%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(0%)" }
+        }
+      },
       animation: {
-        "delayed-fadein-once": "fadein .42s ease-in-out 1.47s forwards",
-        "fadein-once": "fadein ease-in-out 1.47s forwards",
-        "fadein-once-quick": "fadein ease-in-out 0.47s forwards"
+        "scroll-x": "k-scroll-x 10s linear infinite"
       }
     }
   },

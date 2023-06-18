@@ -1,5 +1,8 @@
 import type { InvokeCommand, InvokeIO } from "~features/invoke/_shared"
-import type { DirectoryState } from "~features/model-downloader/model-file"
+import type {
+  DirectoryState,
+  FileInfo
+} from "~features/model-downloader/model-file"
 
 export type ThreadsDirectoryCommandMap = {
   [InvokeCommand.AppendThreadContent]: InvokeIO<
@@ -7,7 +10,7 @@ export type ThreadsDirectoryCommandMap = {
       path: string
       content: string
     },
-    string
+    void
   >
   [InvokeCommand.ReadThreadFile]: InvokeIO<{
     path: string
@@ -18,7 +21,7 @@ export type ThreadsDirectoryCommandMap = {
   [InvokeCommand.DeleteThreadFile]: InvokeIO<{ path: string }>
   [InvokeCommand.RenameThreadFile]: InvokeIO<
     { path: string; newName: string },
-    string
+    FileInfo
   >
-  [InvokeCommand.CreateThreadFile]: InvokeIO<never, string>
+  [InvokeCommand.CreateThreadFile]: InvokeIO<never, FileInfo>
 }

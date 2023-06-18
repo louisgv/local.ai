@@ -1,7 +1,7 @@
+import { cn } from "@localai/theme/utils"
 import { Button } from "@localai/ui/button"
 import { Input } from "@localai/ui/input"
 import {
-  ChatBubbleIcon,
   CheckIcon,
   Cross2Icon,
   FileTextIcon,
@@ -9,8 +9,9 @@ import {
   TrashIcon
 } from "@radix-ui/react-icons"
 import { PeopleTag, SidebarCollapse, SidebarExpand } from "iconoir-react"
-import { useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 
+import { InvokeCommand, invoke } from "~features/invoke"
 import { NavButton } from "~features/layout/nav-button"
 import { useToggle } from "~features/layout/use-toggle"
 import { ViewBody } from "~features/layout/view"
@@ -33,11 +34,7 @@ function ChatIcon({ type = undefined as ChatType }) {
 function ThreadItem({ item = null as FileInfo, index = 0 }) {
   const {
     activeThreadState: [activeThread, setActiveThread],
-    threadsDirectoryState: {
-      removeThread,
-      updateThreadsDirectory,
-      renameThread
-    }
+    threadsDirectoryState: { updateThreadsDirectory }
   } = useGlobal()
 
   const [isEditing, toggleIsEditting] = useToggle()
@@ -45,23 +42,31 @@ function ThreadItem({ item = null as FileInfo, index = 0 }) {
   const threadName = useMemo(() => item.name.slice(0, -2), [item])
   const newNameRef = useRef("")
 
-  const rename = async () => {
-    if (!newNameRef.current) {
-      return
+  useEffect(() => {
+    if (!isEditing) {
+      newNameRef.current = ""
     }
-    const newPath = await renameThread(item, newNameRef.current)
+  }, [isEditing])
+
+  const rename = async () => {
+    if (!!newNameRef.current) {
+      const newThread = await invoke(InvokeCommand.RenameThreadFile, {
+        path: item.path,
+        newName: newNameRef.current
+      })
+
+      await updateThreadsDirectory()
+      setActiveThread(newThread)
+    }
 
     toggleIsEditting()
-
-    await updateThreadsDirectory()
-
-    setActiveThread(newPath)
   }
 
   if (isEditing) {
     return (
       <li className="flex relative group gap-1 justify-center items-center px-2">
         <Input
+          autoFocus
           defaultValue={threadName}
           placeholder="Name"
           onChange={(e) => (newNameRef.current = e.target.value)}
@@ -85,13 +90,19 @@ function ThreadItem({ item = null as FileInfo, index = 0 }) {
   return (
     <li className="flex relative group">
       <NavButton
-        route={Route.Chat}
-        isActive={item.path === activeThread}
+        route={Route.Thread}
+        isActive={item.path === activeThread?.path}
         onPressed={async () => {
-          setActiveThread(item.path)
+          setActiveThread(item)
         }}>
         <ChatIcon type={"chat"} />
-        <div className="w-full flex">{threadName}</div>
+        <div
+          className={cn(
+            "w-[calc(100%)] block text-left overflow-hidden overflow-ellipsis whitespace-nowrap",
+            "group-hover:w-[calc(100%-64px)]"
+          )}>
+          {threadName}
+        </div>
       </NavButton>
       <div className="group-hover:opacity-100 opacity-0 transition-opacity absolute right-2 flex gap-1 self-center">
         <Button className="p-1 h-6" onClick={toggleIsEditting}>
@@ -100,7 +111,10 @@ function ThreadItem({ item = null as FileInfo, index = 0 }) {
         <Button
           className="p-1 h-6"
           onClick={async () => {
-            await removeThread(item)
+            await invoke(InvokeCommand.DeleteThreadFile, {
+              path: item.path
+            })
+
             const { files } = await updateThreadsDirectory()
 
             if (files.length === 0) {
@@ -108,11 +122,11 @@ function ThreadItem({ item = null as FileInfo, index = 0 }) {
             }
 
             if (index > files.length - 1) {
-              setActiveThread(files[files.length - 1].path)
+              setActiveThread(files[files.length - 1])
               return
             }
 
-            setActiveThread(files[index].path)
+            setActiveThread(files[index])
           }}>
           <TrashIcon />
         </Button>
