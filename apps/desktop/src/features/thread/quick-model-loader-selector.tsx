@@ -41,7 +41,7 @@ export const QuickModelLoaderSelector = () => {
         className={cn(
           "text-gray-11",
           "relative",
-          "w-64 flex flex-grow-0 flex-shrink-0"
+          "w-64 flex flex-grow-0 flex-shrink-0 group"
         )}>
         <label
           className={cn(
@@ -51,9 +51,15 @@ export const QuickModelLoaderSelector = () => {
         </label>
 
         <SelectValue>
-          <span className="flex w-52">
-            {selectedModel?.name || "Select a model to load"}
-          </span>
+          <div className="w-52 overflow-hidden text-left">
+            {selectedModel ? (
+              <span className="w-[calc(100%)] block whitespace-nowrap group-hover:animate-scroll-x group-hover:w-max">
+                {selectedModel.name}
+              </span>
+            ) : (
+              "Select a model to load"
+            )}
+          </div>
         </SelectValue>
       </SelectTrigger>
       <SelectContent className="flex h-48 w-full">

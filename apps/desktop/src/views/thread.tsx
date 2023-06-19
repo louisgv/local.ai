@@ -42,7 +42,7 @@ const botIconList = [
   BasketballAlt
 ]
 
-export const ChatView = () => {
+export const ThreadView = () => {
   const {
     messages,
     addNote,
@@ -51,7 +51,9 @@ export const ChatView = () => {
     systemPrompt,
     setSystemPrompt,
     isResponding,
-    botIconIndex
+    botIconIndex,
+    promptTemplate,
+    setPrompTemplate
   } = useActiveThread()
 
   const botIconClass = useMemo(
@@ -120,12 +122,9 @@ export const ChatView = () => {
         <ViewBody className="p-4 flex flex-col gap-6 overflow-auto items-start w-full">
           <Textarea
             rows={8}
-            title="Prompt template (WIP)"
-            defaultValue={dedent`
-                      <BOT>: {SYSTEM}
-                      <HUMAN>: {PROMPT}
-                      <BOT>:
-                    `}
+            title="Prompt template"
+            value={promptTemplate}
+            onChange={(e) => setPrompTemplate(e.target.value)}
           />
           <Input placeholder="Temperature (WIP)" defaultValue={0.47} />
           <Input placeholder="Max Tokens (WIP)" defaultValue={0.47} />

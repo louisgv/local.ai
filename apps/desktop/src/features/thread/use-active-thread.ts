@@ -1,14 +1,27 @@
 import { nanoid } from "nanoid"
 import { useRef, useState } from "react"
+import dedent from "ts-dedent"
 
 import { Role, type ThreadMessage } from "~features/thread/_shared"
 import { processSseStream } from "~features/thread/process-sse-stream"
 import { useThreadMdx } from "~features/thread/use-thread-mdx"
 import { useGlobal } from "~providers/global"
 
-// TODO: Utilize a prompt template system instead
-const getQAPrompt = (text: string, systemPrompt: string) =>
-  [`ASSISTANT: ${systemPrompt}`, `USER: ${text}`, `ASSISTANT: `].join("\n")
+const DEFAULT_PROMPT_TEMPLATE = dedent`
+  ASSISTANT: {system}
+  USER: {prompt}
+  ASSISTANT:
+`
+
+function applyTemplate(
+  promptTemplate: string,
+  systemPrompt: string,
+  userPrompt: string
+) {
+  return promptTemplate
+    .replace("{system}", systemPrompt)
+    .replace("{prompt}", userPrompt)
+}
 
 export const useActiveThread = () => {
   const {
@@ -26,6 +39,8 @@ export const useActiveThread = () => {
     appendMessage,
     botIconIndex
   } = useThreadMdx()
+
+  const [promptTemplate, setPrompTemplate] = useState(DEFAULT_PROMPT_TEMPLATE)
 
   const [maxTokens, setMaxTokens] = useState(4200)
   const [temperature, setTemperature] = useState(0)
@@ -52,7 +67,7 @@ export const useActiveThread = () => {
     abortRef.current = true
   }
 
-  const startInference = async (text: string) => {
+  const startInference = async (userPrompt: string) => {
     if (isResponding) {
       return
     }
@@ -61,7 +76,7 @@ export const useActiveThread = () => {
       {
         id: nanoid(),
         role: Role.User,
-        content: text
+        content: userPrompt
       },
       ...messages
     ]
@@ -87,7 +102,7 @@ export const useActiveThread = () => {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            prompt: getQAPrompt(text, systemPrompt),
+            prompt: applyTemplate(promptTemplate, systemPrompt, userPrompt),
             max_tokens: maxTokens,
             temperature,
             stream: true
@@ -122,6 +137,10 @@ export const useActiveThread = () => {
     messages,
     isResponding,
     botIconIndex,
+
+    promptTemplate,
+    setPrompTemplate,
+
     addNote,
     startInference,
     stopInference,
