@@ -19,7 +19,9 @@ import { getCachedIntegrity } from "~providers/model"
 
 export enum Route {
   ModelManager = "model-manager",
-  Thread = "thread"
+  Thread = "thread",
+  ServerManager = "ServerManager",
+  ServerManagerView = "ServerManagerView"
 }
 
 let _prefix: string

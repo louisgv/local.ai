@@ -50,11 +50,18 @@ const TopBar = () => {
 
 const BottomBar = () => {
   return (
-    <div className="flex flex-col w-full h-full py-3 px-2 gap-4 border-t border-t-gray-6">
-      <NavButton route={Route.ModelManager}>
-        <Home /> Model Manager
-      </NavButton>
-    </div>
+    <>
+      <div className="flex flex-col w-full h-full py-3 px-2 gap-4 border-t border-t-gray-6">
+        <NavButton route={Route.ModelManager}>
+          <Home /> Model Manager
+        </NavButton>
+      </div>
+      <div className="flex flex-col w-full h-full py-3 px-2 gap-4 border-t border-t-gray-6">
+        <NavButton route={Route.ServerManager}>
+          <Home /> Server Manager
+        </NavButton>
+      </div>
+    </>
   )
 }
 
