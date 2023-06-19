@@ -8,23 +8,11 @@ import {
 import { open as dialogOpen } from "@tauri-apps/api/dialog"
 
 import { InstanceCreator } from "~features/inference-server/instance-creator"
-import { ServerConfig } from "~features/inference-server/server-config"
 import { ServerListItem } from "~features/inference-server/server-list-item"
 import { InvokeCommand, invoke } from "~features/invoke"
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
-import { ModelSelector } from "~features/model-downloader/model-selector"
 import { ChatSideBarToggle } from "~features/thread/side-bar"
 import { useGlobal } from "~providers/global"
-
-// Flow: Pick a models directory
-
-// For each model file in the directory, show an items with the following:
-// - Model name
-// - Model hash
-// - Model description
-// - Model size
-
-// A button to "spawn" an inference server for the selected model
 
 export function ServerManagerView() {
   const {

@@ -124,6 +124,14 @@ const useGlobalProvider = () => {
     }
   }, [activeThreadState[0], routeState[0]])
 
+  useEffect(() => {
+    if (routeState[0] === Route.ServerManager) {
+      setTitle("Server Manager")
+    } else if (activeThreadState[0]) {
+      setTitle(activeThreadState[0].name.slice(0, -2))
+    }
+  }, [activeThreadState[0], routeState[0]])
+
   return {
     getWindow: () => windowRef.current,
     loadModel,
