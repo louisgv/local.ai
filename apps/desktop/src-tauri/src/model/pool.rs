@@ -8,7 +8,7 @@ use llm::{load_progress_callback_stdout, ModelArchitecture, VocabularySource};
 
 use std::path::Path;
 
-use crate::{inference::thread::ModelGuard, model_stats};
+use crate::inference::process::ModelGuard;
 use std::collections::VecDeque;
 
 use crate::config::ConfigKey;
@@ -135,10 +135,10 @@ fn get_vocab_source(vocab: String) -> VocabularySource {
 
 #[tauri::command]
 pub async fn load_model<'a>(
-  model_stats_bucket_state: tauri::State<'_, model_stats::State>,
+  model_stats_bucket_state: tauri::State<'_, crate::model::stats::State>,
   config_state: tauri::State<'_, crate::config::State>,
-  model_type_bucket_state: tauri::State<'_, crate::model_type::State>,
-  model_config_bucket_state: tauri::State<'_, crate::model_config::State>,
+  model_type_bucket_state: tauri::State<'_, crate::model::r#type::State>,
+  model_config_bucket_state: tauri::State<'_, crate::model::config::State>,
   app_handle: AppHandle,
   path: &str,
   concurrency: usize,

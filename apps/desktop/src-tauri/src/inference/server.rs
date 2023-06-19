@@ -11,11 +11,11 @@ use std::sync::{
   Arc,
 };
 
-use crate::abort_stream::AbortStream;
-use crate::inference::thread::{
-  start_inference, CompletionRequest, InferenceThreadRequest,
+use crate::inference::process::{
+  start, CompletionRequest, InferenceThreadRequest,
 };
-use crate::model_pool;
+use crate::model;
+use crate::utils::abort_stream::AbortStream;
 
 #[derive(Default)]
 pub struct State {
@@ -44,14 +44,14 @@ async fn post_model() -> impl Responder {
 async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
   println!("Received completion request: {:?}", payload.0);
 
-  if model_pool::is_empty() {
+  if model::pool::is_empty() {
     println!("No model loaded or available in the pool.");
     return HttpResponse::ServiceUnavailable().finish();
   }
 
   let (token_sender, receiver) = flume::unbounded::<Bytes>();
 
-  let model_guard = match model_pool::get_model() {
+  let model_guard = match model::pool::get_model() {
     Some(guard) => guard,
     None => {
       println!("No model available.");
@@ -61,7 +61,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 
   let abort_flag = Arc::new(RwLock::new(false));
 
-  let inference_thread = match start_inference(InferenceThreadRequest {
+  let inference_thread = match start(InferenceThreadRequest {
     model_guard: Arc::clone(&model_guard),
     abort_flag: Arc::clone(&abort_flag),
     token_sender,

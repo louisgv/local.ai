@@ -17,7 +17,7 @@ use tokio::task::JoinHandle;
 
 use crate::{
   inference::stop_handler::StopHandler,
-  model_pool::{self, get_n_threads},
+  model::{self, pool::get_n_threads},
 };
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -99,7 +99,7 @@ fn get_inference_params(
 }
 
 // Perhaps might be better to clone the model for each thread...
-pub fn start_inference(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
+pub fn start(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
   println!("Starting inference ...");
 
   // Need to clone it to have its own arc
@@ -241,7 +241,7 @@ fn spawn_inference_thread(
     }
 
     // TODO: Might make this into a callback later, for now we just abuse the singleton
-    model_pool::return_model(Some(Arc::clone(&req.model_guard)));
+    model::pool::return_model(Some(Arc::clone(&req.model_guard)));
 
     // Run inference
     // let res = session.infer::<Infallible>(
