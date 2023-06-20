@@ -119,20 +119,6 @@ pub async fn spawn_pool(
   Ok(())
 }
 
-fn get_vocab_source(vocab: String) -> VocabularySource {
-  match vocab {
-    v if {
-      let path = Path::new(&v);
-      path.is_absolute() && path.exists() && path.is_file()
-    } =>
-    {
-      VocabularySource::HuggingFaceTokenizerFile(PathBuf::from(v))
-    }
-    v if v.len() > 0 => VocabularySource::HuggingFaceRemote(v),
-    _ => VocabularySource::Model,
-  }
-}
-
 #[tauri::command]
 pub async fn load_model<'a>(
   model_stats_bucket_state: tauri::State<'_, crate::model::stats::State>,
@@ -156,7 +142,7 @@ pub async fn load_model<'a>(
   spawn_pool(
     path,
     model_type.as_str(),
-    &get_vocab_source(model_config.tokenizer),
+    &model_config.get_vocab(),
     concurrency,
     &cache_dir,
   )

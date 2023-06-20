@@ -3,12 +3,12 @@
 import { createProvider } from "puro"
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 
+import { createFileConfigStore } from "~features/inference-server/file-config-store"
 import { useInit } from "~features/inference-server/use-init"
-import { useModelConfig } from "~features/inference-server/use-model-config"
 import { useModelStats } from "~features/inference-server/use-model-stats"
 import { useModelType } from "~features/inference-server/use-model-type"
 import { InvokeCommand, invoke } from "~features/invoke"
-import type { ModelIntegrity } from "~features/invoke/model-integrity"
+import type { ModelConfig, ModelIntegrity } from "~features/invoke/model"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 import {
   DownloadState,
@@ -21,6 +21,11 @@ export enum ModelLoadState {
   Loading,
   Loaded
 }
+
+const useModelConfig = createFileConfigStore<ModelConfig>(
+  InvokeCommand.GetModelConfig,
+  InvokeCommand.SetModelConfig
+)
 
 export const getCachedIntegrity = (model: ModelMetadata) =>
   invoke(InvokeCommand.GetCachedIntegrity, {
@@ -43,9 +48,12 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   const [integrity, setIntegrity] = useState<ModelIntegrity>(null)
   const [isChecking, setIsChecking] = useState(false)
 
-  const { modelType, updateModelType } = useModelType(model)
+  const modelType = useModelType(model)
 
-  const { modelConfig, updateModelConfig } = useModelConfig(model)
+  const modelConfig = useModelConfig(model, {
+    tokenizer: "",
+    defaultPromptTemplate: ""
+  })
 
   const { downloadState, pauseDownload, progress, resumeDownload, modelSize } =
     useModelDownload(model)
@@ -57,6 +65,11 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
     [integrity, modelMap]
   )
 
+  const integrityInit = useInit(async () => {
+    const resp = await getCachedIntegrity(model)
+    setIntegrity(resp)
+  }, [model])
+
   useEffect(() => {
     if (activeModel?.path !== model.path) {
       setModelLoadState(ModelLoadState.Default)
@@ -64,11 +77,6 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
       setModelLoadState(ModelLoadState.Loaded)
     }
   }, [activeModel, model])
-
-  const integrityInit = useInit(async () => {
-    const resp = await getCachedIntegrity(model)
-    setIntegrity(resp)
-  }, [model])
 
   useEffect(() => {
     if (downloadState === DownloadState.Completed) {
@@ -103,8 +111,8 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
           "Known model metadata found, updating model config:\n\n" +
             JSON.stringify(knownModelMetadata, null, 2)
         )
-        updateModelType(knownModelMetadata.modelType)
-        updateModelConfig({
+        modelType.update(knownModelMetadata.modelType)
+        modelConfig.update({
           tokenizer: knownModelMetadata.tokenizers?.[0] || "", // Pick the first one for now
           defaultPromptTemplate: knownModelMetadata.promptTemplate || ""
         })
@@ -129,9 +137,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
     modelSize,
     modelLoadState,
     modelType,
-    updateModelType,
     modelConfig,
-    updateModelConfig,
     loadModel,
     downloadState,
     progress,

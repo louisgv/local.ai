@@ -9,6 +9,8 @@ export enum InvokeCommand {
   ReadDirectory = "read_directory",
   WriteFile = "write_file",
   ReadFile = "read_file",
+  GetThreadConfig = "get_thread_config",
+  SetThreadConfig = "set_thread_config",
   AppendThreadContent = "append_thread_content",
   ReadThreadFile = "read_thread_file",
   InitializeThreadsDir = "initialize_threads_dir",

@@ -1,13 +1,16 @@
 import { nanoid } from "nanoid"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 import { InvokeCommand, invoke } from "~features/invoke"
+import type {
+  FileInfo,
+  ModelMetadata
+} from "~features/model-downloader/model-file"
 import {
-  DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_SYSTEM_MESSAGE,
   Role,
   type ThreadMessage
 } from "~features/thread/_shared"
-import { useGlobal } from "~providers/global"
 
 type ThreadReadData = {
   line: string
@@ -32,32 +35,28 @@ const botRegexString = [
 const botRegex = new RegExp(botRegexString, "u")
 const noteRegex = new RegExp(`${NOTE_TAG} ${idRegex} \\/>`, "u")
 
+const getMdRoleLine = (
+  { role, id }: ThreadMessage,
+  model = null as ModelMetadata,
+  systemPrompt = ""
+) => {
+  switch (role) {
+    case Role.User:
+      return `${USER_TAG} id="${id}" />`
+    case Role.Bot:
+      return `${BOT_TAG} id="${id}" system="${systemPrompt}" model="${model?.name}" digest="${model?.digest}" />`
+    case Role.Note:
+    default:
+      return `${NOTE_TAG} id="${id}" />`
+  }
+}
+
 // Append-only, static file MDX thread driver
 // Can be replaced with a more dynamic, storage-based driver
-export const useThreadMdx = () => {
-  const {
-    activeModelState: [activeModel],
-    activeThreadState: [activeThread]
-  } = useGlobal()
-
+export const useThreadMdx = (thread: FileInfo, model?: ModelMetadata) => {
   const [messages, setMessages] = useState<ThreadMessage[]>([])
-  const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT)
+  const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_MESSAGE)
   const [botIconIndex, setBotIconIndex] = useState<number>(0)
-
-  const getMdRoleLine = useCallback(
-    ({ role, id }: ThreadMessage) => {
-      switch (role) {
-        case Role.User:
-          return `${USER_TAG} id="${id}" />`
-        case Role.Bot:
-          return `${BOT_TAG} id="${id}" system="${systemPrompt}" model="${activeModel.name}" digest="${activeModel.digest}" />`
-        case Role.Note:
-        default:
-          return `${NOTE_TAG} id="${id}" />`
-      }
-    },
-    [systemPrompt, activeModel]
-  )
 
   useEffect(() => {
     let unlisten: () => void
@@ -69,7 +68,7 @@ export const useThreadMdx = () => {
 
       const messagesBuffer: ThreadMessage[] = []
       let metadataIndicatorCount = 1
-      let lastSystemPrompt = DEFAULT_SYSTEM_PROMPT
+      let lastSystemPrompt = DEFAULT_SYSTEM_MESSAGE
       let tagBuffer = ""
       let bufferIndex = -1
 
@@ -151,7 +150,7 @@ export const useThreadMdx = () => {
       )
 
       await invoke(InvokeCommand.ReadThreadFile, {
-        path: activeThread.path,
+        path: thread.path,
         eventId
       })
     }
@@ -159,19 +158,19 @@ export const useThreadMdx = () => {
     return () => {
       unlisten?.()
     }
-  }, [activeThread])
+  }, [thread])
 
   const appendMessage = async (message: ThreadMessage) => {
     const content = [
       "\n",
-      getMdRoleLine(message),
+      getMdRoleLine(message, model, systemPrompt),
       "\n\n",
       message.content,
       "\n"
     ].join("")
 
     return invoke(InvokeCommand.AppendThreadContent, {
-      path: activeThread.path,
+      path: thread.path,
       content
     })
   }

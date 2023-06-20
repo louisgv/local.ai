@@ -1,17 +1,26 @@
 import { cn } from "@localai/theme/utils"
+import { ResetIcon } from "@radix-ui/react-icons"
 import { type InputHTMLAttributes, forwardRef } from "react"
 
-export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {}
+import { Button } from "./button"
+
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  onRevert?: () => void
+}
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, children, ...props }, ref) => {
+  ({ onRevert, className, type, children, ...props }, ref) => {
     return (
       <div className={cn("relative flex h-10 rounded-md w-full", className)}>
         {(props.title || props.placeholder) && (
           <label
             className={cn(
               "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-10 text-ellipsis whitespace-nowrap",
-              props.title || props.value || props.defaultValue
+              props.title ||
+                props.defaultValue !== undefined ||
+                props.value ||
+                (typeof props.value === "number" &&
+                  (props.value === 0 || isNaN(props.value)))
                 ? "opacity-100"
                 : "opacity-0"
             )}>
@@ -37,6 +46,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           {...props}
         />
+        {onRevert && (
+          <Button
+            className="absolute right-2 bottom-2 w-4 h-4 p-0.5"
+            onClick={onRevert}>
+            <ResetIcon />
+          </Button>
+        )}
         {children}
       </div>
     )

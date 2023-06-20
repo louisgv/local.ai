@@ -26,6 +26,7 @@ fn main() {
       model::r#type::State::new(app)?;
       model::integrity::State::new(app)?;
       model::stats::State::new(app)?;
+      thread::config::State::new(app)?;
 
       // A hack to make MacOS window show up in dev mode...
       #[cfg(all(debug_assertions, not(target_os = "windows")))]
@@ -44,6 +45,8 @@ fn main() {
       path::read_directory,
       path::write_file,
       path::read_file,
+      thread::config::get_thread_config,
+      thread::config::set_thread_config,
       thread::directory::append_thread_content,
       thread::directory::read_thread_file,
       thread::directory::initialize_threads_dir,

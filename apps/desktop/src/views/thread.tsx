@@ -1,12 +1,14 @@
 import { cn } from "@localai/theme/utils"
 import { Button } from "@localai/ui/button"
+import { FloatInput } from "@localai/ui/float-input"
 import { Input } from "@localai/ui/input"
 import { Spinner } from "@localai/ui/spinner"
 import { Textarea } from "@localai/ui/textarea"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  GearIcon
+  GearIcon,
+  ResetIcon
 } from "@radix-ui/react-icons"
 import {
   BasketballAlt,
@@ -20,15 +22,18 @@ import {
   Pokeball
 } from "iconoir-react"
 import { useMemo } from "react"
-import dedent from "ts-dedent"
 
 import { useToggle } from "~features/layout/use-toggle"
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
+import { DEFAULT_PROMPT_TEMPLATE } from "~features/thread/_shared"
 import { MessageBlock } from "~features/thread/message-block"
 import { PromptTextarea } from "~features/thread/prompt-textarea"
 import { QuickModelLoaderSelector } from "~features/thread/quick-model-loader-selector"
 import { ChatSideBarToggle } from "~features/thread/side-bar"
-import { useActiveThread } from "~features/thread/use-active-thread"
+import {
+  DEFAULT_THREAD_CONFIG,
+  useActiveThread
+} from "~features/thread/use-active-thread"
 
 const botIconList = [
   BreadSlice,
@@ -52,8 +57,8 @@ export const ThreadView = () => {
     setSystemPrompt,
     isResponding,
     botIconIndex,
-    promptTemplate,
-    setPrompTemplate
+    threadConfig,
+    setCompletionParams
   } = useActiveThread()
 
   const botIconClass = useMemo(
@@ -123,11 +128,109 @@ export const ThreadView = () => {
           <Textarea
             rows={8}
             title="Prompt template"
-            value={promptTemplate}
-            onChange={(e) => setPrompTemplate(e.target.value)}
+            value={threadConfig.data.promptTemplate}
+            onChange={(e) =>
+              threadConfig.update({
+                promptTemplate: e.target.value
+              })
+            }
+            onRevert={() => {
+              threadConfig.update({
+                promptTemplate: DEFAULT_PROMPT_TEMPLATE
+              })
+            }}
           />
-          <Input placeholder="Temperature (WIP)" defaultValue={0.47} />
-          <Input placeholder="Max Tokens (WIP)" defaultValue={0.47} />
+
+          <FloatInput
+            placeholder="Temperature"
+            value={threadConfig.data.completionParams.temperature}
+            onDone={(v) =>
+              setCompletionParams({
+                temperature: v
+              })
+            }
+            onRevert={() => {
+              setCompletionParams({
+                temperature: DEFAULT_THREAD_CONFIG.completionParams.temperature
+              })
+            }}
+          />
+
+          <FloatInput
+            placeholder="Top P"
+            value={threadConfig.data.completionParams.top_p}
+            onDone={(v) =>
+              setCompletionParams({
+                top_p: v
+              })
+            }
+          />
+
+          <FloatInput
+            placeholder="Frequency Penalty"
+            value={threadConfig.data.completionParams.frequency_penalty}
+            onDone={(v) =>
+              setCompletionParams({
+                frequency_penalty: v
+              })
+            }
+          />
+
+          <FloatInput
+            placeholder="Presence Penalty"
+            value={threadConfig.data.completionParams.presence_penalty}
+            onDone={(v) =>
+              setCompletionParams({
+                presence_penalty: v
+              })
+            }
+          />
+
+          <Input
+            placeholder="Stop Words"
+            value={(threadConfig.data.completionParams.stop || []).join(",")}
+            onChange={(e) =>
+              setCompletionParams({
+                stop: e.target.value.split(",").map((s) => s.trim())
+              })
+            }
+          />
+
+          <Input
+            placeholder="Max Tokens (0 is INF)"
+            value={threadConfig.data.completionParams.max_tokens}
+            min={0}
+            type="number"
+            onChange={(e) =>
+              setCompletionParams({
+                max_tokens: e.target.valueAsNumber
+              })
+            }
+          />
+
+          <Input
+            placeholder="Seed"
+            value={threadConfig.data.completionParams.seed}
+            min={0}
+            type="number"
+            onChange={(e) =>
+              setCompletionParams({
+                seed: e.target.valueAsNumber
+              })
+            }
+          />
+
+          <Input
+            placeholder="Top K"
+            value={threadConfig.data.completionParams.top_k}
+            min={0}
+            type="number"
+            onChange={(e) =>
+              setCompletionParams({
+                top_k: e.target.valueAsNumber
+              })
+            }
+          />
         </ViewBody>
       </ViewContainer>
     </ViewContainer>

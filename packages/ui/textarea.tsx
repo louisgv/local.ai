@@ -1,11 +1,16 @@
 import { cn } from "@localai/theme/utils"
+import { ResetIcon } from "@radix-ui/react-icons"
 import * as React from "react"
 
+import { Button } from "./button"
+
 export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  onRevert?: () => void
+}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, ...props }, ref) => {
+  ({ onRevert, className, ...props }, ref) => {
     return (
       <div className={cn("relative w-full", className)}>
         {props.title && (
@@ -30,6 +35,14 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           {...props}
         />
+
+        {onRevert && (
+          <Button
+            className="absolute right-2 bottom-2 w-4 h-4 p-0.5"
+            onClick={onRevert}>
+            <ResetIcon />
+          </Button>
+        )}
       </div>
     )
   }

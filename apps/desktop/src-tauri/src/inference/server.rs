@@ -11,9 +11,8 @@ use std::sync::{
   Arc,
 };
 
-use crate::inference::process::{
-  start, CompletionRequest, InferenceThreadRequest,
-};
+use crate::inference::completion::CompletionRequest;
+use crate::inference::process::{start, InferenceThreadRequest};
 use crate::model;
 use crate::utils::abort_stream::AbortStream;
 

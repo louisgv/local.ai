@@ -52,14 +52,12 @@ export const ModelConfig = () => {
     modelLoadState,
     launchCount,
     incrementLaunchCount,
-    updateModelType,
     loadModel,
     downloadState,
-    modelConfig,
-    updateModelConfig
+    modelConfig
   } = useModel()
 
-  if (!modelConfig) {
+  if (!modelConfig.data) {
     return null
   }
 
@@ -98,17 +96,19 @@ export const ModelConfig = () => {
         <Input
           className="w-40"
           placeholder="Tokenizer"
-          value={modelConfig.tokenizer}
+          value={modelConfig.data.tokenizer}
           onChange={(e) =>
-            updateModelConfig({
+            modelConfig.update({
               tokenizer: e.target.value
             })
           }
         />
 
-        <Select value={modelType} onValueChange={updateModelType}>
+        <Select value={modelType.data} onValueChange={modelType.update}>
           <SelectTrigger className={cn("text-gray-11", "w-24")}>
-            <SelectValue aria-label={modelType}>{modelType}</SelectValue>
+            <SelectValue aria-label={modelType.data}>
+              {modelType.data}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent className="flex h-48 w-full">
             {modelTypeList.map((mt) => (

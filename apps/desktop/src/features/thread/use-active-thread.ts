@@ -1,35 +1,55 @@
 import { nanoid } from "nanoid"
 import { useRef, useState } from "react"
-import dedent from "ts-dedent"
 
-import { Role, type ThreadMessage } from "~features/thread/_shared"
+import { createFileConfigStore } from "~features/inference-server/file-config-store"
+import { InvokeCommand } from "~features/invoke"
+import type { CompletionRequest, ThreadConfig } from "~features/invoke/thread"
+import {
+  DEFAULT_PROMPT_TEMPLATE,
+  DEFAULT_SYSTEM_MESSAGE,
+  Role,
+  type ThreadMessage
+} from "~features/thread/_shared"
 import { processSseStream } from "~features/thread/process-sse-stream"
 import { useThreadMdx } from "~features/thread/use-thread-mdx"
 import { useGlobal } from "~providers/global"
 
-const DEFAULT_PROMPT_TEMPLATE = dedent`
-  ASSISTANT: {system}
-  USER: {prompt}
-  ASSISTANT:
-`
+export const DEFAULT_THREAD_CONFIG: ThreadConfig = {
+  promptTemplate: DEFAULT_PROMPT_TEMPLATE,
+  systemMessage: DEFAULT_SYSTEM_MESSAGE,
+  completionParams: {
+    prompt: "",
+    max_tokens: 0, // Use maximum amount
+    temperature: 1.0,
+    seed: 147,
+    frequency_penalty: 0.6,
+    presence_penalty: 0.0,
+    top_k: 42,
+    top_p: 1.0
+  }
+}
 
-function applyTemplate(
-  promptTemplate: string,
-  systemPrompt: string,
-  userPrompt: string
-) {
-  return promptTemplate
-    .replace("{system}", systemPrompt)
+function applyTemplate(config: ThreadConfig, userPrompt: string) {
+  return config.promptTemplate
+    .replace("{system}", config.systemMessage)
     .replace("{prompt}", userPrompt)
 }
 
+const useThreadConfig = createFileConfigStore<ThreadConfig>(
+  InvokeCommand.GetThreadConfig,
+  InvokeCommand.SetThreadConfig
+)
+
 export const useActiveThread = () => {
   const {
+    activeThreadState: [activeThread],
     activeModelState: [activeModel],
     portState: [port]
   } = useGlobal()
 
   const [isResponding, setIsResponding] = useState(false)
+
+  const threadConfig = useThreadConfig(activeThread, DEFAULT_THREAD_CONFIG)
 
   const {
     messages,
@@ -38,16 +58,19 @@ export const useActiveThread = () => {
     setSystemPrompt,
     appendMessage,
     botIconIndex
-  } = useThreadMdx()
-
-  const [promptTemplate, setPrompTemplate] = useState(DEFAULT_PROMPT_TEMPLATE)
-
-  const [maxTokens, setMaxTokens] = useState(4200)
-  const [temperature, setTemperature] = useState(0)
-  const [topP, setTopP] = useState(1)
+  } = useThreadMdx(activeThread, activeModel)
 
   const aiMessageRef = useRef<ThreadMessage>()
   const abortRef = useRef(false)
+
+  const setCompletionParams = (params: Partial<CompletionRequest>) => {
+    threadConfig.update({
+      completionParams: {
+        ...threadConfig.data.completionParams,
+        ...params
+      }
+    })
+  }
 
   const addNote = async (text: string) => {
     setIsResponding(true)
@@ -102,10 +125,9 @@ export const useActiveThread = () => {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            prompt: applyTemplate(promptTemplate, systemPrompt, userPrompt),
-            max_tokens: maxTokens,
-            temperature,
-            stream: true
+            stream: true,
+            prompt: applyTemplate(threadConfig.data, userPrompt),
+            ...threadConfig.data.completionParams
           })
         }
       )
@@ -138,8 +160,8 @@ export const useActiveThread = () => {
     isResponding,
     botIconIndex,
 
-    promptTemplate,
-    setPrompTemplate,
+    threadConfig,
+    setCompletionParams,
 
     addNote,
     startInference,
