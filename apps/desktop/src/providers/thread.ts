@@ -1,33 +1,21 @@
+"use client"
+
 import { nanoid } from "nanoid"
-import { useRef, useState } from "react"
+import { createProvider } from "puro"
+import { useContext, useRef, useState } from "react"
 
 import { createFileConfigStore } from "~features/inference-server/file-config-store"
 import { InvokeCommand } from "~features/invoke"
 import type { CompletionRequest, ThreadConfig } from "~features/invoke/thread"
+import type { FileInfo } from "~features/model-downloader/model-file"
 import {
-  DEFAULT_PROMPT_TEMPLATE,
-  DEFAULT_SYSTEM_MESSAGE,
+  DEFAULT_THREAD_CONFIG,
   Role,
   type ThreadMessage
 } from "~features/thread/_shared"
 import { processSseStream } from "~features/thread/process-sse-stream"
 import { useThreadMdx } from "~features/thread/use-thread-mdx"
 import { useGlobal } from "~providers/global"
-
-export const DEFAULT_THREAD_CONFIG: ThreadConfig = {
-  promptTemplate: DEFAULT_PROMPT_TEMPLATE,
-  systemMessage: DEFAULT_SYSTEM_MESSAGE,
-  completionParams: {
-    prompt: "",
-    max_tokens: 0, // Use maximum amount
-    temperature: 1.0,
-    seed: 147,
-    frequency_penalty: 0.6,
-    presence_penalty: 0.0,
-    top_k: 42,
-    top_p: 1.0
-  }
-}
 
 function applyTemplate(config: ThreadConfig, userPrompt: string) {
   return config.promptTemplate
@@ -40,25 +28,23 @@ const useThreadConfig = createFileConfigStore<ThreadConfig>(
   InvokeCommand.SetThreadConfig
 )
 
-export const useActiveThread = () => {
+/**
+ * Requires a global provider
+ */
+const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
   const {
-    activeThreadState: [activeThread],
     activeModelState: [activeModel],
     portState: [port]
   } = useGlobal()
 
   const [isResponding, setIsResponding] = useState(false)
 
-  const threadConfig = useThreadConfig(activeThread, DEFAULT_THREAD_CONFIG)
+  const threadConfig = useThreadConfig(thread, DEFAULT_THREAD_CONFIG)
 
-  const {
-    messages,
-    setMessages,
-    systemPrompt,
-    setSystemPrompt,
-    appendMessage,
-    botIconIndex
-  } = useThreadMdx(activeThread, activeModel)
+  const { messages, setMessages, appendMessage, botIconIndex } = useThreadMdx(
+    thread,
+    activeModel
+  )
 
   const aiMessageRef = useRef<ThreadMessage>()
   const abortRef = useRef(false)
@@ -165,8 +151,11 @@ export const useActiveThread = () => {
 
     addNote,
     startInference,
-    stopInference,
-    systemPrompt,
-    setSystemPrompt
+    stopInference
   }
 }
+
+const { BaseContext, Provider } = createProvider(useThreadProvider)
+
+export const useThread = () => useContext(BaseContext)
+export const ThreadProvider = Provider

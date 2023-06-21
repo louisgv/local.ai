@@ -23,7 +23,6 @@ fn main() {
 
       model::downloader::State::new(app)?;
       model::config::State::new(app)?;
-      model::r#type::State::new(app)?;
       model::integrity::State::new(app)?;
       model::stats::State::new(app)?;
       thread::config::State::new(app)?;
@@ -69,8 +68,6 @@ fn main() {
       inference::server::start_server,
       inference::server::stop_server,
       model::pool::load_model,
-      model::r#type::get_model_type,
-      model::r#type::set_model_type,
       test::test_model,
       utils::fs::open_directory,
     ])

@@ -1,5 +1,3 @@
-import type { ModelType } from "@models/_shared"
-
 import type { ModelCommandMap } from "~features/invoke/model"
 import type { ThreadCommandMap } from "~features/invoke/thread"
 
@@ -13,9 +11,6 @@ type InvokeCommandMap = {
 
   [InvokeCommand.OpenDirectory]: InvokeIO<{ path: string }>
   [InvokeCommand.GetConfig]: InvokeIO<{ key: string }, string>
-
-  [InvokeCommand.GetModelType]: InvokeIO<{ path: string }, ModelType>
-  [InvokeCommand.SetModelType]: InvokeIO<{ path: string; modelType: ModelType }>
 
   [InvokeCommand.StartServer]: InvokeIO<{ port: number }, string>
   [InvokeCommand.StopServer]: InvokeIO<never, string>

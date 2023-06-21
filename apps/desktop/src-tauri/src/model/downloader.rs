@@ -158,7 +158,7 @@ pub async fn resume_download(
   state.assert_download_state(&output_path, DownloadState::Idle)?;
 
   spawn_download_threads(
-    output_path,
+    &output_path,
     state.download_progress_bucket.clone(),
     state.download_state_map.clone(),
     model_integrity_state.0.clone(),
@@ -172,14 +172,12 @@ pub async fn start_download(
   window: Window,
   state: tauri::State<'_, State>,
   default_path_state: tauri::State<'_, crate::path::State>,
-  model_type_state: tauri::State<'_, crate::model::r#type::State>,
   config_state: tauri::State<'_, crate::config::State>,
   model_integrity_state: tauri::State<'_, crate::model::integrity::State>,
   name: String,
   download_url: String,
   digest: String,
-  model_type: String,
-) -> Result<(), String> {
+) -> Result<String, String> {
   println!("download_model: {}", download_url);
   println!("digest: {}", digest);
 
@@ -194,8 +192,6 @@ pub async fn start_download(
   }
 
   println!("output_path: {:?}", output_path);
-
-  model_type_state.set(&output_path, &model_type)?;
 
   state.set_download_progress(
     &output_path,
@@ -213,18 +209,18 @@ pub async fn start_download(
   )?;
 
   spawn_download_threads(
-    output_path,
+    &output_path,
     state.download_progress_bucket.clone(),
     state.download_state_map.clone(),
     model_integrity_state.0.clone(),
     Arc::new(RwLock::new(window)),
   );
 
-  Ok(())
+  Ok(output_path)
 }
 
 fn spawn_download_threads(
-  output_path: String,
+  output_path: &String,
   download_progress_bucket: DownloadProgressBucket,
   download_state_map: DownloadStateMap,
   model_integrity_bucket_state: StateBucket<Json<ModelIntegrity>>,

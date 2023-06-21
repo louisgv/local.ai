@@ -29,6 +29,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
 
         <input
+          ref={ref}
           type={type}
           className={cn(
             "h-full w-full",
@@ -43,7 +44,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             "text-gray-11 focus:text-gray-12",
             className
           )}
-          ref={ref}
           {...props}
         />
         {onRevert && (

@@ -1,5 +1,7 @@
 import dedent from "ts-dedent"
 
+import type { ThreadConfig } from "~features/invoke/thread"
+
 export enum Role {
   User = "user",
   Bot = "bot",
@@ -22,3 +24,19 @@ export const DEFAULT_PROMPT_TEMPLATE = dedent`
   Human: {prompt}
   AI: 
 `
+
+export const DEFAULT_THREAD_CONFIG: ThreadConfig = {
+  promptTemplate: DEFAULT_PROMPT_TEMPLATE,
+  systemMessage: DEFAULT_SYSTEM_MESSAGE,
+  completionParams: {
+    prompt: "",
+    max_tokens: 0, // Use maximum amount
+    temperature: 1.0,
+    seed: 147,
+    frequency_penalty: 0.6,
+    presence_penalty: 0.0,
+    top_k: 42,
+    top_p: 1.0,
+    stop: ["Human:", "AI:"]
+  }
+}

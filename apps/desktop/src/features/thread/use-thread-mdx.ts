@@ -1,7 +1,9 @@
 import { nanoid } from "nanoid"
 import { useEffect, useState } from "react"
+import dedent from "ts-dedent"
 
 import { InvokeCommand, invoke } from "~features/invoke"
+import type { ThreadConfig } from "~features/invoke/thread"
 import type {
   FileInfo,
   ModelMetadata
@@ -38,13 +40,18 @@ const noteRegex = new RegExp(`${NOTE_TAG} ${idRegex} \\/>`, "u")
 const getMdRoleLine = (
   { role, id }: ThreadMessage,
   model = null as ModelMetadata,
-  systemPrompt = ""
+  config = null as ThreadConfig
 ) => {
   switch (role) {
     case Role.User:
       return `${USER_TAG} id="${id}" />`
     case Role.Bot:
-      return `${BOT_TAG} id="${id}" system="${systemPrompt}" model="${model?.name}" digest="${model?.digest}" />`
+      return dedent`
+      ${BOT_TAG} id="${id}" model="${model?.name}" 
+        digest="${model?.digest}" 
+        system="${config.systemMessage}" 
+      />
+    `
     case Role.Note:
     default:
       return `${NOTE_TAG} id="${id}" />`
@@ -55,7 +62,6 @@ const getMdRoleLine = (
 // Can be replaced with a more dynamic, storage-based driver
 export const useThreadMdx = (thread: FileInfo, model?: ModelMetadata) => {
   const [messages, setMessages] = useState<ThreadMessage[]>([])
-  const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_MESSAGE)
   const [botIconIndex, setBotIconIndex] = useState<number>(0)
 
   useEffect(() => {
@@ -68,7 +74,6 @@ export const useThreadMdx = (thread: FileInfo, model?: ModelMetadata) => {
 
       const messagesBuffer: ThreadMessage[] = []
       let metadataIndicatorCount = 1
-      let lastSystemPrompt = DEFAULT_SYSTEM_MESSAGE
       let tagBuffer = ""
       let bufferIndex = -1
 
@@ -90,7 +95,6 @@ export const useThreadMdx = (thread: FileInfo, model?: ModelMetadata) => {
         ({ payload: { line, done } }) => {
           if (done) {
             setMessages([...messagesBuffer.reverse()])
-            setSystemPrompt(lastSystemPrompt)
             unlisten?.()
             return
           }
@@ -137,7 +141,6 @@ export const useThreadMdx = (thread: FileInfo, model?: ModelMetadata) => {
           // Check for bot
           if (botRegex.test(tagBuffer)) {
             const { match } = addMessage(botRegex, Role.Bot)
-            lastSystemPrompt = match.groups.system
             messagesBuffer[bufferIndex].model = match.groups.model
             return
           }
@@ -160,10 +163,13 @@ export const useThreadMdx = (thread: FileInfo, model?: ModelMetadata) => {
     }
   }, [thread])
 
-  const appendMessage = async (message: ThreadMessage) => {
+  const appendMessage = async (
+    message: ThreadMessage,
+    config?: ThreadConfig
+  ) => {
     const content = [
       "\n",
-      getMdRoleLine(message, model, systemPrompt),
+      getMdRoleLine(message, model, config),
       "\n\n",
       message.content,
       "\n"
@@ -179,8 +185,6 @@ export const useThreadMdx = (thread: FileInfo, model?: ModelMetadata) => {
     messages,
     setMessages,
     appendMessage,
-    botIconIndex,
-    systemPrompt,
-    setSystemPrompt
+    botIconIndex
   }
 }

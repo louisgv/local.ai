@@ -1,14 +1,17 @@
 use std::path::{Path, PathBuf};
 
-use llm::VocabularySource;
+use llm::{ModelArchitecture, VocabularySource};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Default)]
 pub struct ModelConfig {
-  pub tokenizer: Option<String>,
+  #[serde(rename = "modelType")]
+  model_type: Option<String>,
+
+  tokenizer: Option<String>,
 
   #[serde(rename = "defaultPromptTemplate")]
-  pub default_prompt_template: Option<String>,
+  default_prompt_template: Option<String>,
 }
 
 crate::macros::bucket_state::make!(ModelConfig, "model_config", "v1");
@@ -30,5 +33,16 @@ impl ModelConfig {
 
   pub fn get_vocab(&self) -> VocabularySource {
     self.determine_source().unwrap_or(VocabularySource::Model)
+  }
+
+  pub fn get_model_arch(&self) -> Result<ModelArchitecture, String> {
+    let default_model_type = "llama".to_string();
+    let model_type = self.model_type.as_ref().unwrap_or(&default_model_type);
+
+    let architecture: ModelArchitecture = model_type
+      .parse()
+      .map_err(|_| format!("Invalid model type: {model_type}"))?;
+
+    Ok(architecture)
   }
 }

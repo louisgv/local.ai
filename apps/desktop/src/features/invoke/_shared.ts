@@ -33,8 +33,6 @@ export enum InvokeCommand {
   StartServer = "start_server",
   StopServer = "stop_server",
   LoadModel = "load_model",
-  GetModelType = "get_model_type",
-  SetModelType = "set_model_type",
   TestModel = "test_model",
   OpenDirectory = "open_directory"
 }

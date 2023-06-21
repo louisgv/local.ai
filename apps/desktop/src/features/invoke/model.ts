@@ -1,4 +1,4 @@
-import type { ModelInfo } from "@models/_shared"
+import type { ModelInfo, ModelType } from "@models/_shared"
 
 import type { InvokeCommand, InvokeIO } from "~features/invoke/_shared"
 import type { DirectoryState } from "~features/model-downloader/model-file"
@@ -24,9 +24,10 @@ export type ProgressData = {
 
 type ModelDownloaderCommandMap = {
   [InvokeCommand.StartDownload]: InvokeIO<
-    Pick<ModelInfo, "name" | "downloadUrl" | "modelType"> & {
+    Pick<ModelInfo, "name" | "downloadUrl"> & {
       digest: string
-    }
+    },
+    string
   >
   [InvokeCommand.GetDownloadProgress]: InvokeIO<{ path: string }, ProgressData>
   [InvokeCommand.PauseDownload]: InvokeIO<{ path: string }, ProgressData>
@@ -61,6 +62,7 @@ type ModelIntegrityCommandMap = {
 }
 
 export type ModelConfig = {
+  modelType: ModelType
   tokenizer: string
   defaultPromptTemplate: string
 }

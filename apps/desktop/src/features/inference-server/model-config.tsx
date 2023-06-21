@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@localai/ui/select"
-import { modelTypeList } from "@models/index"
+import { ModelType, modelTypeList } from "@models/index"
 import { TrashIcon } from "@radix-ui/react-icons"
 import { confirm } from "@tauri-apps/api/dialog"
 import { useState } from "react"
@@ -20,7 +20,7 @@ import { useGlobal } from "~providers/global"
 import { ModelLoadState, useModel } from "~providers/model"
 
 const TestModelButton = () => {
-  const { model, modelType } = useModel()
+  const { model } = useModel()
 
   const [isTesting, setIsTesting] = useState(false)
 
@@ -31,8 +31,7 @@ const TestModelButton = () => {
       onClick={async () => {
         setIsTesting(true)
         await invoke(InvokeCommand.TestModel, {
-          ...model,
-          modelType
+          ...model
         })
         setIsTesting(false)
       }}>
@@ -48,7 +47,6 @@ export const ModelConfig = () => {
 
   const {
     model,
-    modelType,
     modelLoadState,
     launchCount,
     incrementLaunchCount,
@@ -104,10 +102,22 @@ export const ModelConfig = () => {
           }
         />
 
-        <Select value={modelType.data} onValueChange={modelType.update}>
-          <SelectTrigger className={cn("text-gray-11", "w-24")}>
-            <SelectValue aria-label={modelType.data}>
-              {modelType.data}
+        <Select
+          value={modelConfig.data.modelType}
+          onValueChange={(v) =>
+            modelConfig.update({
+              modelType: v as ModelType
+            })
+          }>
+          <SelectTrigger className={cn("text-gray-11", "w-24 relative")}>
+            <label
+              className={cn(
+                "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md z-10"
+              )}>
+              Type
+            </label>
+            <SelectValue aria-label={modelConfig.data.modelType}>
+              {modelConfig.data.modelType || "???"}
             </SelectValue>
           </SelectTrigger>
           <SelectContent className="flex h-48 w-full">

@@ -8,6 +8,7 @@ use rand_chacha::ChaCha8Rng;
 use super::stop_handler::StopHandler;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(untagged)]
 pub enum StopSequence {
   Single(String),
   Multiple(Vec<String>),

@@ -4,4 +4,3 @@ pub mod downloader;
 pub mod integrity;
 pub mod pool;
 pub mod stats;
-pub mod r#type;

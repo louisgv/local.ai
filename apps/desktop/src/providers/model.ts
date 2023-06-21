@@ -1,12 +1,12 @@
 "use client"
 
+import { ModelType } from "@models/_shared"
 import { createProvider } from "puro"
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 
 import { createFileConfigStore } from "~features/inference-server/file-config-store"
 import { useInit } from "~features/inference-server/use-init"
 import { useModelStats } from "~features/inference-server/use-model-stats"
-import { useModelType } from "~features/inference-server/use-model-type"
 import { InvokeCommand, invoke } from "~features/invoke"
 import type { ModelConfig, ModelIntegrity } from "~features/invoke/model"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
@@ -48,9 +48,8 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   const [integrity, setIntegrity] = useState<ModelIntegrity>(null)
   const [isChecking, setIsChecking] = useState(false)
 
-  const modelType = useModelType(model)
-
   const modelConfig = useModelConfig(model, {
+    modelType: ModelType.Llama,
     tokenizer: "",
     defaultPromptTemplate: ""
   })
@@ -71,18 +70,18 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   }, [model])
 
   useEffect(() => {
+    if (downloadState === DownloadState.Completed) {
+      getCachedIntegrity(model).then(setIntegrity)
+    }
+  }, [model, downloadState])
+
+  useEffect(() => {
     if (activeModel?.path !== model.path) {
       setModelLoadState(ModelLoadState.Default)
     } else {
       setModelLoadState(ModelLoadState.Loaded)
     }
   }, [activeModel, model])
-
-  useEffect(() => {
-    if (downloadState === DownloadState.Completed) {
-      getCachedIntegrity(model).then(setIntegrity)
-    }
-  }, [model, downloadState])
 
   const loadModel = useCallback(async () => {
     setModelLoadState(ModelLoadState.Loading)
@@ -111,8 +110,8 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
           "Known model metadata found, updating model config:\n\n" +
             JSON.stringify(knownModelMetadata, null, 2)
         )
-        modelType.update(knownModelMetadata.modelType)
         modelConfig.update({
+          modelType: knownModelMetadata.modelType,
           tokenizer: knownModelMetadata.tokenizers?.[0] || "", // Pick the first one for now
           defaultPromptTemplate: knownModelMetadata.promptTemplate || ""
         })
@@ -136,7 +135,6 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
     checkModel,
     modelSize,
     modelLoadState,
-    modelType,
     modelConfig,
     loadModel,
     downloadState,

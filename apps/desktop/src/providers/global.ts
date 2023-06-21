@@ -52,6 +52,7 @@ const useGlobalProvider = () => {
 
   const serverStartedState = useState(false)
   const sidebarState = useToggle(true)
+  const threadViewConfigPanelState = useToggle(false)
 
   const modelsDirectoryState = useModelsDirectory()
   const threadsDirectoryState = useThreadsDirectory()
@@ -139,6 +140,7 @@ const useGlobalProvider = () => {
     sidebarState,
     modelsDirectoryState,
     threadsDirectoryState,
+    threadViewConfigPanelState,
     onboardState
   }
 }

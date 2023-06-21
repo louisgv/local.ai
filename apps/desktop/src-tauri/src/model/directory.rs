@@ -96,9 +96,9 @@ pub async fn update_models_dir(
 #[tauri::command]
 pub async fn delete_model_file(
   model_integrity_bucket_state: tauri::State<'_, model::integrity::State>,
-  model_type_bucket_state: tauri::State<'_, model::r#type::State>,
   model_stats_bucket_state: tauri::State<'_, model::stats::State>,
   model_download_progress_state: tauri::State<'_, model::downloader::State>,
+  model_config_state: tauri::State<'_, model::config::State>,
 
   path: &str,
 ) -> Result<(), String> {
@@ -109,7 +109,7 @@ pub async fn delete_model_file(
         .map_err(|e| format!("{}", e))
     },
     remove_data(&model_integrity_bucket_state.0, &path),
-    remove_data(&model_type_bucket_state.0, &path),
+    remove_data(&model_config_state.0, &path),
     remove_data(&model_stats_bucket_state.0, &path),
     remove_data(
       &model_download_progress_state.download_progress_bucket,
