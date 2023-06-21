@@ -2,7 +2,7 @@
 
 import { nanoid } from "nanoid"
 import { createProvider } from "puro"
-import { useContext, useRef, useState } from "react"
+import { useContext, useMemo, useRef, useState } from "react"
 
 import { createFileConfigStore } from "~features/inference-server/file-config-store"
 import { InvokeCommand } from "~features/invoke"
@@ -34,17 +34,26 @@ const useThreadConfig = createFileConfigStore<ThreadConfig>(
 const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
   const {
     activeModelState: [activeModel],
-    portState: [port]
+    modelsDirectoryState: { models, modelsMap },
+    portState: [port],
+    loadModel
   } = useGlobal()
 
   const [isResponding, setIsResponding] = useState(false)
 
   const threadConfig = useThreadConfig(thread, DEFAULT_THREAD_CONFIG)
 
-  const { messages, setMessages, appendMessage, botIconIndex } = useThreadMdx(
-    thread,
-    activeModel
-  )
+  const threadModel = useMemo(() => {
+    const savedPath = threadConfig.data?.modelPath
+    if (!!savedPath && modelsMap.path.has(savedPath)) {
+      return modelsMap.path.get(savedPath)
+    } else {
+      return models[0]
+    }
+  }, [threadConfig.data, models, modelsMap])
+
+  const { messages, setMessages, appendMessage, botIconIndex } =
+    useThreadMdx(thread)
 
   const aiMessageRef = useRef<ThreadMessage>()
   const abortRef = useRef(false)
@@ -95,14 +104,19 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
 
     await appendMessage(newMessages[0])
 
-    aiMessageRef.current = {
-      id: nanoid(),
-      role: Role.Bot,
-      model: activeModel.name,
-      content: ""
-    }
-
     try {
+      const loadedModel =
+        !activeModel || activeModel.path !== threadModel.path
+          ? await loadModel(threadModel) // load the saved model in config if differ or load the most used model in the list
+          : activeModel
+
+      aiMessageRef.current = {
+        id: nanoid(),
+        role: Role.Bot,
+        model: loadedModel.name,
+        content: ""
+      }
+
       const fetchStream = await globalThis.fetch(
         `http://localhost:${port}/completions`,
         {
@@ -111,9 +125,9 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
+            ...threadConfig.data.completionParams,
             stream: true,
-            prompt: applyTemplate(threadConfig.data, userPrompt),
-            ...threadConfig.data.completionParams
+            prompt: applyTemplate(threadConfig.data, userPrompt)
           })
         }
       )
@@ -131,12 +145,16 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
         },
         async function onFinish() {
           abortRef.current = false
-          await appendMessage(aiMessageRef.current)
+          await appendMessage(
+            aiMessageRef.current,
+            threadConfig.data,
+            loadedModel
+          )
           setIsResponding(false)
         }
       )
     } catch (error) {
-      alert(`ERROR: Server was not started OR no model was loaded.`)
+      alert(`ERROR: Server was not started OR no model was loaded | ${error}`)
       setIsResponding(false)
     }
   }
@@ -146,6 +164,7 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
     isResponding,
     botIconIndex,
 
+    threadModel,
     threadConfig,
     setCompletionParams,
 

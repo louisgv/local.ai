@@ -37,6 +37,6 @@ export const DEFAULT_THREAD_CONFIG: ThreadConfig = {
     presence_penalty: 0.0,
     top_k: 42,
     top_p: 1.0,
-    stop: ["Human:", "AI:"]
+    stop: ["AI: ", "Human: "]
   }
 }

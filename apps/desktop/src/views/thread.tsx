@@ -23,9 +23,9 @@ import { useMemo } from "react"
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
 import { MessageBlock } from "~features/thread/message-block"
 import { PromptTextarea } from "~features/thread/prompt-textarea"
-import { QuickModelLoaderSelector } from "~features/thread/quick-model-loader-selector"
 import { ChatSideBarToggle } from "~features/thread/side-bar"
-import { ThreadConfigPanel } from "~features/thread/thread-config"
+import { ThreadConfigPanel } from "~features/thread/thread-config-panel"
+import { ThreadModelSelector } from "~features/thread/thread-model-selector"
 import { useGlobal } from "~providers/global"
 import { ThreadProvider, useThread } from "~providers/thread"
 
@@ -64,7 +64,7 @@ const MainPanel = () => {
     <ViewContainer>
       <ViewHeader>
         <ChatSideBarToggle />
-        <QuickModelLoaderSelector />
+        <ThreadModelSelector />
         <Input
           className="w-full"
           placeholder="System Message"

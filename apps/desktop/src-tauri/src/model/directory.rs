@@ -24,6 +24,8 @@ pub fn get_current_models_path(
   )
 }
 
+static LOAD_MODIFIER: u64 = 3600 * 24;
+
 fn sort_files(
   files: &mut Vec<FileInfo>,
   model_stats_bucket_state: tauri::State<'_, model::stats::State>,
@@ -41,15 +43,14 @@ fn sort_files(
     let a_load_count = get_load_count(a);
     let b_load_count = get_load_count(b);
 
+    // Adjust the modification date by load count
     let a_modified_adjusted =
       a.modified.unwrap_or(std::time::SystemTime::UNIX_EPOCH)
-        + Duration::from_secs(a_load_count as u64 * 3600);
+        + Duration::from_secs(a_load_count as u64 * LOAD_MODIFIER);
 
     let b_modified_adjusted =
       b.modified.unwrap_or(std::time::SystemTime::UNIX_EPOCH)
-        + Duration::from_secs(b_load_count as u64 * 3600);
-
-    // Adjust the modification date by adding 1 hour for each load count
+        + Duration::from_secs(b_load_count as u64 * LOAD_MODIFIER);
 
     // Compare the adjusted modification dates
     b_modified_adjusted.cmp(&a_modified_adjusted)

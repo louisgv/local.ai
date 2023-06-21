@@ -8,11 +8,7 @@ import type {
   FileInfo,
   ModelMetadata
 } from "~features/model-downloader/model-file"
-import {
-  DEFAULT_SYSTEM_MESSAGE,
-  Role,
-  type ThreadMessage
-} from "~features/thread/_shared"
+import { Role, type ThreadMessage } from "~features/thread/_shared"
 
 type ThreadReadData = {
   line: string
@@ -28,9 +24,9 @@ const idRegex = 'id="(?<id>[^"]+)"' // This regex extracts the ID, and it's comm
 const userRegex = new RegExp(`${USER_TAG} ${idRegex} \\/>`, "u")
 const botRegexString = [
   `${BOT_TAG}[\\s\\S]*${idRegex}`,
-  `(?:[\\s\\S]*system="(?<system>[^"]+)")?`,
   `(?:[\\s\\S]*model="(?<model>[^"]+)")?`,
   `(?:[\\s\\S]*digest="(?<digest>[^"]+)")?`,
+  `(?:[\\s\\S]*system="(?<system>[^"]+)")?`,
   `[\\s\\S]*\\/>`
 ].join("")
 
@@ -39,17 +35,20 @@ const noteRegex = new RegExp(`${NOTE_TAG} ${idRegex} \\/>`, "u")
 
 const getMdRoleLine = (
   { role, id }: ThreadMessage,
-  model = null as ModelMetadata,
-  config = null as ThreadConfig
+  config = null as ThreadConfig,
+  model = null as ModelMetadata
 ) => {
   switch (role) {
     case Role.User:
       return `${USER_TAG} id="${id}" />`
     case Role.Bot:
       return dedent`
-      ${BOT_TAG} id="${id}" model="${model?.name}" 
-        digest="${model?.digest}" 
-        system="${config.systemMessage}" 
+      ${BOT_TAG} 
+        id="${id}"
+        model="${model?.name}"${
+        model.digest ? `\ndigest="${model?.digest}"` : ""
+      }
+        system="${config.systemMessage}"
       />
     `
     case Role.Note:
@@ -60,7 +59,7 @@ const getMdRoleLine = (
 
 // Append-only, static file MDX thread driver
 // Can be replaced with a more dynamic, storage-based driver
-export const useThreadMdx = (thread: FileInfo, model?: ModelMetadata) => {
+export const useThreadMdx = (thread: FileInfo) => {
   const [messages, setMessages] = useState<ThreadMessage[]>([])
   const [botIconIndex, setBotIconIndex] = useState<number>(0)
 
@@ -165,11 +164,12 @@ export const useThreadMdx = (thread: FileInfo, model?: ModelMetadata) => {
 
   const appendMessage = async (
     message: ThreadMessage,
-    config?: ThreadConfig
+    config?: ThreadConfig,
+    model?: ModelMetadata
   ) => {
     const content = [
       "\n",
-      getMdRoleLine(message, model, config),
+      getMdRoleLine(message, config, model),
       "\n\n",
       message.content,
       "\n"

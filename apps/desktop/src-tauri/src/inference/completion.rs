@@ -25,7 +25,7 @@ impl StopSequence {
 
 impl Default for StopSequence {
   fn default() -> Self {
-    StopSequence::Multiple(vec!["Human:".to_string(), "AI:".to_string()])
+    StopSequence::Multiple(vec!["AI: ".to_string(), "Human: ".to_string()])
   }
 }
 

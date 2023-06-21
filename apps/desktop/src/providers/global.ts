@@ -105,14 +105,18 @@ const useGlobalProvider = () => {
 
     const integrity = await getCachedIntegrity(model)
 
-    activeModelState[1]({
+    const loadedModel = {
       ...model,
       digest: integrity?.blake3
-    })
+    }
+
+    activeModelState[1](loadedModel)
 
     if (!serverStartedState[0]) {
       await startServer()
     }
+
+    return loadedModel
   }
 
   useEffect(() => {

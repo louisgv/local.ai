@@ -7,7 +7,7 @@ export const wizardModelMap: ModelMap = {
     description: dedent`
       StarCoder fine-tuned using Evol-Instruct method. Good for code generation.
 
-      Req: >=32GB of CPU.
+      Req: >=8GB of CPU.
     `,
     modelType: ModelType.Gpt2,
     size: 14257205145,

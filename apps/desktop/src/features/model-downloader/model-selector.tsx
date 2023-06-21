@@ -54,7 +54,7 @@ export const ModelSelector = ({ className = "" }) => {
         </SelectTrigger>
         <SelectContent className="flex h-96 w-full">
           {models
-            .filter((model) => !modelsMap.has(model.name))
+            .filter((model) => !modelsMap.name.has(model.name))
             .map((model) => (
               <SelectItem key={model.downloadUrl} value={model.blake3}>
                 <div
