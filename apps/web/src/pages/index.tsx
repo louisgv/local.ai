@@ -303,9 +303,15 @@ const IndexPage: NextPage = () => (
               available={[
                 "Digest compute",
                 "Known-good model API",
-                "License and Usage chips"
+                "License and Usage chips",
+                "BLAKE3 quick check",
+                "Model info card"
               ]}
-              upcoming={["BLAKE3 quick check", "Model card"]}
+              upcoming={[
+                "Model Explorer",
+                "Model Search",
+                "Model Recommendation"
+              ]}
             />
           </div>
         </FeatureCard>
@@ -343,15 +349,12 @@ const IndexPage: NextPage = () => (
             <FeaturesList
               available={[
                 "Streaming server",
-                "Quick Inference UI",
-                "Writes to .mdx"
-              ]}
-              upcoming={[
+                "Quick inference UI",
+                "Writes to .mdx",
                 "Inference params",
-                "Remote vocabulary",
-                "/audio",
-                "/image"
+                "Remote vocabulary"
               ]}
+              upcoming={["Server Managet", "/audio", "/image"]}
             />
           </div>
         </FeatureCard>

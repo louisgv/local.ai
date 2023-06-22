@@ -42,11 +42,11 @@ async function setTitle(title = "") {
 }
 
 const useGlobalProvider = () => {
-  const routeState = useState<Route>(Route.ModelManager)
+  const [activeRoute, setActiveRoute] = useState<Route>(Route.ModelManager)
 
   const activeModelState = useState<ModelMetadata>(null)
   const concurrencyState = useState(1)
-  const activeThreadState = useState<FileInfo>()
+  const [activeThread, setActiveThread] = useState<FileInfo>()
 
   const portState = useState(8000)
 
@@ -120,12 +120,12 @@ const useGlobalProvider = () => {
   }
 
   useEffect(() => {
-    if (routeState[0] === Route.ModelManager) {
+    if (activeRoute === Route.ModelManager) {
       setTitle("Model Manager")
-    } else if (activeThreadState[0]) {
-      setTitle(activeThreadState[0].name.slice(0, -2))
+    } else if (activeThread) {
+      setTitle(activeThread.name.slice(0, -2))
     }
-  }, [activeThreadState[0], routeState[0]])
+  }, [activeThread, activeRoute])
 
   return {
     getWindow: () => windowRef.current,
@@ -136,8 +136,8 @@ const useGlobalProvider = () => {
     knownModels,
 
     portState,
-    routeState,
-    activeThreadState,
+    routeState: [activeRoute, setActiveRoute] as const,
+    activeThreadState: [activeThread, setActiveThread] as const,
     activeModelState,
     concurrencyState,
     serverStartedState,
