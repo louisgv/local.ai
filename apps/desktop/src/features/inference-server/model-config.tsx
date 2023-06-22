@@ -48,8 +48,7 @@ export const ModelConfig = () => {
   const {
     model,
     modelLoadState,
-    launchCount,
-    incrementLaunchCount,
+    modelStats,
     loadModel,
     downloadState,
     modelConfig
@@ -137,7 +136,7 @@ export const ModelConfig = () => {
                 "text-xs rounded-lg bg-gray-6 py-2 px-3",
                 className
               )}>
-              {launchCount}
+              {modelStats.launchCount}
             </code>
           )}
           isSpinning={modelLoadState === ModelLoadState.Loading}
@@ -147,7 +146,7 @@ export const ModelConfig = () => {
               downloadState !== DownloadState.Completed)
           }
           onClick={() => {
-            incrementLaunchCount()
+            modelStats.incrementLaunchCount()
             loadModel()
           }}>
           {modelLoadState === ModelLoadState.Loaded ? "Loaded" : "Load Model"}
