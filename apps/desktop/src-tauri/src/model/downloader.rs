@@ -1,7 +1,7 @@
-use crate::kv_bucket::{get_state_json, StateBucket};
-use crate::model_integrity::{compute_file_integrity, ModelIntegrity};
-use crate::{kv_bucket, models_directory::get_current_models_path};
-use kv::*;
+use crate::model::directory::get_current_models_path;
+use crate::model::integrity::{compute_file_integrity, ModelIntegrity};
+use crate::utils::kv_bucket::{self, get_state_json, StateBucket};
+use kv::Json;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -73,28 +73,44 @@ impl State {
     });
     Ok(())
   }
-}
 
-fn assert_download_state(
-  download_state_map: &DownloadStateMap,
-  output_path: &str,
-  expected_state: DownloadState,
-) -> Result<(), String> {
-  let download_state_map = download_state_map.lock();
+  pub fn set_download_progress(
+    &self,
+    path: &String,
+    data: DownloadProgressData,
+  ) -> Result<(), String> {
+    let dl_progress = self.download_progress_bucket.lock();
 
-  let current_state_arc = match download_state_map.get(output_path) {
-    Some(arc) => arc.clone(),
-    None => return Ok(()),
-  };
-  let current_state = current_state_arc.read();
-  if *current_state != expected_state {
-    return Err(format!(
-      "Download state for {} is {:?}, expected {:?}",
-      output_path, current_state, expected_state
-    ));
+    dl_progress
+      .set(path, &Json(data))
+      .map_err(|e| e.to_string())?;
+
+    dl_progress.flush().map_err(|e| e.to_string())?;
+
+    Ok(())
   }
 
-  Ok(())
+  pub fn assert_download_state(
+    &self,
+    output_path: &str,
+    expected_state: DownloadState,
+  ) -> Result<(), String> {
+    let download_state_map = self.download_state_map.lock();
+
+    let current_state_arc = match download_state_map.get(output_path) {
+      Some(arc) => arc.clone(),
+      None => return Ok(()),
+    };
+    let current_state = current_state_arc.read();
+    if *current_state != expected_state {
+      return Err(format!(
+        "Download state for {} is {:?}, expected {:?}",
+        output_path, current_state, expected_state
+      ));
+    }
+
+    Ok(())
+  }
 }
 
 #[tauri::command]
@@ -134,19 +150,15 @@ pub async fn pause_download(
 pub async fn resume_download(
   window: Window,
   state: tauri::State<'_, self::State>,
-  model_integrity_state: tauri::State<'_, crate::model_integrity::State>,
+  model_integrity_state: tauri::State<'_, crate::model::integrity::State>,
   path: &str,
 ) -> Result<(), String> {
   let output_path = String::from(path);
 
-  assert_download_state(
-    &state.download_state_map.clone(),
-    &output_path,
-    DownloadState::Idle,
-  )?;
+  state.assert_download_state(&output_path, DownloadState::Idle)?;
 
   spawn_download_threads(
-    output_path,
+    &output_path,
     state.download_progress_bucket.clone(),
     state.download_state_map.clone(),
     model_integrity_state.0.clone(),
@@ -160,14 +172,12 @@ pub async fn start_download(
   window: Window,
   state: tauri::State<'_, State>,
   default_path_state: tauri::State<'_, crate::path::State>,
-  model_type_state: tauri::State<'_, crate::model_type::State>,
   config_state: tauri::State<'_, crate::config::State>,
-  model_integrity_state: tauri::State<'_, crate::model_integrity::State>,
+  model_integrity_state: tauri::State<'_, crate::model::integrity::State>,
   name: String,
   download_url: String,
   digest: String,
-  model_type: String,
-) -> Result<(), String> {
+) -> Result<String, String> {
   println!("download_model: {}", download_url);
   println!("digest: {}", digest);
 
@@ -183,51 +193,34 @@ pub async fn start_download(
 
   println!("output_path: {:?}", output_path);
 
-  crate::model_type::set_model_type(
-    model_type_state.clone(),
-    output_path.as_str(),
-    &model_type,
-  )
-  .await?;
-
-  {
-    let download_progress_bucket = state.download_progress_bucket.clone();
-    let download_progress_bucket = download_progress_bucket.lock();
-    download_progress_bucket
-      .set(
-        &output_path,
-        &Json(DownloadProgressData {
-          path: output_path.clone(),
-          digest,
-          download_url,
-          download_state: DownloadState::Downloading,
-          event_id: format!(
-            "download_progress:{}",
-            blake3::hash(output_path.as_bytes())
-          ),
-          ..Default::default()
-        }),
-      )
-      .map_err(|e| e.to_string())?;
-
-    download_progress_bucket
-      .flush()
-      .map_err(|e| e.to_string())?;
-  };
+  state.set_download_progress(
+    &output_path,
+    DownloadProgressData {
+      path: output_path.clone(),
+      digest,
+      download_url,
+      download_state: DownloadState::Downloading,
+      event_id: format!(
+        "download_progress:{}",
+        blake3::hash(output_path.as_bytes())
+      ),
+      ..Default::default()
+    },
+  )?;
 
   spawn_download_threads(
-    output_path,
+    &output_path,
     state.download_progress_bucket.clone(),
     state.download_state_map.clone(),
     model_integrity_state.0.clone(),
     Arc::new(RwLock::new(window)),
   );
 
-  Ok(())
+  Ok(output_path)
 }
 
 fn spawn_download_threads(
-  output_path: String,
+  output_path: &String,
   download_progress_bucket: DownloadProgressBucket,
   download_state_map: DownloadStateMap,
   model_integrity_bucket_state: StateBucket<Json<ModelIntegrity>>,
@@ -331,10 +324,7 @@ fn spawn_download_threads(
         let model_integrity =
           compute_file_integrity(output_path.as_str()).await.unwrap();
 
-        let model_integrity_bucket: parking_lot::lock_api::MutexGuard<
-          parking_lot::RawMutex,
-          Bucket<String, Json<ModelIntegrity>>,
-        > = model_integrity_bucket_state.lock();
+        let model_integrity_bucket = model_integrity_bucket_state.lock();
 
         match model_integrity_bucket
           .set(&output_path, &Json(model_integrity.clone()))

@@ -9,39 +9,33 @@ import {
 import { useState } from "react"
 
 import { useGlobal } from "~providers/global"
+import { useThread } from "~providers/thread"
 
-export const QuickModelLoaderSelector = () => {
+export const ThreadModelSelector = () => {
   const {
-    activeModelState: [activeModel],
-    modelsDirectoryState: { models, modelsMap },
-    loadModel
+    modelsDirectoryState: { models, modelsMap }
   } = useGlobal()
 
-  const [selectedModel, setSelectedModel] = useState(activeModel)
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const { threadModel, threadConfig } = useThread()
+
+  const [isUpdating, setIsUpdating] = useState(false)
   return (
     <Select
-      disabled={isRefreshing}
-      value={selectedModel?.name}
+      disabled={isUpdating}
+      value={threadModel.name}
       onValueChange={async (name) => {
-        setIsRefreshing(true)
-
-        const model = modelsMap.get(name)
-        setSelectedModel(model)
-
-        try {
-          await loadModel(model)
-        } catch (error) {
-          alert(error)
-        }
-
-        setIsRefreshing(false)
+        setIsUpdating(true)
+        const model = modelsMap.name.get(name)
+        await threadConfig.update({
+          modelPath: model.path
+        })
+        setIsUpdating(false)
       }}>
       <SelectTrigger
         className={cn(
           "text-gray-11",
           "relative",
-          "w-64 flex flex-grow-0 flex-shrink-0"
+          "w-64 flex flex-grow-0 flex-shrink-0 group"
         )}>
         <label
           className={cn(
@@ -51,9 +45,15 @@ export const QuickModelLoaderSelector = () => {
         </label>
 
         <SelectValue>
-          <span className="flex w-52">
-            {selectedModel?.name || "Select a model to load"}
-          </span>
+          <div className="w-52 overflow-hidden text-left">
+            {threadModel ? (
+              <span className="w-[calc(100%)] block whitespace-nowrap group-hover:animate-scroll-x group-hover:w-max">
+                {threadModel.name}
+              </span>
+            ) : (
+              "Select a model to load"
+            )}
+          </div>
         </SelectValue>
       </SelectTrigger>
       <SelectContent className="flex h-48 w-full">

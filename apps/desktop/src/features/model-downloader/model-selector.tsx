@@ -54,7 +54,7 @@ export const ModelSelector = ({ className = "" }) => {
         </SelectTrigger>
         <SelectContent className="flex h-96 w-full">
           {models
-            .filter((model) => !modelsMap.has(model.name))
+            .filter((model) => !modelsMap.name.has(model.name))
             .map((model) => (
               <SelectItem key={model.downloadUrl} value={model.blake3}>
                 <div
@@ -109,11 +109,19 @@ export const ModelSelector = ({ className = "" }) => {
         onClick={async () => {
           setIsDownloading(true)
           try {
-            await invoke(InvokeCommand.StartDownload, {
+            const outputPath = await invoke(InvokeCommand.StartDownload, {
               name: selectedModel.name,
               downloadUrl: selectedModel.downloadUrl,
-              modelType: selectedModel.modelType,
               digest: selectedModel.blake3
+            })
+
+            await invoke(InvokeCommand.SetModelConfig, {
+              path: outputPath,
+              config: {
+                modelType: selectedModel.modelType,
+                tokenizer: selectedModel.tokenizers?.[0] || "",
+                defaultPromptTemplate: selectedModel.promptTemplate || ""
+              }
             })
           } catch (error) {
             alert(error)

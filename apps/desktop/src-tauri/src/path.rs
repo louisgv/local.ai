@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 use walkdir::WalkDir;
 
-/// Default paths
+/// Default paths - TODO: we should prob move this into config tbh
 #[derive(Clone)]
 pub struct State {
   pub models_directory_buf: PathBuf,

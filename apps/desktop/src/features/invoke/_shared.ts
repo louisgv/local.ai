@@ -9,6 +9,8 @@ export enum InvokeCommand {
   ReadDirectory = "read_directory",
   WriteFile = "write_file",
   ReadFile = "read_file",
+  GetThreadConfig = "get_thread_config",
+  SetThreadConfig = "set_thread_config",
   AppendThreadContent = "append_thread_content",
   ReadThreadFile = "read_thread_file",
   InitializeThreadsDir = "initialize_threads_dir",
@@ -31,8 +33,6 @@ export enum InvokeCommand {
   StartServer = "start_server",
   StopServer = "stop_server",
   LoadModel = "load_model",
-  GetModelType = "get_model_type",
-  SetModelType = "set_model_type",
   TestModel = "test_model",
   OpenDirectory = "open_directory"
 }

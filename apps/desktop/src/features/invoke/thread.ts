@@ -4,7 +4,32 @@ import type {
   FileInfo
 } from "~features/model-downloader/model-file"
 
-export type ThreadsDirectoryCommandMap = {
+export type CompletionRequest = {
+  prompt: string
+
+  seed?: number
+
+  sampler: "top-p-top-k"
+
+  max_tokens?: number
+  temperature?: number
+  top_p?: number
+  top_k?: number
+  frequency_penalty?: number
+  presence_penalty?: number
+
+  stop?: string[]
+}
+
+export type ThreadConfig = {
+  modelPath?: string
+  tokenizer?: string
+  promptTemplate?: string
+  systemMessage?: string
+  completionParams?: CompletionRequest
+}
+
+export type ThreadCommandMap = {
   [InvokeCommand.AppendThreadContent]: InvokeIO<
     {
       path: string
@@ -22,6 +47,13 @@ export type ThreadsDirectoryCommandMap = {
   [InvokeCommand.RenameThreadFile]: InvokeIO<
     { path: string; newName: string },
     FileInfo
+  >
+  [InvokeCommand.CreateThreadFile]: InvokeIO<never, FileInfo>
+
+  [InvokeCommand.GetThreadConfig]: InvokeIO<{ path: string }, ThreadConfig>
+  [InvokeCommand.SetThreadConfig]: InvokeIO<
+    { path: string; config: ThreadConfig },
+    void
   >
   [InvokeCommand.CreateThreadFile]: InvokeIO<never, FileInfo>
 }

@@ -4,37 +4,16 @@ use std::{convert::Infallible, sync::Arc};
 use actix_web::web::Bytes;
 use flume::Sender;
 use llm::{
-  samplers, InferenceError, InferenceFeedback, InferenceParameters, Model,
-  OutputRequest, Prompt, TokenUtf8Buffer,
+  InferenceError, InferenceFeedback, InferenceParameters, Model, OutputRequest,
+  Prompt, TokenUtf8Buffer,
 };
 use parking_lot::{Mutex, RwLock};
 
-use rand::prelude::*;
-
-use rand_chacha::ChaCha8Rng;
-use serde::{Deserialize, Serialize};
 use tokio::task::JoinHandle;
 
-use crate::{
-  inference::stop_handler::StopHandler,
-  model_pool::{self, get_n_threads},
-};
+use crate::model;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct CompletionRequest {
-  prompt: String,
-  stream: Option<bool>,
-
-  max_tokens: Option<usize>,
-
-  pub seed: Option<u64>,
-  pub temperature: Option<f32>,
-  pub top_p: Option<f32>,
-  pub frequency_penalty: Option<f32>,
-  pub presence_penalty: Option<f32>,
-
-  pub stop_sequences: Option<Vec<String>>,
-}
+use super::completion::{CompletionRequest, CompletionResponse};
 
 pub type ModelGuard = Arc<Mutex<Option<Box<dyn Model>>>>;
 
@@ -46,60 +25,20 @@ pub struct InferenceThreadRequest {
   pub completion_request: CompletionRequest,
 }
 
-#[derive(Serialize)]
-pub struct Choice {
-  text: String,
-}
-
-#[derive(Serialize)]
-pub struct CompletionResponse {
-  pub choices: Vec<Choice>,
-}
-
-fn get_completion_resp(text: String) -> Bytes {
-  let completion_response = CompletionResponse {
-    choices: vec![Choice { text }],
-  };
-
-  let serialized = serde_json::to_string(&completion_response).unwrap();
-
-  Bytes::from(format!("data: {}\n\n", serialized))
-}
-
-fn clean_prompt(s: &str) -> String {
-  s.replacen("!", ".", 4)
-    .replace("<bot>: ", "bot: ")
-    .replace("\n<human>: ", "\n===\nhuman: ")
-}
-
 fn get_inference_params(
   completion_request: &CompletionRequest,
 ) -> InferenceParameters {
-  let n_threads = get_n_threads();
-
-  let repeat_penalty =
-    (completion_request.frequency_penalty.unwrap_or(0.6) + 2.0) / 2.0;
-
-  let repetition_penalty_last_n = 256
-    + (((completion_request.presence_penalty.unwrap_or(0.0) + 2.0) / 4.0
-      * 512.0) as usize);
+  let n_threads = model::pool::get_n_threads();
 
   InferenceParameters {
     n_threads,
     n_batch: n_threads,
-    sampler: Arc::new(samplers::TopPTopK {
-      temperature: completion_request.temperature.unwrap_or(1.0),
-      top_p: completion_request.top_p.unwrap_or(1.0),
-      repeat_penalty,
-      repetition_penalty_last_n,
-
-      ..Default::default()
-    }),
+    sampler: Arc::new(completion_request.to_top_p_top_k()),
   }
 }
 
 // Perhaps might be better to clone the model for each thread...
-pub fn start_inference(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
+pub fn start(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
   println!("Starting inference ...");
 
   // Need to clone it to have its own arc
@@ -116,8 +55,6 @@ pub fn start_inference(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
   let mut session = model.start_session(Default::default());
   println!("Session created ...");
 
-  let raw_prompt = clean_prompt(req.completion_request.prompt.as_str());
-  let prompt = &raw_prompt;
   let mut output_request = OutputRequest::default();
 
   let inference_params = get_inference_params(&req.completion_request);
@@ -143,7 +80,7 @@ pub fn start_inference(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
   match session.feed_prompt::<Infallible, Prompt>(
     model.as_ref(),
     &inference_params,
-    prompt.into(),
+    req.completion_request.prompt.as_str().into(),
     &mut output_request,
     |_| Ok(InferenceFeedback::Continue),
   ) {
@@ -168,11 +105,9 @@ fn spawn_inference_thread(
 ) -> JoinHandle<()> {
   println!("Spawning inference thread...");
   let handle = actix_web::rt::task::spawn_blocking(move || {
-    let mut rng =
-      ChaCha8Rng::seed_from_u64(req.completion_request.seed.unwrap_or(420));
+    let mut rng = req.completion_request.get_rng();
 
-    let maximum_token_count =
-      req.completion_request.max_tokens.unwrap_or(usize::MAX);
+    let maximum_token_count = req.completion_request.get_max_tokens();
 
     let mut token_utf8_buf = TokenUtf8Buffer::new();
     let guard = req.model_guard.lock();
@@ -185,14 +120,8 @@ fn spawn_inference_thread(
       }
     };
 
-    let mut stop_handler = StopHandler::new(
-      model.as_ref(),
-      req
-        .completion_request
-        .stop_sequences
-        .as_ref()
-        .unwrap_or(&vec![]),
-    );
+    let mut stop_handler =
+      req.completion_request.get_stop_handler(model.as_ref());
 
     let mut tokens_processed = 0;
 
@@ -225,7 +154,10 @@ fn spawn_inference_thread(
 
       // Buffer the token until it's valid UTF-8, then call the callback.
       if let Some(tokens) = token_utf8_buf.push(&token) {
-        match req.token_sender.send(get_completion_resp(tokens)) {
+        match req
+          .token_sender
+          .send(CompletionResponse::to_data_bytes(tokens))
+        {
           Ok(_) => {}
           Err(_) => {
             break;
@@ -237,11 +169,11 @@ fn spawn_inference_thread(
     }
 
     if !req.token_sender.is_disconnected() {
-      req.token_sender.send(Bytes::from("data: [DONE]")).unwrap();
+      req.token_sender.send(CompletionResponse::done()).unwrap();
     }
 
     // TODO: Might make this into a callback later, for now we just abuse the singleton
-    model_pool::return_model(Some(Arc::clone(&req.model_guard)));
+    model::pool::return_model(Some(Arc::clone(&req.model_guard)));
 
     // Run inference
     // let res = session.infer::<Infallible>(

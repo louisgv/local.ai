@@ -2,10 +2,7 @@ import { useEffect, useState } from "react"
 
 import { useInit } from "~features/inference-server/use-init"
 import { InvokeCommand, invoke } from "~features/invoke"
-import {
-  DownloadState,
-  type ProgressData
-} from "~features/invoke/model-downloader"
+import { DownloadState, type ProgressData } from "~features/invoke/model"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 import { useGlobal } from "~providers/global"
 

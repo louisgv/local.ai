@@ -7,7 +7,8 @@ export const guanacoModelMap: ModelMap = {
     size: 5055128192,
     downloadUrl:
       "https://huggingface.co/lukasmoeller/replit-code-v1-3b-ggml/tree/main",
-    blake3: "abcdef",
+    blake3:
+      "PENCIL | Velit et aute aute mollit adipisicing adipisicing nisi dolore aliqua.",
     sha256: "plumbshake",
     licenses: [LicenseType.Academic, LicenseType.NonCommercial],
     citations: [

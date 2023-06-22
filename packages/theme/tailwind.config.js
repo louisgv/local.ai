@@ -17,8 +17,9 @@ module.exports = {
       keyframes: {
         "k-scroll-x": {
           "0%": { transform: "translateX(0%)" },
-          "42%": { transform: "translateX(-100%)" },
-          "69%": { transform: "translateX(-100%)" },
+          "25%": { transform: "translateX(-100%)" },
+          "50%": { transform: "translateX(-80%)" },
+          "75%": { transform: "translateX(0%)" },
           "100%": { transform: "translateX(0%)" }
         }
       },

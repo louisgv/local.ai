@@ -30,6 +30,7 @@ tauri = { version = "1.4.0", features = [
   "window-show",
 ] }
 
+paste = "1.0"
 sys-info = "0.9.1"
 num_cpus = "1.15.0"
 tauri-plugin-persisted-scope = { version = "0.1.0" }

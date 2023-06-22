@@ -4,6 +4,7 @@ import { MarkdownContainer } from "@localai/ui/markdown-container"
 import { Notes, User } from "iconoir-react"
 import { useMemo } from "react"
 
+import { getTruncatedHash } from "~features/inference-server/model-digest"
 import { Role, type ThreadMessage } from "~features/thread/_shared"
 
 const defaultMessage = `
@@ -43,7 +44,10 @@ export const MessageBlock = ({
         </MarkdownContainer>
 
         {message.model && (
-          <pre className="flex text-xs justify-end mt-4">{message.model}</pre>
+          <div className="flex flex-col text-xs justify-end text-end mt-4 gap-1">
+            <pre>{message.model}</pre>
+            {message.digest && <pre>{getTruncatedHash(message.digest)}</pre>}
+          </div>
         )}
       </div>
       <Button
