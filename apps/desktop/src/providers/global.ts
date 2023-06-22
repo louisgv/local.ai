@@ -21,7 +21,7 @@ export enum Route {
   ModelManager = "model-manager",
   Thread = "thread",
   ServerManager = "ServerManager",
-  ServerManagerView = "ServerManagerView"
+  ServerManager = "ServerManagerView"
 }
 
 let _prefix: string
@@ -54,6 +54,7 @@ const useGlobalProvider = () => {
 
   const serverStartedState = useState(false)
   const sidebarState = useToggle(true)
+  const threadViewConfigPanelState = useToggle(false)
 
   const modelsDirectoryState = useModelsDirectory()
   const threadsDirectoryState = useThreadsDirectory()
@@ -106,14 +107,18 @@ const useGlobalProvider = () => {
 
     const integrity = await getCachedIntegrity(model)
 
-    activeModelState[1]({
+    const loadedModel = {
       ...model,
       digest: integrity?.blake3
-    })
+    }
+
+    activeModelState[1](loadedModel)
 
     if (!serverStartedState[0]) {
       await startServer()
     }
+
+    return loadedModel
   }
 
   useEffect(() => {
@@ -149,6 +154,7 @@ const useGlobalProvider = () => {
     sidebarState,
     modelsDirectoryState,
     threadsDirectoryState,
+    threadViewConfigPanelState,
     onboardState
   }
 }

@@ -1,4 +1,4 @@
-use crate::kv_bucket::{self, StateBucket};
+use crate::utils::kv_bucket::{self, StateBucket};
 use core::fmt;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};

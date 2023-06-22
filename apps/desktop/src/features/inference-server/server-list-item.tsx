@@ -9,26 +9,12 @@ import {
 } from "@radix-ui/react-icons"
 import dedent from "ts-dedent"
 
-import { ModelInfo } from "~features/inference-server/model-info"
 import { useToggle } from "~features/layout/use-toggle"
 import { type ModelMetadata } from "~features/model-downloader/model-file"
 import { useGlobal } from "~providers/global"
-import { ModelProvider, useModel } from "~providers/model"
+import { ModelProvider } from "~providers/model"
 
 import { ServerConfig } from "./server-config"
-
-const ModelLabel = () => {
-  const { model, modelSize } = useModel()
-
-  return (
-    <div className="flex flex-col w-full justify-start">
-      <div className="flex text-md gap-2">
-        <span>{model.name}</span>
-        <ModelInfo />
-      </div>
-    </div>
-  )
-}
 
 export const ServerListItem = ({ model }: { model: ModelMetadata }) => {
   const {
@@ -47,7 +33,6 @@ export const ServerListItem = ({ model }: { model: ModelMetadata }) => {
             : "border border-gray-7 hover:border-gray-8"
         )}>
         <div className="flex justify-between w-full">
-          <ModelLabel />
           <Button className="gap-0" onClick={() => toggleConfig()}>
             {!isConfigVisible && <ChevronLeftIcon />}
 

@@ -2459,6 +2459,7 @@ dependencies = [
  "objc",
  "once_cell",
  "parking_lot 0.12.1",
+ "paste",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "rayon",

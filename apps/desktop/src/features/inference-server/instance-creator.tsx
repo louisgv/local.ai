@@ -19,7 +19,7 @@ export const InstanceCreator = () => {
         isSpinning={isLoading}
         className={cn(
           "w-48 justify-center border",
-          "bg-gray-5 text-gray-11 ring-gray-9 ring-2 hover: text-gray-12"
+          "bg-gray-5 text-gray-11 ring-gray-9 ring-2 hover:text-gray-12"
         )}
         onClick={handleClick}>
         {isLoading ? "..." : "Create New Instance"}

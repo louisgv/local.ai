@@ -7,8 +7,6 @@ export type FileInfo = {
 
 export type ModelMetadata = FileInfo & {
   digest?: string
-  label?: string
-  description?: string
 }
 
 export type DirectoryState = {

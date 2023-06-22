@@ -1,14 +1,14 @@
 "use client"
 
+import { ModelType } from "@models/_shared"
 import { createProvider } from "puro"
 import { useCallback, useContext, useEffect, useMemo, useState } from "react"
 
+import { createFileConfigStore } from "~features/inference-server/file-config-store"
 import { useInit } from "~features/inference-server/use-init"
-import { useModelConfig } from "~features/inference-server/use-model-config"
 import { useModelStats } from "~features/inference-server/use-model-stats"
-import { useModelType } from "~features/inference-server/use-model-type"
 import { InvokeCommand, invoke } from "~features/invoke"
-import type { ModelIntegrity } from "~features/invoke/model-integrity"
+import type { ModelConfig, ModelIntegrity } from "~features/invoke/model"
 import type { ModelMetadata } from "~features/model-downloader/model-file"
 import {
   DownloadState,
@@ -21,6 +21,11 @@ export enum ModelLoadState {
   Loading,
   Loaded
 }
+
+const useModelConfig = createFileConfigStore<ModelConfig>(
+  InvokeCommand.GetModelConfig,
+  InvokeCommand.SetModelConfig
+)
 
 export const getCachedIntegrity = (model: ModelMetadata) =>
   invoke(InvokeCommand.GetCachedIntegrity, {
@@ -43,9 +48,11 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   const [integrity, setIntegrity] = useState<ModelIntegrity>(null)
   const [isChecking, setIsChecking] = useState(false)
 
-  const { modelType, updateModelType } = useModelType(model)
-
-  const { modelConfig, updateModelConfig } = useModelConfig(model)
+  const modelConfig = useModelConfig(model, {
+    modelType: ModelType.Llama,
+    tokenizer: "",
+    defaultPromptTemplate: ""
+  })
 
   const { downloadState, pauseDownload, progress, resumeDownload, modelSize } =
     useModelDownload(model)
@@ -56,14 +63,6 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
     () => modelMap?.[integrity?.blake3],
     [integrity, modelMap]
   )
-
-  useEffect(() => {
-    if (activeModel?.path !== model.path) {
-      setModelLoadState(ModelLoadState.Default)
-    } else {
-      setModelLoadState(ModelLoadState.Loaded)
-    }
-  }, [activeModel, model])
 
   const integrityInit = useInit(async () => {
     const resp = await getCachedIntegrity(model)
@@ -76,7 +75,15 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
     }
   }, [model, downloadState])
 
-  const loadModel = useCallback(async () => {
+  useEffect(() => {
+    if (activeModel?.path !== model.path) {
+      setModelLoadState(ModelLoadState.Default)
+    } else {
+      setModelLoadState(ModelLoadState.Loaded)
+    }
+  }, [activeModel, model])
+
+  const loadModel = async () => {
     setModelLoadState(ModelLoadState.Loading)
     try {
       await _loadModel(model)
@@ -86,7 +93,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
       alert(error)
       setModelLoadState(ModelLoadState.Default)
     }
-  }, [model])
+  }
 
   const checkModel = useCallback(async () => {
     setIntegrity(null)
@@ -99,12 +106,8 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
 
       const knownModelMetadata = modelMap[resp.blake3]
       if (!!knownModelMetadata) {
-        alert(
-          "Known model metadata found, updating model config:\n\n" +
-            JSON.stringify(knownModelMetadata, null, 2)
-        )
-        updateModelType(knownModelMetadata.modelType)
-        updateModelConfig({
+        await modelConfig.update({
+          modelType: knownModelMetadata.modelType,
           tokenizer: knownModelMetadata.tokenizers?.[0] || "", // Pick the first one for now
           defaultPromptTemplate: knownModelMetadata.promptTemplate || ""
         })
@@ -117,7 +120,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
       alert(error)
     }
     setIsChecking(false)
-  }, [model])
+  }, [model, modelConfig, modelMap])
 
   return {
     model,
@@ -128,10 +131,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
     checkModel,
     modelSize,
     modelLoadState,
-    modelType,
-    updateModelType,
     modelConfig,
-    updateModelConfig,
     loadModel,
     downloadState,
     progress,

@@ -4,15 +4,17 @@ use tauri::AppHandle;
 
 use std::{fs, path::PathBuf, sync::Arc};
 
-use llm::{load_progress_callback_stdout, ModelArchitecture, VocabularySource};
+use llm::load_progress_callback_stdout;
 
 use std::path::Path;
 
-use crate::{inference::thread::ModelGuard, model_stats};
+use crate::inference::process::ModelGuard;
 use std::collections::VecDeque;
 
 use crate::config::ConfigKey;
 use crate::path::get_app_dir_path_buf;
+
+use super::config::ModelConfig;
 
 pub static LOADED_MODEL_POOL: Lazy<Mutex<VecDeque<Option<ModelGuard>>>> =
   Lazy::new(|| Mutex::new(VecDeque::new()));
@@ -40,17 +42,14 @@ pub fn get_n_threads() -> usize {
 
 pub async fn spawn_pool(
   path: &str,
-  model_type: &str,
-  vocabulary_source: &VocabularySource,
+  model_config: &ModelConfig,
   concurrency: usize,
   cache_dir: &PathBuf,
 ) -> Result<(), String> {
   let now = std::time::Instant::now();
   let model_path = Path::new(path);
 
-  let architecture: ModelArchitecture = model_type
-    .parse()
-    .map_err(|_| format!("Invalid model type: {model_type}"))?;
+  let architecture = model_config.get_model_arch()?;
 
   let skip_copy = concurrency == 1;
   let mut tasks = vec![];
@@ -62,8 +61,7 @@ pub async fn spawn_pool(
     let cache_name = format!("run_cache_{}", i);
     let cache_file_path = cache_dir.join(cache_name);
     let original_model_path = original_model_path.clone();
-    let architecture = architecture.clone();
-    let vocabulary_source = vocabulary_source.to_owned();
+    let vocabulary_source = model_config.get_vocab();
     let task = tokio::task::spawn_blocking(move || {
       if !skip_copy {
         fs::copy(&original_model_path, &cache_file_path)
@@ -79,7 +77,7 @@ pub async fn spawn_pool(
       match llm::load_dynamic(
         architecture,
         cache_path.as_path(),
-        vocabulary_source.clone(),
+        vocabulary_source,
         llm::ModelParameters {
           prefer_mmap: true,
           // TODO: need to figure out how to assign this properly, and automatically
@@ -119,26 +117,11 @@ pub async fn spawn_pool(
   Ok(())
 }
 
-fn get_vocab_source(vocab: String) -> VocabularySource {
-  match vocab {
-    v if {
-      let path = Path::new(&v);
-      path.is_absolute() && path.exists() && path.is_file()
-    } =>
-    {
-      VocabularySource::HuggingFaceTokenizerFile(PathBuf::from(v))
-    }
-    v if v.len() > 0 => VocabularySource::HuggingFaceRemote(v),
-    _ => VocabularySource::Model,
-  }
-}
-
 #[tauri::command]
 pub async fn load_model<'a>(
-  model_stats_bucket_state: tauri::State<'_, model_stats::State>,
   config_state: tauri::State<'_, crate::config::State>,
-  model_type_bucket_state: tauri::State<'_, crate::model_type::State>,
-  model_config_bucket_state: tauri::State<'_, crate::model_config::State>,
+  model_stats_bucket_state: tauri::State<'_, crate::model::stats::State>,
+  model_config_bucket_state: tauri::State<'_, crate::model::config::State>,
   app_handle: AppHandle,
   path: &str,
   concurrency: usize,
@@ -149,16 +132,7 @@ pub async fn load_model<'a>(
   let cache_dir =
     get_app_dir_path_buf(app_handle, String::from("inference_cache"))?;
 
-  let model_type = model_type_bucket_state.get(path)?;
+  let model_config = model_config_bucket_state.get(path).unwrap_or_default();
 
-  let model_config = model_config_bucket_state.get(path)?;
-
-  spawn_pool(
-    path,
-    model_type.as_str(),
-    &get_vocab_source(model_config.tokenizer),
-    concurrency,
-    &cache_dir,
-  )
-  .await
+  spawn_pool(path, &model_config, concurrency, &cache_dir).await
 }

@@ -1,5 +1,5 @@
 diesel::table! {
-  chats (id) {
+  threads (id) {
       id -> Integer,
       title -> Text,
   }
@@ -9,6 +9,6 @@ diesel::table! {
   messages (id) {
       id -> Integer,
       text -> Text,
-      chat_id -> Integer,
+      thread_id -> Integer,
   }
 }

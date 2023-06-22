@@ -1,9 +1,9 @@
 import { useMemo } from "react"
 
 import { Route, useGlobal } from "~providers/global"
-import { ChatView } from "~views/chat"
 import { ModelManagerView } from "~views/model-manager"
 import { ServerManagerView } from "~views/server-manager"
+import { ThreadView } from "~views/thread"
 
 // Since NextJS router doesn't work with SPA yet, use manual router for now.
 
@@ -15,11 +15,11 @@ function IndexPage() {
   return useMemo(() => {
     switch (currentRoute) {
       case Route.Thread:
-        return <ChatView />
+        return <ThreadView />
       case Route.ModelManager:
       default:
         return <ModelManagerView />
-      case Route.ServerManagerView:
+      case Route.ServerManager:
         return <ServerManagerView />
     }
   }, [currentRoute])

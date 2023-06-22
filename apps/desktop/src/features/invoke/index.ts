@@ -1,11 +1,5 @@
-import type { ModelType } from "@models/_shared"
-
-import type { ModelConfigCommandMap } from "~features/invoke/model-config"
-import type { ModelDownloaderCommandMap } from "~features/invoke/model-downloader"
-import type { ModelIntegrityCommandMap } from "~features/invoke/model-integrity"
-import type { ModelStatsCommandMap } from "~features/invoke/model-stats"
-import type { ModelsDirectoryCommandMap } from "~features/invoke/models-directory"
-import type { ThreadsDirectoryCommandMap } from "~features/invoke/threads-directory"
+import type { ModelCommandMap } from "~features/invoke/model"
+import type { ThreadCommandMap } from "~features/invoke/thread"
 
 import { InvokeCommand, type InvokeIO } from "./_shared"
 
@@ -18,19 +12,14 @@ type InvokeCommandMap = {
   [InvokeCommand.OpenDirectory]: InvokeIO<{ path: string }>
   [InvokeCommand.GetConfig]: InvokeIO<{ key: string }, string>
 
-  [InvokeCommand.GetModelType]: InvokeIO<{ path: string }, ModelType>
-  [InvokeCommand.SetModelType]: InvokeIO<{ path: string; modelType: ModelType }>
-
   [InvokeCommand.StartServer]: InvokeIO<{ port: number }, string>
   [InvokeCommand.StopServer]: InvokeIO<never, string>
-} & ModelIntegrityCommandMap &
-  ModelStatsCommandMap &
-  ModelDownloaderCommandMap &
-  ThreadsDirectoryCommandMap &
-  ModelsDirectoryCommandMap &
-  ModelConfigCommandMap
+} & ThreadCommandMap &
+  ModelCommandMap
 
-export async function invoke<T extends keyof InvokeCommandMap>(
+export type ValidCommand = keyof InvokeCommandMap
+
+export async function invoke<T extends ValidCommand>(
   cmd: T,
   ...[args]: InvokeCommandMap[T]["input"] extends never
     ? []
