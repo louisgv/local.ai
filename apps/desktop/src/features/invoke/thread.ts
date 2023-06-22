@@ -9,6 +9,8 @@ export type CompletionRequest = {
 
   seed?: number
 
+  sampler: "top-p-top-k"
+
   max_tokens?: number
   temperature?: number
   top_p?: number

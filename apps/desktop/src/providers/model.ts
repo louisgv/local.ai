@@ -83,7 +83,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
     }
   }, [activeModel, model])
 
-  const loadModel = useCallback(async () => {
+  const loadModel = async () => {
     setModelLoadState(ModelLoadState.Loading)
     try {
       await _loadModel(model)
@@ -93,7 +93,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
       alert(error)
       setModelLoadState(ModelLoadState.Default)
     }
-  }, [model])
+  }
 
   const checkModel = useCallback(async () => {
     setIntegrity(null)
@@ -106,11 +106,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
 
       const knownModelMetadata = modelMap[resp.blake3]
       if (!!knownModelMetadata) {
-        alert(
-          "Known model metadata found, updating model config:\n\n" +
-            JSON.stringify(knownModelMetadata, null, 2)
-        )
-        modelConfig.update({
+        await modelConfig.update({
           modelType: knownModelMetadata.modelType,
           tokenizer: knownModelMetadata.tokenizers?.[0] || "", // Pick the first one for now
           defaultPromptTemplate: knownModelMetadata.promptTemplate || ""
@@ -124,7 +120,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
       alert(error)
     }
     setIsChecking(false)
-  }, [model])
+  }, [model, modelConfig, modelMap])
 
   return {
     model,

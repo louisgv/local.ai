@@ -32,6 +32,9 @@ impl Default for StopSequence {
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct CompletionRequest {
   pub prompt: String,
+
+  sampler: Option<String>,
+
   stream: Option<bool>,
 
   max_tokens: Option<usize>,

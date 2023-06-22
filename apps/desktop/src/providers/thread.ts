@@ -2,7 +2,7 @@
 
 import { nanoid } from "nanoid"
 import { createProvider } from "puro"
-import { useContext, useMemo, useRef, useState } from "react"
+import { useCallback, useContext, useMemo, useRef, useState } from "react"
 
 import { createFileConfigStore } from "~features/inference-server/file-config-store"
 import { InvokeCommand } from "~features/invoke"
@@ -58,14 +58,17 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
   const aiMessageRef = useRef<ThreadMessage>()
   const abortRef = useRef(false)
 
-  const setCompletionParams = (params: Partial<CompletionRequest>) => {
-    threadConfig.update({
-      completionParams: {
-        ...threadConfig.data.completionParams,
-        ...params
-      }
-    })
-  }
+  const setCompletionParams = useCallback(
+    (params: Partial<CompletionRequest>) => {
+      threadConfig.update({
+        completionParams: {
+          ...threadConfig.data.completionParams,
+          ...params
+        }
+      })
+    },
+    [threadConfig]
+  )
 
   const addNote = async (text: string) => {
     setIsResponding(true)
@@ -114,6 +117,7 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
         id: nanoid(),
         role: Role.Bot,
         model: loadedModel.name,
+        digest: loadedModel.digest,
         content: ""
       }
 

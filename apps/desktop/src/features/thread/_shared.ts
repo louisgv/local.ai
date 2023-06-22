@@ -14,6 +14,9 @@ export type ThreadMessage = {
   role: Role
 
   model?: string
+  digest?: string
+
+  metatag?: string
 }
 
 export const DEFAULT_SYSTEM_MESSAGE =
@@ -29,6 +32,7 @@ export const DEFAULT_THREAD_CONFIG: ThreadConfig = {
   promptTemplate: DEFAULT_PROMPT_TEMPLATE,
   systemMessage: DEFAULT_SYSTEM_MESSAGE,
   completionParams: {
+    sampler: "top-p-top-k",
     prompt: "",
     max_tokens: 0, // Use maximum amount
     temperature: 1.0,

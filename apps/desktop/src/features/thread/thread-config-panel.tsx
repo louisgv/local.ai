@@ -19,7 +19,6 @@ type ConfigInputProps = {
 
 const ConfigInput = ({ type, placeholder, configKey }: ConfigInputProps) => {
   const { threadConfig, setCompletionParams } = useThread()
-
   return useMemo(() => {
     const value = threadConfig.data.completionParams[configKey] as any
 
@@ -71,7 +70,7 @@ const ConfigInput = ({ type, placeholder, configKey }: ConfigInputProps) => {
         )
       }
     }
-  }, [type, threadConfig])
+  }, [type, threadConfig, configKey, placeholder, setCompletionParams])
 }
 
 export const ThreadConfigPanel = () => {

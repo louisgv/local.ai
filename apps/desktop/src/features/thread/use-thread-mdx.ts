@@ -1,6 +1,5 @@
 import { nanoid } from "nanoid"
 import { useEffect, useState } from "react"
-import dedent from "ts-dedent"
 
 import { InvokeCommand, invoke } from "~features/invoke"
 import type { ThreadConfig } from "~features/invoke/thread"
@@ -9,6 +8,7 @@ import type {
   ModelMetadata
 } from "~features/model-downloader/model-file"
 import { Role, type ThreadMessage } from "~features/thread/_shared"
+import { getMdxProp, getMdxTickProp } from "~features/thread/mdx-parser"
 
 type ThreadReadData = {
   line: string
@@ -21,12 +21,16 @@ const NOTE_TAG = "<Note"
 
 const idRegex = 'id="(?<id>[^"]+)"' // This regex extracts the ID, and it's common in all regexes
 
+const getStrPropRegex = (propKey: string) =>
+  `(?:[\\s\\S]*${propKey}="(?<${propKey}>[^"]+)")?`
+
 const userRegex = new RegExp(`${USER_TAG} ${idRegex} \\/>`, "u")
+
 const botRegexString = [
   `${BOT_TAG}[\\s\\S]*${idRegex}`,
-  `(?:[\\s\\S]*model="(?<model>[^"]+)")?`,
-  `(?:[\\s\\S]*digest="(?<digest>[^"]+)")?`,
-  `(?:[\\s\\S]*system="(?<system>[^"]+)")?`,
+  getStrPropRegex("model"),
+  getStrPropRegex("digest"),
+  getStrPropRegex("system"),
   `[\\s\\S]*\\/>`
 ].join("")
 
@@ -42,15 +46,17 @@ const getMdRoleLine = (
     case Role.User:
       return `${USER_TAG} id="${id}" />`
     case Role.Bot:
-      return dedent`
-      ${BOT_TAG} 
-        id="${id}"
-        model="${model?.name}"${
-        model.digest ? `\ndigest="${model?.digest}"` : ""
-      }
-        system="${config.systemMessage}"
-      />
-    `
+      return [
+        BOT_TAG,
+        `\n\tid="${id}"`,
+        `\n\tmodel="${model?.name}"`,
+        getMdxProp(model, "digest"),
+        getMdxProp(config, "systemMessage", "system"),
+        getMdxTickProp(config, "promptTemplate"),
+        getMdxProp(config, "tokenizer"),
+        getMdxProp(config, "completionParams"),
+        "\n/>"
+      ].join("")
     case Role.Note:
     default:
       return `${NOTE_TAG} id="${id}" />`
@@ -78,11 +84,11 @@ export const useThreadMdx = (thread: FileInfo) => {
 
       const addMessage = (regexp: RegExp, role: Role) => {
         const match = tagBuffer.match(regexp)
-
         messagesBuffer.push({
           id: match.groups.id,
           role,
-          content: ""
+          content: "",
+          metatag: tagBuffer // Can be used later to extract props
         })
         bufferIndex++
         tagBuffer = ""
@@ -141,6 +147,7 @@ export const useThreadMdx = (thread: FileInfo) => {
           if (botRegex.test(tagBuffer)) {
             const { match } = addMessage(botRegex, Role.Bot)
             messagesBuffer[bufferIndex].model = match.groups.model
+            messagesBuffer[bufferIndex].digest = match.groups.digest
             return
           }
 
@@ -171,7 +178,7 @@ export const useThreadMdx = (thread: FileInfo) => {
       "\n",
       getMdRoleLine(message, config, model),
       "\n\n",
-      message.content,
+      message.content.trim(),
       "\n"
     ].join("")
 
