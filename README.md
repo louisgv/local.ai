@@ -28,6 +28,7 @@ Here's how to run the project locally:
 ### Workflow
 
 ```
+git submodule update --init --recursive
 pnpm i
 pnpm dev
 ```
