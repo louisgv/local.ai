@@ -12,11 +12,10 @@ export const nousHermesMap: ModelMap = {
     modelType: ModelType.Llama,
     size: 5055134336,
     downloadUrl:
-      "https://huggingface.co/TheBloke/Nous-Hermes-13B-GGML/blob/main/nous-hermes-13b.ggmlv3.q5_K_M.bin",
-    blake3: "f966d5cbbec09ddf1a7a14aeab1602e2fe14fd0b615c329c1139049dea4ad4d2",
-    sha256: "78043ceeefea23204b23a52218ae7ae0c67688f5282f4c32f77aec8c394d2ecf",
+      "https://huggingface.co/TheBloke/Nous-Hermes-13B-GGML/resolve/main/nous-hermes-13b.ggmlv3.q5_1.bin",
+    blake3: "f8ad4a67e11584e1844e4eca129f27929fd6ff3f4f9db1e0899984bb0104f7a5",
+    sha256: "de16dbba893bb937bb545d9428edcd389e95e41508f9c3854db08fb105a99750",
     licenses: [LicenseType.NonCommercial, LicenseType.Academic],
-    tokenizers: ["NousResearch/Nous-Hermes-13b"],
     citations: [
       "https://huggingface.co/NousResearch/Nous-Hermes-13b",
       "https://huggingface.co/TheBloke/Nous-Hermes-13B-GGML"
