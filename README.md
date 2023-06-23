@@ -1,10 +1,21 @@
 # 🎒 local.ai
 
-A desktop app for local AI experimentation, model inference hosting, and note-taking.
+A desktop app for local, private, secured AI experimentation. Included out-of-the box are:
+- A known-good model API and a model downloader, with descriptions such as recommended hardware specs, model license, blake3/sha256 hashes etc...
+- A simple note-taking app, with inference config PER note. The note and its config are output into plain text `.mdx` format
+- A model inference streaming server (/completion endpoint, similar to OpenAI)
 
 It's made to be used alongside https://github.com/alexanderatallah/window.ai/ as a simple way to have a local inference server up and running in no time. window.ai + local.ai enable every web app to utilize AI without incurring any cost from either the developer or the user!
 
 Right now, local.ai uses the https://github.com/rustformers/llm rust crate at its core. Check them out, they are super cool!
+
+## 🚀 Install
+
+Go to the site at https://www.localai.app/ and click the button for your machine's architecture. You can also find the build manually in [the GitHub release page](https://github.com/louisgv/local.ai/releases).
+
+Windows and MacOS binaries are signed under [Plasmo Corp.](https://www.plasmo.com/) -  a company owned by the author of this project ([@louisgv](https://github.com/louisgv/)). 
+
+You may also [build from source](#-development)!
 
 ## 📺 Demo
 
