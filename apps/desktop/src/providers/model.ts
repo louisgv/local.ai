@@ -57,7 +57,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
   const { downloadState, pauseDownload, progress, resumeDownload, modelSize } =
     useModelDownload(model)
 
-  const { launchCount, incrementLaunchCount } = useModelStats(model)
+  const modelStats = useModelStats(model)
 
   const knownModelInfo = useMemo(
     () => modelMap?.[integrity?.blake3],
@@ -137,8 +137,7 @@ const useModelProvider = ({ model }: { model: ModelMetadata }) => {
     progress,
     pauseDownload,
     resumeDownload,
-    launchCount,
-    incrementLaunchCount
+    modelStats
   }
 }
 

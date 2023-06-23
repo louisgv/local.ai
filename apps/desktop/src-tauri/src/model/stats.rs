@@ -10,7 +10,7 @@ pub struct ModelStats {
 crate::macros::bucket_state::make!(ModelStats, "model_stats", "v1");
 impl State {
   pub fn increment_load_count(&self, path: &str) -> Result<(), String> {
-    let current_value = self.get(path)?;
+    let current_value = self.get(path).unwrap_or_default();
     let bucket = self.0.lock();
     let file_path = String::from(path);
 
