@@ -33,25 +33,6 @@ pnpm i
 pnpm dev
 ```
 
-## 🛣️ Roadmap:
-
-### Todo:
-
-- Start as many inference endpoints/ports as needed
-
-### Done:
-
-- ~~Code signing, official binary release~~
-- ~~Auto update server~~
-- ~~LLM model downloader~~
-- ~~Website with download links~~
-- ~~(NTH): Automated release bundling~~
-
-### Legends:
-
-- NTH: Nice to have
-- ~~item~~: Done
-
 ## 🪪 License
 
 [GNU GPLv3](./LICENSE)
@@ -65,3 +46,20 @@ pnpm dev
 ### Why GPLv3?
 
 Anything AI-related including their derivatives should be open-source for all to inspect. GPLv3 enforces this chain of open-source.
+
+### Is there a community?
+
+- [GitHub discussion](https://github.com/louisgv/local.ai/discussions)
+- Checkout this [poll](https://github.com/louisgv/local.ai/discussions/51)
+
+### Where should I ask question?
+
+- [Here](https://github.com/louisgv/local.ai/discussions/categories/q-a)
+
+### Do you accept contribution/PR?
+
+Absolutely - Please note that any contribution toward this repo shall be relicensed under GPLv3. There are many ways to contribute, such as:
+- Documentation via wiki edit submission and known model documentation
+- Testing and filing BUG issue
+- For beginner, check out [Good First Issues](https://github.com/louisgv/local.ai/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+- For seasoned developers, check out [Unassigned Help Wanted Issues](https://github.com/louisgv/local.ai/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22+no%3Aassignee)
