@@ -1,4 +1,4 @@
-import { cn } from "@localai/theme/utils"
+import { cn } from "@lab/theme/utils"
 import { Cross1Icon, ResetIcon } from "@radix-ui/react-icons"
 import {
   type InputHTMLAttributes,
@@ -120,3 +120,5 @@ export const TokenInput = forwardRef<HTMLInputElement, StopSequenceInputProps>(
     )
   }
 )
+
+TokenInput.displayName = "TokenInput"

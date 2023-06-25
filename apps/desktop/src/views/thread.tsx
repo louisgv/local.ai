@@ -1,7 +1,7 @@
-import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
-import { Input } from "@localai/ui/input"
-import { Spinner } from "@localai/ui/spinner"
+import { cn } from "@lab/theme/utils"
+import { Button } from "@lab/ui/button"
+import { Input } from "@lab/ui/input"
+import { Spinner } from "@lab/ui/spinner"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,

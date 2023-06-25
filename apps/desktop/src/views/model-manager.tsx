@@ -1,5 +1,5 @@
-import { Button, SpinnerButton } from "@localai/ui/button"
-import { Input } from "@localai/ui/input"
+import { Button, SpinnerButton } from "@lab/ui/button"
+import { Input } from "@lab/ui/input"
 import {
   DotsHorizontalIcon,
   OpenInNewWindowIcon,

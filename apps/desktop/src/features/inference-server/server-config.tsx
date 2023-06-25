@@ -1,6 +1,6 @@
-import { cn } from "@localai/theme/utils"
-import { SpinnerButton } from "@localai/ui/button"
-import { Input } from "@localai/ui/input"
+import { cn } from "@lab/theme/utils"
+import { SpinnerButton } from "@lab/ui/button"
+import { Input } from "@lab/ui/input"
 import { useState } from "react"
 
 import { useGlobal } from "~providers/global"

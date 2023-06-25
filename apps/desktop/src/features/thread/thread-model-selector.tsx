@@ -1,11 +1,11 @@
-import { cn } from "@localai/theme/utils"
+import { cn } from "@lab/theme/utils"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from "@localai/ui/select"
+} from "@lab/ui/select"
 import { useState } from "react"
 
 import { useGlobal } from "~providers/global"

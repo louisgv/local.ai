@@ -1,6 +1,6 @@
-import { cn } from "@localai/theme/utils"
-import { BasicLayout } from "@localai/ui/layouts/base"
-import { QuickLink } from "@localai/ui/link"
+import { cn } from "@lab/theme/utils"
+import { BasicLayout } from "@lab/ui/layouts/base"
+import { QuickLink } from "@lab/ui/link"
 import { clsx } from "clsx"
 import {
   BrainElectricity,

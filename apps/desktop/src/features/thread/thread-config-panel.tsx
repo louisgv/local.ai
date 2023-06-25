@@ -1,7 +1,7 @@
-import { FloatInput } from "@localai/ui/float-input"
-import { Input } from "@localai/ui/input"
-import { Textarea } from "@localai/ui/textarea"
-import { TokenInput } from "@localai/ui/token-input"
+import { FloatInput } from "@lab/ui/float-input"
+import { Input } from "@lab/ui/input"
+import { Textarea } from "@lab/ui/textarea"
+import { TokenInput } from "@lab/ui/token-input"
 import { useMemo } from "react"
 
 import type { CompletionRequest } from "~features/invoke/thread"

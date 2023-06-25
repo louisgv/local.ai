@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@localai/theme/utils"
+import { cn } from "@lab/theme/utils"
 import {
   CheckIcon as Check,
   ChevronDownIcon as ChevronDown,

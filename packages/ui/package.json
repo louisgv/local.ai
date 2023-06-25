@@ -1,5 +1,5 @@
 {
-  "name": "@localai/ui",
+  "name": "@lab/ui",
   "private": true,
   "version": "0.0.0",
   "license": "ISC",
@@ -18,7 +18,7 @@
     "remark-gfm": "3.0.1"
   },
   "devDependencies": {
-    "@localai/theme": "workspace:*",
+    "@lab/theme": "workspace:*",
     "@plasmo/config": "workspace:*"
   }
 }

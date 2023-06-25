@@ -1,6 +1,6 @@
-import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
-import { Input } from "@localai/ui/input"
+import { cn } from "@lab/theme/utils"
+import { Button } from "@lab/ui/button"
+import { Input } from "@lab/ui/input"
 import {
   CheckIcon,
   Cross2Icon,

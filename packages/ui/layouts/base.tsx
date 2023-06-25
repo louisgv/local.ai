@@ -1,4 +1,4 @@
-import clsx from "clsx"
+import { cn } from "@lab/theme/utils"
 import type { ReactNode } from "react"
 
 import { QuickLink } from "../link"
@@ -49,9 +49,9 @@ export const BasicLayout = ({
       </header>
       <main className="self-center">{children}</main>
 
-      <footer className={clsx("bg-mauve-2 text-mauve-11", "px-8 py-12")}>
+      <footer className={cn("bg-mauve-2 text-mauve-11", "px-8 py-12")}>
         <div
-          className={clsx(
+          className={cn(
             "flex flex-col md:flex-row gap-12 items-center justify-center"
           )}>
           {/* <!-- Company Information --> */}

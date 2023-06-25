@@ -1,6 +1,6 @@
-import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
-import { Textarea } from "@localai/ui/textarea"
+import { cn } from "@lab/theme/utils"
+import { Button } from "@lab/ui/button"
+import { Textarea } from "@lab/ui/textarea"
 import { Notes, Pause, Send } from "iconoir-react"
 import { useCallback, useState } from "react"
 

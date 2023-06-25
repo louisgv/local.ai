@@ -1,4 +1,4 @@
-import { cn } from "@localai/theme/utils"
+import { cn } from "@lab/theme/utils"
 
 import { ModelConfig } from "~features/inference-server/model-config"
 import { ModelDigest } from "~features/inference-server/model-digest"

@@ -1,5 +1,5 @@
-import { cn } from "@localai/theme/utils"
-import { Button, SpinnerButton } from "@localai/ui/button"
+import { cn } from "@lab/theme/utils"
+import { Button, SpinnerButton } from "@lab/ui/button"
 import { PauseIcon, ResumeIcon } from "@radix-ui/react-icons"
 import { CloudCheck, ShoppingCodeError } from "iconoir-react"
 

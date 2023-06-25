@@ -1,4 +1,4 @@
-import { cn } from "@localai/theme/utils"
+import { cn } from "@lab/theme/utils"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 

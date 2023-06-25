@@ -1,5 +1,5 @@
-import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
+import { cn } from "@lab/theme/utils"
+import { Button } from "@lab/ui/button"
 import type { ReactNode } from "react"
 
 import { type Route, useGlobal } from "~providers/global"

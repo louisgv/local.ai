@@ -1,4 +1,4 @@
-import { cn } from "@localai/theme/utils"
+import { cn } from "@lab/theme/utils"
 import type { ReactNode } from "react"
 
 export const ViewContainer = ({

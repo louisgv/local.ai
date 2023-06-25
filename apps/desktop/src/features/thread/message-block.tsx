@@ -1,6 +1,6 @@
-import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
-import { MarkdownContainer } from "@localai/ui/markdown-container"
+import { cn } from "@lab/theme/utils"
+import { Button } from "@lab/ui/button"
+import { MarkdownContainer } from "@lab/ui/markdown-container"
 import { Notes, User } from "iconoir-react"
 import { useMemo } from "react"
 

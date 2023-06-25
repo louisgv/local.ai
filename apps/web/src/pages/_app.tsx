@@ -1,12 +1,12 @@
-import { GlobalStyle } from "@localai/theme/global-style"
+import { GlobalStyle } from "@lab/theme/global-style"
 import type { AppProps } from "next/app"
 
 import { GlobalProvider } from "~providers/global"
 import { DynamicFavIcon } from "~providers/seo"
 
-import "@localai/theme/fonts.css"
-import "@localai/theme/tailwind.css"
-import "@localai/theme/scrollbar.css"
+import "@lab/theme/fonts.css"
+import "@lab/theme/tailwind.css"
+import "@lab/theme/scrollbar.css"
 
 import Head from "next/head"
 

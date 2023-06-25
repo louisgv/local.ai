@@ -1,13 +1,13 @@
-import { cn } from "@localai/theme/utils"
-import { SpinnerButton } from "@localai/ui/button"
-import { Input } from "@localai/ui/input"
+import { cn } from "@lab/theme/utils"
+import { SpinnerButton } from "@lab/ui/button"
+import { Input } from "@lab/ui/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from "@localai/ui/select"
+} from "@lab/ui/select"
 import { ModelType, modelTypeList } from "@models/index"
 import { TrashIcon } from "@radix-ui/react-icons"
 import { confirm } from "@tauri-apps/api/dialog"

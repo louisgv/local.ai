@@ -1,4 +1,4 @@
-import { cn } from "@localai/theme/utils"
+import { cn } from "@lab/theme/utils"
 import { ResetIcon } from "@radix-ui/react-icons"
 import * as React from "react"
 

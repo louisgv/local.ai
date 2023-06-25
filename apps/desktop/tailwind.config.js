@@ -1,4 +1,4 @@
-const defaultConfig = require("@localai/theme/tailwind.config")
+const defaultConfig = require("@lab/theme/tailwind.config")
 
 module.exports = {
   ...defaultConfig,

@@ -1,5 +1,5 @@
-import { Button } from "@localai/ui/button"
-import { AppLayout } from "@localai/ui/layouts/app"
+import { Button } from "@lab/ui/button"
+import { AppLayout } from "@lab/ui/layouts/app"
 import { DotsHorizontalIcon, OpenInNewWindowIcon } from "@radix-ui/react-icons"
 import { open as dialogOpen } from "@tauri-apps/api/dialog"
 import { Home } from "iconoir-react"
