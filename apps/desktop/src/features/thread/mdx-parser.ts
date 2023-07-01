@@ -1,6 +1,5 @@
 import { Parser } from "acorn"
 import acornJsx from "acorn-jsx"
-import dedent from "ts-dedent"
 
 function replacer(_: any, value: any) {
   if (value === "" || value === null) {

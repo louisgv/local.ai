@@ -3,6 +3,7 @@ import { ResetIcon } from "@radix-ui/react-icons"
 import * as React from "react"
 
 import { Button } from "./button"
+import { CornerLabel } from "./label"
 
 export interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -13,14 +14,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ onRevert, className, ...props }, ref) => {
     return (
       <div className={cn("relative w-full", className)}>
-        {props.title && (
-          <label
-            className={cn(
-              "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-50 text-ellipsis whitespace-nowrap"
-            )}>
-            {props.title}
-          </label>
-        )}
+        {props.title && <CornerLabel>{props.title}</CornerLabel>}
         <textarea
           className={cn(
             "border border-gray-6 focus:border-gray-7",

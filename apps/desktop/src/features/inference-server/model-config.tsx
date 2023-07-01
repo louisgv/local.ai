@@ -1,6 +1,7 @@
 import { cn } from "@lab/theme/utils"
 import { SpinnerButton } from "@lab/ui/button"
 import { Input } from "@lab/ui/input"
+import { CornerLabel } from "@lab/ui/label"
 import {
   Select,
   SelectContent,
@@ -109,12 +110,7 @@ export const ModelConfig = () => {
             })
           }>
           <SelectTrigger className={cn("text-gray-11", "w-24 relative")}>
-            <label
-              className={cn(
-                "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md z-10"
-              )}>
-              Type
-            </label>
+            <CornerLabel>Type</CornerLabel>
             <SelectValue aria-label={modelConfig.data.modelType}>
               {modelConfig.data.modelType || "???"}
             </SelectValue>
@@ -129,6 +125,7 @@ export const ModelConfig = () => {
         </Select>
 
         <SpinnerButton
+          className="w-28"
           Icon={({ className }) => (
             <code
               className={cn(
@@ -141,15 +138,14 @@ export const ModelConfig = () => {
           )}
           isSpinning={modelLoadState === ModelLoadState.Loading}
           disabled={
-            modelLoadState === ModelLoadState.Loaded ||
-            (downloadState !== DownloadState.None &&
-              downloadState !== DownloadState.Completed)
+            downloadState !== DownloadState.None &&
+            downloadState !== DownloadState.Completed
           }
           onClick={() => {
             modelStats.incrementLaunchCount()
             loadModel()
           }}>
-          {modelLoadState === ModelLoadState.Loaded ? "Loaded" : "Load Model"}
+          {modelLoadState === ModelLoadState.Loaded ? "Reload" : "Load"}
         </SpinnerButton>
       </div>
     </div>

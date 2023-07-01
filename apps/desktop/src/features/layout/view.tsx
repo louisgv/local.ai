@@ -10,11 +10,17 @@ export const ViewContainer = ({
   </div>
 )
 
-export const ViewHeader = ({ children = null as ReactNode }) => {
+export const ViewHeader = ({
+  children = null as ReactNode,
+  className = ""
+}) => {
   return (
     <div
       // data-tauri-drag-region
-      className="flex items-center gap-2 bg-gray-1 w-full h-16 shrink-0 px-4 border-b border-b-gray-6 z-50">
+      className={cn(
+        "flex items-center gap-2 bg-gray-1 w-full h-20 shrink-0 px-4 border-b border-b-gray-6 z-30",
+        className
+      )}>
       {children}
       {/* // For future maybe custom window bar
       <div className="flex ml-auto">

@@ -13,11 +13,15 @@ edition = "2021"
 tauri-build = { version = "1.4.0", features = [] }
 
 [dependencies]
-llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm" }
+llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
+  "default",
+  "cublas",
+] }
 
 # llm = { git = "https://github.com/RedBoxing/llm.git", branch = "hf-tokenizer", package = "llm" }
 
 tauri = { version = "1.4.0", features = [
+  "reqwest-client",
   "dialog-confirm",
   "dialog-message",
   "dialog-open",
@@ -70,21 +74,21 @@ blake3 = "1.3.3"
 cocoa = "0.24.1"
 objc = "0.2.7"
 
-[target."cfg(target_os = \"macos\")".dependencies.llm]
-git = "https://github.com/rustformers/llm"
-package = "llm"
-branch = "main"
-features = ["metal"]
+[target.aarch64-apple-darwin.dependencies]
+llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
+  "default",
+  "metal",
+] }
 
 [target."cfg(target_os = \"linux\")".dependencies]
 webkit2gtk = "0.18.2"
 
-[target."cfg(target_os = \"windows\")".dependencies]
+[target."cfg(target_arch = \"windows\")".dependencies]
 webview2-com = "0.19.1"
 windows = "0.39.0"
 
-[target."cfg(target_os = \"windows\")".dependencies.llm]
-features = ["metal"]
+# [target."cfg(target_arch = \"windows\")".dependencies.llm]
+# features = ["metal"]
 
 # For testing local tauri builder
 # [patch.crates-io]

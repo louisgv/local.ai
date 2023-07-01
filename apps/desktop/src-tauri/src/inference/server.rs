@@ -58,29 +58,28 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     }
   };
 
-  let abort_flag = Arc::new(RwLock::new(false));
-
-  let inference_thread = match start(InferenceThreadRequest {
-    model_guard: Arc::clone(&model_guard),
-    abort_flag: Arc::clone(&abort_flag),
-    token_sender,
-    completion_request: payload.0,
-  }) {
-    Some(thread) => thread,
-    None => {
-      println!("Failed to spawn inference thread.");
-      return HttpResponse::InternalServerError().finish();
-    }
-  };
-
-  let stream =
-    AbortStream::new(receiver, Arc::clone(&abort_flag), inference_thread);
-
   HttpResponse::Ok()
     .append_header(("Content-Type", "text/event-stream"))
     .append_header(("Cache-Control", "no-cache"))
-    // .keep_alive()
-    .streaming(stream)
+    .keep_alive()
+    .streaming({
+      let abort_flag = Arc::new(RwLock::new(false));
+
+      let inference_thread = match start(InferenceThreadRequest {
+        model_guard: model_guard.clone(),
+        abort_flag: abort_flag.clone(),
+        token_sender,
+        completion_request: payload.0,
+      }) {
+        Some(thread) => thread,
+        None => {
+          println!("Failed to spawn inference thread.");
+          return HttpResponse::InternalServerError().finish();
+        }
+      };
+
+      AbortStream::new(receiver, abort_flag.clone(), inference_thread)
+    })
 }
 
 #[tauri::command]
@@ -94,24 +93,27 @@ pub async fn start_server<'a>(
 
   state.running.store(true, Ordering::SeqCst);
 
-  let server_clone = Arc::clone(&state.server);
-
-  tauri::async_runtime::spawn(async move {
-    let server = HttpServer::new(|| {
-      let cors = Cors::permissive();
-      App::new()
-        .wrap(cors)
-        .service(ping)
-        .service(post_model)
-        .service(post_completions)
-    })
-    .bind(("127.0.0.1", port))
-    .unwrap()
-    // .disable_signals()
-    .run();
-    *server_clone.lock() = Some(server.handle());
-    println!("Server started on port {port}");
-    server.await.unwrap();
+  tauri::async_runtime::spawn({
+    let server_arc = state.server.clone();
+    async move {
+      let server = HttpServer::new(|| {
+        let cors = Cors::permissive();
+        App::new()
+          .wrap(cors)
+          .service(ping)
+          .service(post_model)
+          .service(post_completions)
+      })
+      .bind(("127.0.0.1", port))
+      .unwrap()
+      // .bind(("0.0.0.0", port)) // TODO: make a toggle for this
+      // .unwrap()
+      // .disable_signals()
+      .run();
+      *server_arc.lock() = Some(server.handle());
+      println!("Server started on port {port}");
+      server.await.unwrap();
+    }
   });
 
   Ok(())

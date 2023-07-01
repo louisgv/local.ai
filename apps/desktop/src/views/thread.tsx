@@ -52,7 +52,8 @@ const MainPanel = () => {
     stopInference,
     isResponding,
     botIconIndex,
-    threadConfig
+    threadConfig,
+    statusMessage
   } = useThread()
 
   const botIconClass = useMemo(
@@ -99,8 +100,9 @@ const MainPanel = () => {
           ))}
         </ViewBody>
         <div className="flex flex-col sticky bottom-0 max-w-screen-md pr-4 self-center w-full gap-3">
-          <div className="h-12 flex items-center justify-center w-full">
+          <div className="h-12 flex items-center justify-center w-full gap-2">
             {isResponding && <Spinner className="h-8 w-8 text-blue-9" />}
+            <pre className="text-gray-10 text-sm">{statusMessage}</pre>
           </div>
 
           <PromptTextarea

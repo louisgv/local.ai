@@ -1,17 +1,17 @@
 import { cn } from "@lab/theme/utils"
 import { SpinnerButton } from "@lab/ui/button"
-import { Input } from "@lab/ui/input"
+import { IntInput } from "@lab/ui/int-input"
+import { Switch } from "@lab/ui/switch"
 import { useState } from "react"
 
 import { useGlobal } from "~providers/global"
 
 export const ServerConfig = () => {
   const {
-    concurrencyState: [concurrency, setConcurrency],
+    serverConfig,
     serverStartedState: [isStarted],
     startServer,
-    stopServer,
-    portState: [port, setPort]
+    stopServer
   } = useGlobal()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -23,22 +23,30 @@ export const ServerConfig = () => {
         Test
       </Button> */}
 
-      <Input
+      <IntInput
         className="w-24"
         disabled={isStarted}
         placeholder="Port"
-        value={port}
-        type="number"
-        onChange={(e) => setPort(e.target.valueAsNumber || 0)}
+        value={serverConfig.data.port}
+        onDone={(port) => serverConfig.update({ port })}
       />
-      <Input
+      <IntInput
         className="w-24"
         disabled={isStarted}
         placeholder="Concurrency"
-        value={concurrency}
-        type="number"
-        onChange={(e) => setConcurrency(e.target.valueAsNumber || 0)}
+        value={serverConfig.data.concurrency}
+        onDone={(concurrency) => serverConfig.update({ concurrency })}
       />
+
+      <Switch
+        disabled={isStarted}
+        className={"data-[state=checked]:border-gold-9"}
+        thumbClassName="data-[state=checked]:bg-gold-9"
+        title="GPU"
+        checked={serverConfig.data.useGpu}
+        onCheckedChange={(useGpu) => serverConfig.update({ useGpu })}
+      />
+
       <SpinnerButton
         isSpinning={isLoading}
         className={cn(

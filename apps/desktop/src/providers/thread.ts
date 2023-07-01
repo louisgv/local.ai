@@ -2,7 +2,16 @@
 
 import { nanoid } from "nanoid"
 import { createProvider } from "puro"
-import { useCallback, useContext, useMemo, useRef, useState } from "react"
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react"
+
+import { wait } from "@plasmo/utils/wait"
 
 import { createFileConfigStore } from "~features/inference-server/file-config-store"
 import { InvokeCommand } from "~features/invoke"
@@ -14,6 +23,7 @@ import {
   type ThreadMessage
 } from "~features/thread/_shared"
 import { processSseStream } from "~features/thread/process-sse-stream"
+import { useHybrid } from "~features/thread/use-hybrid"
 import { useThreadMdx } from "~features/thread/use-thread-mdx"
 import { useGlobal } from "~providers/global"
 
@@ -33,13 +43,15 @@ const useThreadConfig = createFileConfigStore<ThreadConfig>(
  */
 const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
   const {
+    routeState: [activeRoute],
+    activeThreadState: [activeThread],
     activeModelState: [activeModel],
     modelsDirectoryState: { models, modelsMap },
-    portState: [port],
+    serverConfig,
     loadModel
   } = useGlobal()
 
-  const [isResponding, setIsResponding] = useState(false)
+  const isResponding = useHybrid(false)
 
   const threadConfig = useThreadConfig(thread, DEFAULT_THREAD_CONFIG)
 
@@ -54,6 +66,8 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
 
   const { messages, setMessages, appendMessage, botIconIndex } =
     useThreadMdx(thread)
+
+  const [statusMessage, setStatusMessage] = useState("")
 
   const aiMessageRef = useRef<ThreadMessage>()
   const abortRef = useRef(false)
@@ -71,7 +85,7 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
   )
 
   const addNote = async (text: string) => {
-    setIsResponding(true)
+    isResponding.set(true)
     const newMessage: ThreadMessage = {
       id: nanoid(),
       role: Role.Note,
@@ -81,7 +95,7 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
     setMessages((m) => [newMessage, ...m])
 
     await appendMessage(newMessage)
-    setIsResponding(false)
+    isResponding.set(false)
   }
 
   const stopInference = () => {
@@ -89,7 +103,7 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
   }
 
   const startInference = async (userPrompt: string) => {
-    if (isResponding) {
+    if (isResponding.data) {
       return
     }
 
@@ -103,7 +117,7 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
     ]
 
     setMessages(newMessages)
-    setIsResponding(true)
+    isResponding.set(true)
 
     await appendMessage(newMessages[0])
 
@@ -122,9 +136,10 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
       }
 
       const fetchStream = await globalThis.fetch(
-        `http://localhost:${port}/completions`,
+        `http://localhost:${serverConfig.data.port}/completions`,
         {
           method: "POST",
+          keepalive: true,
           headers: {
             "Content-Type": "application/json"
           },
@@ -140,32 +155,44 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
         throw new Error(`Server responded with ${fetchStream.status}`)
       }
 
-      await processSseStream(
-        fetchStream,
-        abortRef,
-        async function onData(resp) {
+      await processSseStream(fetchStream, abortRef, {
+        async onComment(comment) {
+          setStatusMessage(comment)
+          await wait(42)
+        },
+        async onData(resp) {
           aiMessageRef.current.content += resp.choices[0].text
           setMessages([aiMessageRef.current, ...newMessages])
         },
-        async function onFinish() {
+        async onFinish() {
           abortRef.current = false
+          setStatusMessage("")
           await appendMessage(
             aiMessageRef.current,
             threadConfig.data,
             loadedModel
           )
-          setIsResponding(false)
+          isResponding.set(false)
         }
-      )
+      })
     } catch (error) {
       alert(`ERROR: Server was not started OR no model was loaded | ${error}`)
-      setIsResponding(false)
+      isResponding.set(false)
     }
   }
 
+  useEffect(() => {
+    if (isResponding.data) {
+      abortRef.current = true
+    }
+  }, [activeThread.path, activeRoute])
+
   return {
     messages,
-    isResponding,
+
+    statusMessage,
+    isResponding: isResponding.render,
+
     botIconIndex,
 
     threadModel,

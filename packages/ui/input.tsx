@@ -3,6 +3,7 @@ import { ResetIcon } from "@radix-ui/react-icons"
 import { type InputHTMLAttributes, forwardRef } from "react"
 
 import { Button } from "./button"
+import { CornerLabel } from "./label"
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   onRevert?: () => void
@@ -13,19 +14,18 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={cn("relative flex h-10 rounded-md w-full", className)}>
         {(props.title || props.placeholder) && (
-          <label
-            className={cn(
-              "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-10 text-ellipsis whitespace-nowrap",
+          <CornerLabel
+            className={
               props.title ||
-                props.defaultValue !== undefined ||
-                props.value ||
-                (typeof props.value === "number" &&
-                  (props.value === 0 || isNaN(props.value)))
+              props.defaultValue !== undefined ||
+              props.value ||
+              (typeof props.value === "number" &&
+                (props.value === 0 || isNaN(props.value)))
                 ? "opacity-100"
                 : "opacity-0"
-            )}>
+            }>
             {props.title || props.placeholder}
-          </label>
+          </CornerLabel>
         )}
 
         <input

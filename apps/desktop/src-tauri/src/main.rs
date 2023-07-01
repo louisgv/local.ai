@@ -26,6 +26,7 @@ fn main() {
       model::integrity::State::new(app)?;
       model::stats::State::new(app)?;
       thread::config::State::new(app)?;
+      inference::server_config::State::new(app)?;
 
       // A hack to make MacOS window show up in dev mode...
       #[cfg(all(debug_assertions, not(target_os = "windows")))]
@@ -67,6 +68,8 @@ fn main() {
       model::config::set_model_config,
       inference::server::start_server,
       inference::server::stop_server,
+      inference::server_config::get_server_config,
+      inference::server_config::set_server_config,
       model::pool::load_model,
       test::test_model,
       utils::fs::open_directory,
