@@ -83,12 +83,9 @@ llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "
 [target."cfg(target_os = \"linux\")".dependencies]
 webkit2gtk = "0.18.2"
 
-[target."cfg(target_arch = \"windows\")".dependencies]
+[target."cfg(target_os = \"windows\")".dependencies]
 webview2-com = "0.19.1"
 windows = "0.39.0"
-
-# [target."cfg(target_arch = \"windows\")".dependencies.llm]
-# features = ["metal"]
 
 # For testing local tauri builder
 # [patch.crates-io]
