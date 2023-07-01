@@ -23,6 +23,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev librsvg2-dev
 
+      - uses: Jimver/cuda-toolkit@v0.2.10
+        if: matrix.platform == 'ubuntu-latest'
+        id: cuda-toolkit-linux
+        with:
+          cuda: "12.1.0"
+          linux-local-args: '["--toolkit"]'
+
+      - uses: Jimver/cuda-toolkit@v0.2.10
+        if: matrix.platform == 'windows-latest'
+        id: cuda-toolkit-windows
+        with:
+          cuda: "12.1.0"
+
       - name: Rust setup
         if: matrix.platform != 'self-hosted'
         uses: dtolnay/rust-toolchain@stable
