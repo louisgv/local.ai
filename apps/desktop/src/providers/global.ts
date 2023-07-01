@@ -5,9 +5,11 @@ import { createProvider } from "puro"
 import { useEffect, useRef } from "react"
 import { useContext, useState } from "react"
 
+import { createFileConfigStore } from "~features/inference-server/file-config-store"
 import { useInit } from "~features/inference-server/use-init"
 import { useModelsDirectory } from "~features/inference-server/use-models-directory"
 import { InvokeCommand, invoke } from "~features/invoke"
+import type { ServerConfig } from "~features/invoke/server"
 import { useToggle } from "~features/layout/use-toggle"
 import type {
   FileInfo,
@@ -41,14 +43,25 @@ async function setTitle(title = "") {
   await window.setTitle(`${_prefix}${title}${suffix}`)
 }
 
+const useServerConfig = createFileConfigStore<ServerConfig>(
+  InvokeCommand.GetServerConfig,
+  InvokeCommand.SetServerConfig
+)
+
 const useGlobalProvider = () => {
   const [activeRoute, setActiveRoute] = useState<Route>(Route.ModelManager)
 
   const activeModelState = useState<ModelMetadata>(null)
-  const concurrencyState = useState(1)
   const [activeThread, setActiveThread] = useState<FileInfo>()
 
-  const portState = useState(8000)
+  const serverConfig = useServerConfig(
+    { path: "june-2023" },
+    {
+      concurrency: 1,
+      port: 8000,
+      useGpu: false
+    }
+  )
 
   const serverStartedState = useState(false)
   const sidebarState = useToggle(true)
@@ -86,9 +99,9 @@ const useGlobalProvider = () => {
   })
 
   const startServer = async () => {
-    await invoke(InvokeCommand.StartServer, { port: portState[0] }).catch(
-      (_) => null
-    )
+    await invoke(InvokeCommand.StartServer, {
+      port: serverConfig.data.port
+    }).catch((_) => null)
     serverStartedState[1](true)
   }
 
@@ -100,7 +113,8 @@ const useGlobalProvider = () => {
   const loadModel = async (model: ModelMetadata) => {
     await invoke(InvokeCommand.LoadModel, {
       ...model,
-      concurrency: concurrencyState[0]
+      concurrency: serverConfig.data.concurrency,
+      useGpu: serverConfig.data.useGpu
     })
 
     const integrity = await getCachedIntegrity(model)
@@ -134,12 +148,12 @@ const useGlobalProvider = () => {
     stopServer,
 
     knownModels,
+    serverConfig,
 
-    portState,
     routeState: [activeRoute, setActiveRoute] as const,
     activeThreadState: [activeThread, setActiveThread] as const,
     activeModelState,
-    concurrencyState,
+
     serverStartedState,
     sidebarState,
     modelsDirectoryState,

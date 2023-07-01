@@ -1,4 +1,5 @@
 import type { ModelCommandMap } from "~features/invoke/model"
+import type { ServerCommandMap } from "~features/invoke/server"
 import type { ThreadCommandMap } from "~features/invoke/thread"
 
 import { InvokeCommand, type InvokeIO } from "./_shared"
@@ -11,11 +12,9 @@ type InvokeCommandMap = {
 
   [InvokeCommand.OpenDirectory]: InvokeIO<{ path: string }>
   [InvokeCommand.GetConfig]: InvokeIO<{ key: string }, string>
-
-  [InvokeCommand.StartServer]: InvokeIO<{ port: number }, string>
-  [InvokeCommand.StopServer]: InvokeIO<never, string>
 } & ThreadCommandMap &
-  ModelCommandMap
+  ModelCommandMap &
+  ServerCommandMap
 
 export type ValidCommand = keyof InvokeCommandMap
 

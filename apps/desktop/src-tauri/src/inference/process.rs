@@ -4,8 +4,8 @@ use std::{convert::Infallible, sync::Arc};
 use actix_web::web::Bytes;
 use flume::Sender;
 use llm::{
-  InferenceError, InferenceFeedback, InferenceParameters, Model, OutputRequest,
-  Prompt, TokenUtf8Buffer,
+  InferenceError, InferenceFeedback, InferenceParameters, InferenceStats,
+  Model, OutputRequest, Prompt, TokenUtf8Buffer,
 };
 use parking_lot::{Mutex, RwLock};
 
@@ -25,6 +25,43 @@ pub struct InferenceThreadRequest {
   pub completion_request: CompletionRequest,
 }
 
+impl InferenceThreadRequest {
+  pub fn is_aborted(&self) -> bool {
+    *self.abort_flag.read() || self.token_sender.is_disconnected()
+  }
+
+  pub fn send_comment(&self, message: &str) {
+    self
+      .token_sender
+      .send(Bytes::from(format!(": {} \n\n", message)))
+      .unwrap();
+  }
+
+  pub fn send_event(&self, event_name: &str) {
+    self
+      .token_sender
+      .send(Bytes::from(format!("event: {} \n\n", event_name)))
+      .unwrap();
+  }
+
+  pub fn send_done(&self) {
+    if self.token_sender.is_disconnected() {
+      return;
+    }
+
+    self.token_sender.send(Bytes::from("data: [DONE]")).unwrap();
+  }
+
+  pub fn send_error(&self, error: String) {
+    println!("{}", error);
+    self
+      .token_sender
+      .send(CompletionResponse::to_data_bytes(error))
+      .unwrap();
+    self.send_done();
+  }
+}
+
 fn get_inference_params(
   completion_request: &CompletionRequest,
 ) -> InferenceParameters {
@@ -41,68 +78,12 @@ fn get_inference_params(
 pub fn start(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
   println!("Starting inference ...");
 
-  // Need to clone it to have its own arc
-  let guard_clone = Arc::clone(&req.model_guard);
-  let guard = guard_clone.lock();
-  let model = match &*guard {
-    Some(m) => m,
-    None => {
-      println!("Model locked, cannot be loaded");
-      return None;
-    }
-  };
-
-  let mut session = model.start_session(Default::default());
-  println!("Session created ...");
-
-  let mut output_request = OutputRequest::default();
-
-  let inference_params = get_inference_params(&req.completion_request);
-
-  // Manual tokenization if needed
-  // let vocab = model.vocabulary();
-  // let prompt_tokens: Vec<i32> = vocab
-  //     .tokenize(prompt, true)
-  //     .into_par_iter() // Flatten to create a parallel iterator over the tuples
-  //     .flatten() // Flatten the nested vectors
-  //     .map(|(_, tok)| tok)
-  //     .collect();
-
-  // for batch in prompt_tokens.chunks(inference_params.n_batch) {
-  //     model.evaluate(&mut session, inference_params, batch, &mut output_request);
-  //     for &tk in batch {
-  //         // Update the tokens for this session
-  //         session.tokens.push(tk);
-  //     }
-  // }
-
-  println!("Feeding prompt ...");
-  match session.feed_prompt::<Infallible, Prompt>(
-    model.as_ref(),
-    &inference_params,
-    req.completion_request.prompt.as_str().into(),
-    &mut output_request,
-    |_| Ok(InferenceFeedback::Continue),
-  ) {
-    Ok(_) => {}
-    Err(e) => {
-      println!("Error while feeding prompt: {:?}", e);
-      return None;
-    }
-  }
-
-  let handle =
-    spawn_inference_thread(req, inference_params, session, output_request);
+  let handle = spawn_inference_thread(req);
 
   Some(handle)
 }
 
-fn spawn_inference_thread(
-  req: InferenceThreadRequest,
-  inference_params: InferenceParameters,
-  mut session: llm::InferenceSession,
-  mut output_request: OutputRequest,
-) -> JoinHandle<()> {
+fn spawn_inference_thread(req: InferenceThreadRequest) -> JoinHandle<()> {
   println!("Spawning inference thread...");
   let handle = actix_web::rt::task::spawn_blocking(move || {
     let mut rng = req.completion_request.get_rng();
@@ -120,15 +101,62 @@ fn spawn_inference_thread(
       }
     };
 
+    let mut session = model.start_session(Default::default());
+
+    let mut output_request = OutputRequest::default();
+
+    let inference_params = get_inference_params(&req.completion_request);
+
+    let mut stats = InferenceStats::default();
+    let start_at = std::time::SystemTime::now();
+
+    println!("Feeding prompt ...");
+    req.send_event("FEEDING_PROMPT");
+
+    match session.feed_prompt::<Infallible, Prompt>(
+      model.as_ref(),
+      &inference_params,
+      req.completion_request.prompt.as_str().into(),
+      &mut output_request,
+      |t| {
+        if req.is_aborted() {
+          return Ok(InferenceFeedback::Halt);
+        }
+
+        if let Some(token) = token_utf8_buf.push(t) {
+          req.send_comment(format!("Processing token: {:?}", token).as_str());
+        }
+
+        Ok(InferenceFeedback::Continue)
+      },
+    ) {
+      Ok(_) => {
+        stats.feed_prompt_duration = start_at.elapsed().unwrap();
+
+        println!(
+          "Done feeding prompt ... in {:?}",
+          stats.feed_prompt_duration
+        );
+      }
+      Err(e) => {
+        req.send_error(e.to_string());
+        return;
+      }
+    };
+
+    req.send_comment("Generating tokens ...");
+    req.send_event("GENERATING_TOKENS");
+
+    // Reset the utf8 buf
+    token_utf8_buf = TokenUtf8Buffer::new();
+
     let mut stop_handler =
       req.completion_request.get_stop_handler(model.as_ref());
 
     let mut tokens_processed = 0;
 
     while tokens_processed < maximum_token_count {
-      if *Arc::clone(&req.abort_flag).read()
-        || req.token_sender.is_disconnected()
-      {
+      if req.is_aborted() {
         break;
       }
 
@@ -143,7 +171,7 @@ fn spawn_inference_thread(
           break;
         }
         Err(e) => {
-          println!("{}", e.to_string());
+          req.send_error(e.to_string());
           break;
         }
       };
@@ -168,8 +196,13 @@ fn spawn_inference_thread(
       tokens_processed += 1;
     }
 
+    stats.predict_duration = start_at.elapsed().unwrap();
+    stats.predict_tokens = tokens_processed;
+
+    println!("Inference stats: {:?}", stats);
+
     if !req.token_sender.is_disconnected() {
-      req.token_sender.send(CompletionResponse::done()).unwrap();
+      req.send_done();
     }
 
     // TODO: Might make this into a callback later, for now we just abuse the singleton

@@ -32,6 +32,8 @@ export enum InvokeCommand {
   SetModelConfig = "set_model_config",
   StartServer = "start_server",
   StopServer = "stop_server",
+  GetServerConfig = "get_server_config",
+  SetServerConfig = "set_server_config",
   LoadModel = "load_model",
   TestModel = "test_model",
   OpenDirectory = "open_directory"

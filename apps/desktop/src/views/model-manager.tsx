@@ -53,7 +53,7 @@ export function ModelManagerView() {
             />
           )}
           <Input
-            className="w-full lg:w-96 rounded-none border-gray-3"
+            className="w-full lg:w-72 rounded-none border-gray-3"
             value={modelsDirectory}
             readOnly
             placeholder="Models directory"

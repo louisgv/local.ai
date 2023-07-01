@@ -1,4 +1,5 @@
 import { cn } from "@lab/theme/utils"
+import { CornerLabel } from "@lab/ui/label"
 import {
   Select,
   SelectContent,
@@ -37,12 +38,7 @@ export const ThreadModelSelector = () => {
           "relative",
           "w-64 flex flex-grow-0 flex-shrink-0 group"
         )}>
-        <label
-          className={cn(
-            "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-50 text-ellipsis whitespace-nowrap"
-          )}>
-          Model
-        </label>
+        <CornerLabel>Model</CornerLabel>
 
         <SelectValue>
           <div className="w-52 overflow-hidden text-left">

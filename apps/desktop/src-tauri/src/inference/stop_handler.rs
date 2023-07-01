@@ -39,7 +39,7 @@ impl StopHandler {
       .iter()
       .map(|word| {
         model
-          .vocabulary()
+          .tokenizer()
           .tokenize(word, false)
           .unwrap()
           .iter()
