@@ -13,7 +13,10 @@ edition = "2021"
 tauri-build = { version = "1.4.0", features = [] }
 
 [dependencies]
-llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm" }
+llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
+  "default",
+  # "cublas",
+] }
 
 # llm = { git = "https://github.com/RedBoxing/llm.git", branch = "hf-tokenizer", package = "llm" }
 
@@ -31,6 +34,7 @@ tauri = { version = "1.4.0", features = [
   "window-show",
 ] }
 
+convert_case = "0.6.0"
 paste = "1.0"
 sys-info = "0.9.1"
 num_cpus = "1.15.0"
@@ -79,10 +83,10 @@ llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "
 
 [target."cfg(target_os = \"linux\")".dependencies]
 webkit2gtk = "0.18.2"
-llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
-  "default",
-  "cublas",
-] }
+# llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
+#   "default",
+#   "cublas",
+# ] }
 
 [target."cfg(target_os = \"windows\")".dependencies]
 webview2-com = "0.19.1"

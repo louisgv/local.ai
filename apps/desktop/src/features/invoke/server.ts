@@ -15,4 +15,5 @@ export type ServerCommandMap = {
     path: string
     config: ServerConfig
   }>
+  [InvokeCommand.CheckGpu]: InvokeIO<never, boolean>
 }
