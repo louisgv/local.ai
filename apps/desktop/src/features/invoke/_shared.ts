@@ -3,8 +3,9 @@ export type InvokeIO<Input = Record<string, any>, Output = any> = {
   output: Output
 }
 
-// This should match up with the list of command in apps/desktop/src-tauri/src/main.rs
+// This enum is generated from the test in apps/desktop/src-tauri/src/main.rs
 export enum InvokeCommand {
+  //#region GENERATED
   GetConfig = "get_config",
   ReadDirectory = "read_directory",
   WriteFile = "write_file",
@@ -30,11 +31,13 @@ export enum InvokeCommand {
   GetModelStats = "get_model_stats",
   GetModelConfig = "get_model_config",
   SetModelConfig = "set_model_config",
+  LoadModel = "load_model",
   StartServer = "start_server",
   StopServer = "stop_server",
   GetServerConfig = "get_server_config",
   SetServerConfig = "set_server_config",
-  LoadModel = "load_model",
-  TestModel = "test_model",
-  OpenDirectory = "open_directory"
+  CheckGpu = "check_gpu",
+  OpenDirectory = "open_directory",
+  TestModel = "test_model"
+  //#endregion
 }
