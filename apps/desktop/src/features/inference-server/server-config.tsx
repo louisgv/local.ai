@@ -4,6 +4,8 @@ import { IntInput } from "@lab/ui/int-input"
 import { Switch } from "@lab/ui/switch"
 import { useState } from "react"
 
+import { InitState, useInit } from "~features/inference-server/use-init"
+import { InvokeCommand, invoke } from "~features/invoke"
 import { useGlobal } from "~providers/global"
 
 export const ServerConfig = () => {
@@ -15,6 +17,16 @@ export const ServerConfig = () => {
   } = useGlobal()
 
   const [isLoading, setIsLoading] = useState(false)
+
+  const [hasGpu, setHasGpu] = useState(false)
+  const gpuCheck = useInit(async () => {
+    const _hasGpu = await invoke(InvokeCommand.CheckGpu)
+    if (!_hasGpu) {
+      serverConfig.update({ useGpu: false })
+    }
+    setHasGpu(_hasGpu)
+  })
+
   return (
     <div className="flex items-center justify-end gap-2">
       {/* <Button
@@ -39,7 +51,9 @@ export const ServerConfig = () => {
       />
 
       <Switch
-        disabled={isStarted}
+        disabled={
+          isStarted || gpuCheck.initState !== InitState.Initialized || !hasGpu
+        }
         className={"data-[state=checked]:border-gold-9"}
         thumbClassName="data-[state=checked]:bg-gold-9"
         title="GPU"
