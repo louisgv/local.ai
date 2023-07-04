@@ -12,7 +12,8 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ onRevert, className, type, children, ...props }, ref) => {
     return (
-      <div className={cn("relative flex h-10 rounded-md w-full", className)}>
+      <div
+        className={cn("relative flex h-10 rounded-md w-full group", className)}>
         {(props.title || props.placeholder) && (
           <CornerLabel
             className={
@@ -34,12 +35,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           className={cn(
             "h-full w-full",
             "px-3 py-2 rounded-md",
-            "border border-gray-6 focus:border-gray-7",
-            "bg-transparent text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none",
+            "border border-gray-6 focus:border-gray-7 active:border-gray-8",
+            "bg-gray-1 focus:bg-gray-2",
+            "text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none",
             "disabled:cursor-not-allowed disabled:opacity-50",
             "transition-all",
-            "outline-1 focus:ring-offset-gray-7 focus-visible:ring-gray-8",
-            "focus-visible:ring-1 focus-visible:ring-offset-2",
+            "outline-1 focus:ring-offset-gray-8 focus-visible:ring-gray-7",
+            "focus-visible:ring-1 focus-visible:ring-offset-1",
             "placeholder:text-gray-10",
             "text-gray-11 focus:text-gray-12",
             className

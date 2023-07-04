@@ -11,6 +11,7 @@ const CornerLabel = forwardRef<HTMLLabelElement, LabelProps>(
       ref={ref}
       className={cn(
         "absolute -top-3 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-10 text-ellipsis whitespace-nowrap",
+        "group-hover:bg-gray-4 group-hover:text-gray-12 group-focus:bg-gray-5",
         isHidden ? "opacity-0" : "opacity-100",
         className
       )}

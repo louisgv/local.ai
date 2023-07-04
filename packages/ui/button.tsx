@@ -17,7 +17,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       className={cn(
         "py-2 px-4 h-10",
         `bg-gray-3 hover:bg-gray-4 text-sm flex flex-row items-center gap-2 rounded-md transition`,
-        "disabled:text-gray-9",
+        "disabled:text-gray-9 disabled:bg-gray-1",
         "text-gray-11 hover:text-gray-12",
         className
       )}

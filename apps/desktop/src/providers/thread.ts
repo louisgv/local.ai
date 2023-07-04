@@ -182,10 +182,10 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
   }
 
   useEffect(() => {
-    if (isResponding.data) {
+    if (isResponding.ref.current) {
       abortRef.current = true
     }
-  }, [activeThread.path, activeRoute])
+  }, [activeThread.path, activeRoute, isResponding.ref])
 
   return {
     messages,

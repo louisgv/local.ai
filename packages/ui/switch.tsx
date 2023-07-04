@@ -16,7 +16,7 @@ const Switch = forwardRef<
 >(({ className, thumbClassName, ...props }, ref) => (
   <SwitchPrimitives.Root
     className={cn(
-      "h-10 w-16 rounded-md",
+      "h-10 w-16 rounded-md group",
       "peer relative inline-flex shrink-0 cursor-pointer items-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
       "text-xs border border-transparent",
       "focus-visible:ring-1 focus-visible:ring-offset-1",

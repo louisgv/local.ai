@@ -76,17 +76,18 @@ const MainPanel = () => {
             })
           }}
         />
-        <Button className="gap-0" onClick={() => toggleConfig()}>
-          {!isConfigVisible && <ChevronLeftIcon />}
-
-          <GearIcon
+        <Button
+          className="w-10 p-3 items-center"
+          onClick={() => toggleConfig()}>
+          <span
             className={cn(
-              "will-change-transform",
-              "transition-transform",
-              isConfigVisible ? "rotate-180" : "-rotate-180"
-            )}
-          />
-          {isConfigVisible && <ChevronRightIcon />}
+              "relative",
+              "will-change-transform transition-transform duration-500",
+              isConfigVisible ? "-rotate-180" : "rotate-0"
+            )}>
+            <ChevronLeftIcon className="absolute -left-2" />
+            <GearIcon />
+          </span>
         </Button>
       </ViewHeader>
       <ViewBody className="p-4 pr-0 flex flex-col gap-6 overflow-hidden">
@@ -134,7 +135,7 @@ export const ThreadView = () => {
             isConfigVisible ? "w-1/4 opacity-100" : "w-0 opacity-0",
             "border-l border-l-gray-6"
           )}>
-          <ViewBody className="p-4 flex flex-col gap-6 overflow-x-hidden items-start">
+          <ViewBody className="p-4 pt-5 flex flex-col gap-6 overflow-x-hidden items-start">
             <ThreadConfigPanel />
           </ViewBody>
         </ViewContainer>
