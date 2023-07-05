@@ -15,6 +15,7 @@ export type ThreadMessage = {
 
   model?: string
   digest?: string
+  timestamp?: string
 
   metatag?: string
 }

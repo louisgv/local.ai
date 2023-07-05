@@ -31,7 +31,12 @@ export const MessageBlock = ({
   const isNote = useMemo(() => message.role === Role.Note, [message])
 
   return (
-    <div className="flex group">
+    <div
+      className={cn(
+        "flex group",
+        "transition-all",
+        message.content ? "opacity-100" : "opacity-0"
+      )}>
       <div
         className={cn(
           "px-4 py-3 rounded-md rounded-tr-none w-full transition-colors",
@@ -43,12 +48,11 @@ export const MessageBlock = ({
           {message.content}
         </MarkdownContainer>
 
-        {message.model && (
-          <div className="flex flex-col text-xs justify-end text-end mt-4 gap-1">
-            <pre>{message.model}</pre>
-            {message.digest && <pre>{getTruncatedHash(message.digest)}</pre>}
-          </div>
-        )}
+        <div className="flex flex-col text-xs justify-end text-end mt-4 gap-1">
+          {message.model && <pre>{message.model}</pre>}
+          {message.digest && <pre>{getTruncatedHash(message.digest)}</pre>}
+          {message.timestamp && <pre>{message.timestamp}</pre>}
+        </div>
       </div>
       <Button
         className={cn(

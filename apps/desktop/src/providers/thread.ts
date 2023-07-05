@@ -1,6 +1,5 @@
 "use client"
 
-import { nanoid } from "nanoid"
 import { createProvider } from "puro"
 import {
   useCallback,
@@ -24,7 +23,7 @@ import {
 } from "~features/thread/_shared"
 import { processSseStream } from "~features/thread/process-sse-stream"
 import { useHybrid } from "~features/thread/use-hybrid"
-import { useThreadMdx } from "~features/thread/use-thread-mdx"
+import { createMessage, useThreadMdx } from "~features/thread/use-thread-mdx"
 import { useGlobal } from "~providers/global"
 
 function applyTemplate(config: ThreadConfig, userPrompt: string) {
@@ -64,12 +63,11 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
     }
   }, [threadConfig.data, models, modelsMap])
 
-  const { messages, setMessages, appendMessage, botIconIndex } =
+  const { messages, dispatch, appendMessage, botIconIndex } =
     useThreadMdx(thread)
 
   const [statusMessage, setStatusMessage] = useState("")
 
-  const aiMessageRef = useRef<ThreadMessage>()
   const abortRef = useRef(false)
 
   const setCompletionParams = useCallback(
@@ -85,17 +83,14 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
   )
 
   const addNote = async (text: string) => {
-    isResponding.set(true)
-    const newMessage: ThreadMessage = {
-      id: nanoid(),
-      role: Role.Note,
-      content: text
-    }
+    const newMessage = createMessage(Role.Note, text)
 
-    setMessages((m) => [newMessage, ...m])
+    dispatch({
+      type: "add",
+      payload: newMessage
+    })
 
     await appendMessage(newMessage)
-    isResponding.set(false)
   }
 
   const stopInference = () => {
@@ -107,19 +102,16 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
       return
     }
 
-    const newMessages: ThreadMessage[] = [
-      {
-        id: nanoid(),
-        role: Role.User,
-        content: userPrompt
-      },
-      ...messages
-    ]
+    const promptMessage = createMessage(Role.User, userPrompt)
 
-    setMessages(newMessages)
+    dispatch({
+      type: "add",
+      payload: promptMessage
+    })
+
     isResponding.set(true)
 
-    await appendMessage(newMessages[0])
+    await appendMessage(promptMessage)
 
     try {
       const loadedModel =
@@ -127,13 +119,12 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
           ? await loadModel(threadModel) // load the saved model in config if differ or load the most used model in the list
           : activeModel
 
-      aiMessageRef.current = {
-        id: nanoid(),
-        role: Role.Bot,
-        model: loadedModel.name,
-        digest: loadedModel.digest,
-        content: ""
-      }
+      const aiMessage = createMessage(Role.Bot, "", loadedModel)
+
+      dispatch({
+        type: "add",
+        payload: aiMessage
+      })
 
       const fetchStream = await globalThis.fetch(
         `http://localhost:${serverConfig.data.port}/completions`,
@@ -158,20 +149,24 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
       await processSseStream(fetchStream, abortRef, {
         async onComment(comment) {
           setStatusMessage(comment)
-          await wait(42)
+          await wait(420)
         },
         async onData(resp) {
-          aiMessageRef.current.content += resp.choices[0].text
-          setMessages([aiMessageRef.current, ...newMessages])
+          const diff = resp.choices[0].text
+          aiMessage.content += diff
+
+          dispatch({
+            type: "concat",
+            payload: {
+              id: aiMessage.id,
+              content: diff
+            }
+          })
         },
         async onFinish() {
           abortRef.current = false
           setStatusMessage("")
-          await appendMessage(
-            aiMessageRef.current,
-            threadConfig.data,
-            loadedModel
-          )
+          await appendMessage(aiMessage, threadConfig.data, loadedModel)
           isResponding.set(false)
         }
       })
