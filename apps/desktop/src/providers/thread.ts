@@ -119,7 +119,10 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
           ? await loadModel(threadModel) // load the saved model in config if differ or load the most used model in the list
           : activeModel
 
-      const aiMessage = createMessage(Role.Bot, "", loadedModel)
+      const aiMessage = createMessage(Role.Bot, "", {
+        model: loadedModel.name,
+        digest: loadedModel.digest
+      })
 
       dispatch({
         type: "add",
@@ -149,18 +152,13 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
       await processSseStream(fetchStream, abortRef, {
         async onComment(comment) {
           setStatusMessage(comment)
-          await wait(420)
+          await wait(42)
         },
         async onData(resp) {
-          const diff = resp.choices[0].text
-          aiMessage.content += diff
-
+          aiMessage.content += resp.choices[0].text
           dispatch({
-            type: "concat",
-            payload: {
-              id: aiMessage.id,
-              content: diff
-            }
+            type: "update",
+            payload: aiMessage
           })
         },
         async onFinish() {

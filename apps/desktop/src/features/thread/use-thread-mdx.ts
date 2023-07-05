@@ -83,14 +83,14 @@ function isThreadMessage(message: any): message is ThreadMessage {
 
 type MessageMap = Record<string, ThreadMessage>
 type MessageMapAction =
-  | { type: "init" }
+  | { type: "update"; payload: Omit<ThreadMessage, "role"> }
   | { type: "add"; payload: ThreadMessage }
-  | { type: "concat"; payload: Omit<ThreadMessage, "role"> }
+  | { type: "init" }
 
-function messageMapReducer(state: MessageMap, action: MessageMapAction) {
+const messageMapReducer = (state: MessageMap, action: MessageMapAction) => {
   switch (action.type) {
-    case "concat":
-      state[action.payload.id].content += action.payload.content
+    case "update":
+      state[action.payload.id].content = action.payload.content
       return {
         ...state
       }
@@ -127,22 +127,25 @@ export const useThreadMdx = (thread: FileInfo) => {
 
       let metadataIndicatorCount = 1
       let tagBuffer = ""
-      let bufferId = ""
+      let bufferMessage: ThreadMessage
 
       const addMessage = (regexp: RegExp) => {
         const match = tagBuffer.match(regexp)
         if (isThreadMessage(match.groups)) {
           const role = paramCase(match.groups.role.slice(1)) as Role
+          bufferMessage = {
+            id: match.groups.id,
+            role,
+            content: ""
+          }
           dispatch({
             type: "add",
             payload: {
               ...match.groups,
-              role,
-              content: "",
+              ...bufferMessage,
               metatag: tagBuffer // Can be used later to extract props
             }
           })
-          bufferId = match.groups.id
           tagBuffer = ""
         }
       }
@@ -193,13 +196,11 @@ export const useThreadMdx = (thread: FileInfo) => {
           }
 
           // If the line did not match any of the tags, add it to the content of the current message
-          if (!!bufferId && tagBuffer.length === 0) {
+          if (!!bufferMessage?.id && tagBuffer.length === 0) {
+            bufferMessage.content += `${line}\n`
             dispatch({
-              type: "concat",
-              payload: {
-                id: bufferId,
-                content: `${line}\n`
-              }
+              type: "update",
+              payload: bufferMessage
             })
           }
         }
