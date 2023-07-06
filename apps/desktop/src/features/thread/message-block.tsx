@@ -2,7 +2,7 @@ import { cn } from "@lab/theme/utils"
 import { Button } from "@lab/ui/button"
 import { MarkdownContainer } from "@lab/ui/markdown-container"
 import { Notes, User } from "iconoir-react"
-import { useMemo } from "react"
+import { type CSSProperties, useMemo } from "react"
 
 import { getTruncatedHash } from "~features/inference-server/model-digest"
 import { Role, type ThreadMessage } from "~features/thread/_shared"
@@ -24,18 +24,27 @@ export const MessageBlock = ({
   message = {
     role: Role.User,
     content: defaultMessage
-  } as ThreadMessage
+  } as ThreadMessage,
+  style = {} as CSSProperties,
+  className = ""
 }) => {
   const isNote = useMemo(() => message.role === Role.Note, [message])
   const isUser = useMemo(() => message.role === Role.User, [message])
   const isBot = useMemo(() => message.role === Role.Bot, [message])
 
+  if (!message.content) {
+    return null
+  }
+
   return (
     <div
+      style={style}
       className={cn(
-        "flex group",
+        "group",
         "transition-all",
-        message.content ? "opacity-100" : "opacity-0"
+        "animate-fade-in-once opacity-0",
+        "flex",
+        className
       )}>
       <div
         className={cn(

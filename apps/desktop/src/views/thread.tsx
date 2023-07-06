@@ -2,11 +2,7 @@ import { cn } from "@lab/theme/utils"
 import { Button } from "@lab/ui/button"
 import { Input } from "@lab/ui/input"
 import { Spinner } from "@lab/ui/spinner"
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  GearIcon
-} from "@radix-ui/react-icons"
+import { ChevronLeftIcon, GearIcon } from "@radix-ui/react-icons"
 import {
   BasketballAlt,
   BreadSlice,
@@ -19,6 +15,7 @@ import {
   Pokeball
 } from "iconoir-react"
 import { useMemo } from "react"
+import RenderIfVisible from "react-render-if-visible"
 
 import { ViewBody, ViewContainer, ViewHeader } from "~features/layout/view"
 import { MessageBlock } from "~features/thread/message-block"
@@ -91,15 +88,14 @@ const MainPanel = () => {
         </Button>
       </ViewHeader>
       <ViewBody className="p-4 pr-0 flex flex-col gap-6 overflow-hidden">
-        <ViewBody className="p-4 pl-0 flex flex-col-reverse gap-4 h-full overflow-auto max-w-screen-md mx-auto">
+        <ViewBody className="p-4 pl-0 flex flex-col-reverse gap-4 h-full  overflow-auto max-w-screen-md mx-auto">
           {messages.map((message) => (
-            <MessageBlock
-              key={message.id}
-              BotIcon={botIconClass}
-              message={message}
-            />
+            <RenderIfVisible key={message.id} defaultHeight={420}>
+              <MessageBlock BotIcon={botIconClass} message={message} />
+            </RenderIfVisible>
           ))}
         </ViewBody>
+
         <div className="flex flex-col sticky bottom-0 max-w-screen-md pr-4 self-center w-full gap-3">
           <div className="h-12 flex items-center justify-center w-full gap-2">
             <Spinner

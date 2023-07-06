@@ -83,14 +83,14 @@ function isThreadMessage(message: any): message is ThreadMessage {
 
 type MessageMap = Record<string, ThreadMessage>
 type MessageMapAction =
-  | { type: "update"; payload: Omit<ThreadMessage, "role"> }
+  | { type: "update"; payload: ThreadMessage }
   | { type: "add"; payload: ThreadMessage }
   | { type: "init" }
 
 const messageMapReducer = (state: MessageMap, action: MessageMapAction) => {
   switch (action.type) {
     case "update":
-      state[action.payload.id].content = action.payload.content
+      state[action.payload.id] = { ...action.payload }
       return {
         ...state
       }
@@ -134,17 +134,15 @@ export const useThreadMdx = (thread: FileInfo) => {
         if (isThreadMessage(match.groups)) {
           const role = paramCase(match.groups.role.slice(1)) as Role
           bufferMessage = {
-            id: match.groups.id,
+            ...match.groups,
+            metatag: tagBuffer, // Can be used later to extract props
             role,
             content: ""
           }
+
           dispatch({
             type: "add",
-            payload: {
-              ...match.groups,
-              ...bufferMessage,
-              metatag: tagBuffer // Can be used later to extract props
-            }
+            payload: bufferMessage
           })
           tagBuffer = ""
         }

@@ -16,17 +16,15 @@ import { createFileConfigStore } from "~features/inference-server/file-config-st
 import { InvokeCommand } from "~features/invoke"
 import type { CompletionRequest, ThreadConfig } from "~features/invoke/thread"
 import type { FileInfo } from "~features/model-downloader/model-file"
-import {
-  DEFAULT_THREAD_CONFIG,
-  Role,
-  type ThreadMessage
-} from "~features/thread/_shared"
+import { DEFAULT_THREAD_CONFIG, Role } from "~features/thread/_shared"
 import { processSseStream } from "~features/thread/process-sse-stream"
 import { useHybrid } from "~features/thread/use-hybrid"
 import { createMessage, useThreadMdx } from "~features/thread/use-thread-mdx"
 import { useGlobal } from "~providers/global"
 
 function applyTemplate(config: ThreadConfig, userPrompt: string) {
+  // Create history from previous convo
+
   return config.promptTemplate
     .replace("{system}", config.systemMessage)
     .replace("{prompt}", userPrompt)
@@ -102,7 +100,9 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
       return
     }
 
-    const promptMessage = createMessage(Role.User, userPrompt)
+    const sanitizedPrompt = userPrompt.trim()
+
+    const promptMessage = createMessage(Role.User, sanitizedPrompt)
 
     dispatch({
       type: "add",
@@ -140,7 +140,7 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
           body: JSON.stringify({
             ...threadConfig.data.completionParams,
             stream: true,
-            prompt: applyTemplate(threadConfig.data, userPrompt)
+            prompt: applyTemplate(threadConfig.data, sanitizedPrompt)
           })
         }
       )
