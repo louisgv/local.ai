@@ -108,6 +108,9 @@ importers:
       react-dom:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
+      react-render-if-visible:
+        specifier: 2.1.1
+        version: 2.1.1(react-dom@18.2.0)(react@18.2.0)
       react-wrap-balancer:
         specifier: 1.0.0
         version: 1.0.0(react@18.2.0)
@@ -4674,6 +4677,17 @@ packages:
       tslib: 2.6.0
       use-callback-ref: 1.3.0(@types/react@18.2.14)(react@18.2.0)
       use-sidecar: 1.1.2(@types/react@18.2.14)(react@18.2.0)
+    dev: false
+
+  /react-render-if-visible@2.1.1(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-dl6OZkF+ktKi/pMNt5Upn99gSWnOCAQdFp/WBclMsPs4dV/RLeE40lab8tixoHB4UEKsspv0jFR13HF4fxmPHw==}
+    engines: {node: '>=8', npm: '>=5'}
+    peerDependencies:
+      react: '>= 16.8.0 < 19'
+      react-dom: '>= 16.8.0 < 19'
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
     dev: false
 
   /react-style-singleton@2.2.1(@types/react@18.2.14)(react@18.2.0):

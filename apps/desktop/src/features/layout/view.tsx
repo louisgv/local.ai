@@ -1,5 +1,9 @@
 import { cn } from "@lab/theme/utils"
-import type { ReactNode } from "react"
+import { type HTMLAttributes, type ReactNode, forwardRef } from "react"
+
+export interface ViewProps extends HTMLAttributes<HTMLDivElement> {
+  onRevert?: () => void
+}
 
 export const ViewContainer = ({
   children = null as ReactNode,
@@ -44,22 +48,29 @@ export const ViewHeader = ({
   )
 }
 
-export const ViewBody = ({ children = null as ReactNode, className = "" }) => (
-  <div className="h-full w-full relative overflow-hidden">
-    <div className={cn("h-full w-full overflow-auto", className)}>
-      {children}
+export const ViewBody = forwardRef<HTMLDivElement, ViewProps>(
+  ({ children = null as ReactNode, className = "", ...props }, ref) => (
+    <div className="h-full w-full relative overflow-hidden">
+      <div
+        className={cn("h-full w-full overflow-auto", className)}
+        {...props}
+        ref={ref}>
+        {children}
+      </div>
+      <div
+        className={cn(
+          "absolute top-0 w-full h-6",
+          "bg-gradient-to-b from-gray-2 to-transparent"
+        )}
+      />
+      <div
+        className={cn(
+          "absolute bottom-0 w-full h-6",
+          "bg-gradient-to-t from-gray-2 to-transparent"
+        )}
+      />
     </div>
-    <div
-      className={cn(
-        "absolute top-0 w-full h-6",
-        "bg-gradient-to-b from-gray-2 to-transparent"
-      )}
-    />
-    <div
-      className={cn(
-        "absolute bottom-0 w-full h-6",
-        "bg-gradient-to-t from-gray-2 to-transparent"
-      )}
-    />
-  </div>
+  )
 )
+
+ViewBody.displayName = "ViewBody"

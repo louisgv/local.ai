@@ -26,7 +26,7 @@ export const MdxCode: CodeComponent = (props) => {
   }
 
   return (
-    <div className="relative">
+    <div className="relative group">
       <CornerLabel>{language}</CornerLabel>
       <SyntaxHighlighter
         showLineNumbers

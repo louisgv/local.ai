@@ -3,9 +3,9 @@ import { dollyModelMap } from "./dolly"
 import { gpt4AllModelMap } from "./gpt4all"
 import { guanacoModelMap } from "./guanaco"
 import { mptModelMap } from "./mpt"
+import { nousHermesMap } from "./nous-hermes"
 import { redpajamaModelMap } from "./redpajama"
 import { wizardModelMap } from "./wizard"
-import { nousHermesMap } from "./nous-hermes"
 import { orcaMap } from "./orca"
 
 export type ModelInfoList = ModelInfo[]
