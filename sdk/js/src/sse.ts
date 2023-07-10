@@ -1,26 +1,21 @@
-// Define StreamResponse type here
-interface StreamResponse {
-  choices: Array<{ text: string }>
-}
-
 const SSE_DATA_PREFIX = "data:"
 const SSE_EVENT_PREFIX = "event:"
 const SSE_COMMENT_PREFIX = ":"
 
 export async function processSseStream(
   fetchStream: Response,
-  abortRef: { current: boolean },
   {
     onData,
     onFinish,
     onEvent,
     onComment
   }: {
-    onData: (resp: StreamResponse) => Promise<void>
+    onData: (str: string) => Promise<void>
     onFinish: (isDone: boolean) => Promise<void>
     onEvent?: (str: string) => Promise<void>
     onComment?: (str: string) => Promise<void>
-  }
+  },
+  abortRef = { current: false }
 ) {
   const reader = fetchStream.body?.getReader()
 
@@ -60,7 +55,7 @@ export async function processSseStream(
             break
           }
 
-          await onData(JSON.parse(eventData))
+          await onData(eventData)
         }
       }
     } catch (_) {}

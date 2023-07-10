@@ -48,8 +48,6 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     return HttpResponse::ServiceUnavailable().finish();
   }
 
-  let (token_sender, receiver) = flume::unbounded::<Bytes>();
-
   let model_guard = match model::pool::get_model() {
     Some(guard) => guard,
     None => {
@@ -57,6 +55,8 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
       return HttpResponse::ServiceUnavailable().finish();
     }
   };
+
+  let (token_sender, receiver) = flume::unbounded::<Bytes>();
 
   HttpResponse::Ok()
     .append_header(("Content-Type", "text/event-stream"))

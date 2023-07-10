@@ -28,6 +28,7 @@
     "swr": "2.2.0"
   },
   "devDependencies": {
+    "@local.ai/sdk": "workspace:*",
     "@lab/theme": "workspace:*",
     "@lab/ui": "workspace:*",
     "@plasmo/config": "workspace:*",
