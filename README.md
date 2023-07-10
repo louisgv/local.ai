@@ -67,6 +67,20 @@ Anything AI-related including their derivatives should be open-source for all to
 
 - [Here](https://github.com/louisgv/local.ai/discussions/categories/q-a)
 
+### I made something with `local.ai`, where should I post it?
+
+- [Here](https://github.com/louisgv/local.ai/discussions/categories/show-and-tell)
+
+### I have some nice things to say about `local.ai`, where should I post it?
+
+- [Here](https://github.com/louisgv/local.ai/discussions/categories/nice-tokens)
+- Also, consider giving the repo a [Star](https://docs.github.com/en/get-started/exploring-projects-on-github/saving-repositories-with-stars) ⭐️
+
+### The naming seems close to [LocalAI](https://github.com/go-skynet/LocalAI)?
+
+- When I first started the project and got the domain localai.app, I had no idea LocalAI was a thing. A friend of mine forwarded me a link to that project mid May, and I was like dang it, let's just add a dot and call it a day (for now...) - local "dot" ai vs LocalAI lol
+- We might [rename the project](https://github.com/louisgv/local.ai/discussions/71).
+
 ### Do you accept contribution/PR?
 
 Absolutely - Please note that any contribution toward this repo shall be relicensed under GPLv3. There are many ways to contribute, such as:
