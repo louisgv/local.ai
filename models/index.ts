@@ -4,9 +4,9 @@ import { gpt4AllModelMap } from "./gpt4all"
 import { guanacoModelMap } from "./guanaco"
 import { mptModelMap } from "./mpt"
 import { nousHermesMap } from "./nous-hermes"
+import { orcaMap } from "./orca"
 import { redpajamaModelMap } from "./redpajama"
 import { wizardModelMap } from "./wizard"
-import { orcaMap } from "./orca"
 
 export type ModelInfoList = ModelInfo[]
 
@@ -18,7 +18,7 @@ export const modelList: ModelInfoList = [
   ...toList(guanacoModelMap),
   ...toList(wizardModelMap),
   ...toList(nousHermesMap),
-  ...toList(orcaMap),
+  ...toList(orcaMap)
 ]
 
 export * from "./_shared"
