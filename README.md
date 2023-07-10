@@ -74,6 +74,7 @@ Anything AI-related including their derivatives should be open-source for all to
 ### I have some nice things to say about `local.ai`, where should I post it?
 
 - [Here](https://github.com/louisgv/local.ai/discussions/categories/nice-tokens)
+- Also, consider giving the repo a [Star](https://docs.github.com/en/get-started/exploring-projects-on-github/saving-repositories-with-stars) ⭐️
 
 ### The naming seems close to [LocalAI](https://github.com/go-skynet/LocalAI)?
 
