@@ -21,6 +21,7 @@ export enum LicenseType {
 }
 
 export type ModelInfo = {
+  path: any
   name?: string
   size: number
   downloadUrl: string

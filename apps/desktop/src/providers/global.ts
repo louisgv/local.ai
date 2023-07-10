@@ -21,7 +21,8 @@ import { getCachedIntegrity } from "~providers/model"
 
 export enum Route {
   ModelManager = "model-manager",
-  Thread = "thread"
+  Thread = "thread",
+  ServerManager = "ServerManager"
 }
 
 let _prefix: string
@@ -140,6 +141,14 @@ const useGlobalProvider = () => {
       setTitle(activeThread.name.slice(0, -2))
     }
   }, [activeThread, activeRoute])
+
+  useEffect(() => {
+    if (routeState[0] === Route.ServerManager) {
+      setTitle("Server Manager")
+    } else if (activeThreadState[0]) {
+      setTitle(activeThreadState[0].name.slice(0, -2))
+    }
+  }, [activeThreadState[0], routeState[0]])
 
   return {
     getWindow: () => windowRef.current,
