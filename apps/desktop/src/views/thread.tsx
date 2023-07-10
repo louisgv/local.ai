@@ -90,7 +90,10 @@ const MainPanel = () => {
       <ViewBody className="p-4 pr-0 flex flex-col gap-6 overflow-hidden">
         <ViewBody className="p-4 pl-0 flex flex-col-reverse gap-4 h-full  overflow-auto max-w-screen-md mx-auto">
           {messages.map((message) => (
-            <RenderIfVisible key={message.id} defaultHeight={420}>
+            <RenderIfVisible
+              key={message.id}
+              initialVisible
+              defaultHeight={420}>
               <MessageBlock BotIcon={botIconClass} message={message} />
             </RenderIfVisible>
           ))}

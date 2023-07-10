@@ -1,9 +1,7 @@
 import { cn } from "@lab/theme/utils"
 import { type HTMLAttributes, type ReactNode, forwardRef } from "react"
 
-export interface ViewProps extends HTMLAttributes<HTMLDivElement> {
-  onRevert?: () => void
-}
+export interface ViewProps extends HTMLAttributes<HTMLDivElement> {}
 
 export const ViewContainer = ({
   children = null as ReactNode,

@@ -1,5 +1,6 @@
 "use client"
 
+import { processSseStream } from "@local.ai/sdk/sse"
 import { createProvider } from "puro"
 import {
   useCallback,
@@ -17,10 +18,13 @@ import { InvokeCommand } from "~features/invoke"
 import type { CompletionRequest, ThreadConfig } from "~features/invoke/thread"
 import type { FileInfo } from "~features/model-downloader/model-file"
 import { DEFAULT_THREAD_CONFIG, Role } from "~features/thread/_shared"
-import { processSseStream } from "~features/thread/process-sse-stream"
 import { useHybrid } from "~features/thread/use-hybrid"
 import { createMessage, useThreadMdx } from "~features/thread/use-thread-mdx"
 import { useGlobal } from "~providers/global"
+
+interface StreamResponse {
+  choices: Array<{ text: string }>
+}
 
 function applyTemplate(config: ThreadConfig, userPrompt: string) {
   // Create history from previous convo
@@ -149,25 +153,30 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
         throw new Error(`Server responded with ${fetchStream.status}`)
       }
 
-      await processSseStream(fetchStream, abortRef, {
-        async onComment(comment) {
-          setStatusMessage(comment)
-          await wait(42)
+      await processSseStream(
+        fetchStream,
+        {
+          async onComment(comment) {
+            setStatusMessage(comment)
+            await wait(42)
+          },
+          async onData(data) {
+            const resp = JSON.parse(data) as StreamResponse
+            aiMessage.content += resp.choices[0].text
+            dispatch({
+              type: "update",
+              payload: aiMessage
+            })
+          },
+          async onFinish() {
+            abortRef.current = false
+            setStatusMessage("")
+            await appendMessage(aiMessage, threadConfig.data, loadedModel)
+            isResponding.set(false)
+          }
         },
-        async onData(resp) {
-          aiMessage.content += resp.choices[0].text
-          dispatch({
-            type: "update",
-            payload: aiMessage
-          })
-        },
-        async onFinish() {
-          abortRef.current = false
-          setStatusMessage("")
-          await appendMessage(aiMessage, threadConfig.data, loadedModel)
-          isResponding.set(false)
-        }
-      })
+        abortRef
+      )
     } catch (error) {
       alert(`ERROR: Server was not started OR no model was loaded | ${error}`)
       isResponding.set(false)

@@ -1,6 +1,7 @@
 # 🎒 local.ai
 
 A desktop app for local, private, secured AI experimentation. Included out-of-the box are:
+
 - A known-good model API and a model downloader, with descriptions such as recommended hardware specs, model license, blake3/sha256 hashes etc...
 - A simple note-taking app, with inference config PER note. The note and its config are output into plain text `.mdx` format
 - A model inference streaming server (/completion endpoint, similar to OpenAI)
@@ -13,7 +14,7 @@ Right now, local.ai uses the https://github.com/rustformers/llm rust crate at it
 
 Go to the site at https://www.localai.app/ and click the button for your machine's architecture. You can also find the build manually in [the GitHub release page](https://github.com/louisgv/local.ai/releases).
 
-Windows and MacOS binaries are signed under [Plasmo Corp.](https://www.plasmo.com/) -  a company owned by the author of this project ([@louisgv](https://github.com/louisgv/)). 
+Windows and MacOS binaries are signed under [Plasmo Corp.](https://www.plasmo.com/) - a company owned by the author of this project ([@louisgv](https://github.com/louisgv/)).
 
 You may also [build from source](#-development)!
 
@@ -46,7 +47,8 @@ pnpm dev
 
 ## 🪪 License
 
-[GNU GPLv3](./LICENSE)
+- Desktop/Web App: [GNU GPLv3](./LICENSE)
+- Client SDK: [MIT](./sdk/LICENSE)
 
 ## 🤔 Trivia
 
@@ -84,6 +86,7 @@ Anything AI-related including their derivatives should be open-source for all to
 ### Do you accept contribution/PR?
 
 Absolutely - Please note that any contribution toward this repo shall be relicensed under GPLv3. There are many ways to contribute, such as:
+
 - Documentation via wiki edit submission and known model documentation
 - Testing and filing BUG issue
 - For beginner, check out [Good First Issues](https://github.com/louisgv/local.ai/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)

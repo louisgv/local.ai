@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "sdk/js"
   ],
   "scripts": {
     "start": "turbo run start --parallel",
