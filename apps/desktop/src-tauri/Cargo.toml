@@ -83,10 +83,18 @@ llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "
 
 [target."cfg(target_os = \"linux\")".dependencies]
 webkit2gtk = "0.18.2"
+# llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
+#   "default",
+#   "cublas",
+# ] }
 
 [target."cfg(target_os = \"windows\")".dependencies]
 webview2-com = "0.19.1"
 windows = "0.39.0"
+# llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
+#   "default",
+#   "cublas",
+# ] }
 
 # For testing local tauri builder
 # [patch.crates-io]
