@@ -7,3 +7,6 @@
 [submodule "packages/utils"]
 	path = packages/utils
 	url = https://github.com/PlasmoHQ/plasmo-utils.git
+[submodule "packages/character"]
+	path = packages/character
+	url = https://github.com/OpenRouterTeam/character.git
