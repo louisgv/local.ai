@@ -11,7 +11,7 @@ use parking_lot::{Mutex, RwLock};
 
 use tokio::task::JoinHandle;
 
-use crate::model;
+use crate::model::{self, pool::get_use_gpu};
 
 use super::completion::{CompletionRequest, CompletionResponse};
 
@@ -67,25 +67,19 @@ fn get_inference_params(
 ) -> InferenceParameters {
   let n_threads = model::pool::get_n_threads();
 
+  let n_batch = if get_use_gpu() { 240 } else { n_threads };
+
   InferenceParameters {
     n_threads,
-    n_batch: n_threads,
+    n_batch,
     sampler: Arc::new(completion_request.to_top_p_top_k()),
   }
 }
 
 // Perhaps might be better to clone the model for each thread...
-pub fn start(req: InferenceThreadRequest) -> Option<JoinHandle<()>> {
-  println!("Starting inference ...");
-
-  let handle = spawn_inference_thread(req);
-
-  Some(handle)
-}
-
-fn spawn_inference_thread(req: InferenceThreadRequest) -> JoinHandle<()> {
+pub fn start(req: InferenceThreadRequest) -> JoinHandle<()> {
   println!("Spawning inference thread...");
-  let handle = actix_web::rt::task::spawn_blocking(move || {
+  actix_web::rt::task::spawn_blocking(move || {
     let mut rng = req.completion_request.get_rng();
 
     let maximum_token_count = req.completion_request.get_max_tokens();
@@ -261,6 +255,5 @@ fn spawn_inference_thread(req: InferenceThreadRequest) -> JoinHandle<()> {
     //             .unwrap();
     //     }
     // }
-  });
-  handle
+  })
 }

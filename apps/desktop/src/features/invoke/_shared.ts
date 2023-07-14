@@ -7,6 +7,7 @@ export type InvokeIO<Input = Record<string, any>, Output = any> = {
 export enum InvokeCommand {
   //#region GENERATED
   GetConfig = "get_config",
+  SetConfig = "set_config",
   ReadDirectory = "read_directory",
   WriteFile = "write_file",
   ReadFile = "read_file",

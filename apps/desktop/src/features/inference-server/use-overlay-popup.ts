@@ -1,28 +1,35 @@
 import { useEffect, useRef, useState } from "react"
 
-export const useOverlayPopup = () => {
+export const useOverlayPopup = <
+  TButton extends HTMLButtonElement,
+  TPopup extends HTMLDivElement
+>() => {
   const [isVisible, setIsVisible] = useState(false)
-  const popupRef = useRef(null)
-  const buttonRef = useRef(null)
+  const buttonRef = useRef<TButton>(null)
+  const popupRef = useRef<TPopup>(null)
 
   const toggle = () => setIsVisible((v) => !v)
 
   useEffect(() => {
     if (!isVisible) return
 
-    const handleDocumentClick = (event: MouseEvent) => {
+    const handleExternalClick = (event: MouseEvent) => {
+      if (!(event.target instanceof Node)) {
+        return
+      }
+
       if (
-        !popupRef.current.contains(event.target) &&
-        !buttonRef.current.contains(event.target)
+        !popupRef.current?.contains(event.target) &&
+        !buttonRef.current?.contains(event.target)
       ) {
         setIsVisible(false)
       }
     }
 
-    document.addEventListener("click", handleDocumentClick)
+    document.addEventListener("click", handleExternalClick)
 
     return () => {
-      document.removeEventListener("click", handleDocumentClick)
+      document.removeEventListener("click", handleExternalClick)
     }
   }, [isVisible])
 

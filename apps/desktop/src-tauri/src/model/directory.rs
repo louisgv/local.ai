@@ -7,23 +7,6 @@ use crate::{
   utils::kv_bucket::remove_data,
 };
 
-// Move this to a state
-pub fn get_current_models_path(
-  default_path_state: tauri::State<'_, crate::path::State>,
-  config_bucket_state: tauri::State<'_, crate::config::State>,
-) -> Result<String, String> {
-  Ok(
-    config_bucket_state
-      .get(ConfigKey::ModelsDirectory)
-      .unwrap_or(
-        default_path_state
-          .models_directory_buf
-          .display()
-          .to_string(),
-      ),
-  )
-}
-
 static LOAD_MODIFIER: u64 = 3600 * 24;
 
 fn sort_files(
@@ -59,12 +42,12 @@ fn sort_files(
 
 #[tauri::command]
 pub async fn initialize_models_dir(
-  default_path_state: tauri::State<'_, crate::path::State>,
   config_bucket_state: tauri::State<'_, config::State>,
   model_stats_bucket_state: tauri::State<'_, model::stats::State>,
 ) -> Result<DirectoryState, String> {
-  let models_path =
-    get_current_models_path(default_path_state, config_bucket_state)?;
+  let models_path = config_bucket_state.read(ConfigKey::ModelsDirectory)?;
+
+  println!("{models_path}");
 
   let mut files = read_directory(models_path.as_str()).await?;
 
@@ -82,7 +65,7 @@ pub async fn update_models_dir(
   config_bucket: tauri::State<'_, config::State>,
   model_stats_bucket_state: tauri::State<'_, model::stats::State>,
 ) -> Result<DirectoryState, String> {
-  config_bucket.set(ConfigKey::ModelsDirectory, dir.to_string())?;
+  config_bucket.write(ConfigKey::ModelsDirectory, dir)?;
 
   let mut files = read_directory(dir).await?;
 

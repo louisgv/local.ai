@@ -1,0 +1,67 @@
+{
+  "name": "@local.ai/sdk",
+  "version": "0.0.1",
+  "description": "local.ai SDK for the browser",
+  "type": "module",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      "sse": [
+        "./src/sse.ts"
+      ]
+    }
+  },
+  "publishConfig": {
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "typesVersions": {
+      "*": {
+        "sse": [
+          "./dist/sse.d.ts"
+        ]
+      }
+    }
+  },
+  "exports": {
+    "./sse": {
+      "import": "./dist/sse.js",
+      "require": "./dist/sse.cjs",
+      "types": "./dist/sse.d.ts"
+    },
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "prepublishOnly": "pnpm build"
+  },
+  "author": "L ❤️ ☮ ✋",
+  "contributors": [
+    "@louisgv"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/louisgv/local.ai.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "AI",
+    "LLM",
+    "client",
+    "API"
+  ],
+  "devDependencies": {
+    "@plasmo/config": "workspace:*",
+    "cross-env": "7.0.3",
+    "tsup": "7.1.0",
+    "typescript": "5.1.6"
+  }
+}

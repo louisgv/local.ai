@@ -164,7 +164,7 @@ export function ChatSideBarToggle() {
     return null
   }
   return (
-    <Button onClick={() => toggleSidebar()}>
+    <Button className="w-10 p-3" onClick={() => toggleSidebar()}>
       {isSidebarShowing ? <SidebarCollapse /> : <SidebarExpand />}
     </Button>
   )

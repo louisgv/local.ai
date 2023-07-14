@@ -41,7 +41,7 @@ export const TokenInput = forwardRef<HTMLInputElement, StopSequenceInputProps>(
     }, [inputToken, localValue, onDone])
 
     return (
-      <div className={cn("relative flex rounded-md w-full", className)}>
+      <div className={cn("relative flex rounded-md w-full group", className)}>
         {(title || placeholder) && (
           <CornerLabel
             className={
@@ -59,19 +59,20 @@ export const TokenInput = forwardRef<HTMLInputElement, StopSequenceInputProps>(
             "h-full w-full",
             "py-2 px-3 rounded-md",
             "border border-gray-6 focus:border-gray-7",
-            "bg-transparent text-sm",
+            "text-sm",
+            "bg-gray-1 focus-within:bg-gray-2",
             "transition-all",
             "focus-visible:ring-1 focus-visible:ring-offset-2",
             "text-gray-11 focus:text-gray-12",
             "flex flex-wrap gap-1",
-            "focus-within:ring-1 focus-within:ring-offset-2 focus-within:ring-offset-gray-7 focus-within:ring-gray-8",
+            "focus-within:ring-1 focus-within:ring-offset-1 focus-within:ring-offset-gray-8 focus-within:ring-gray-7",
             className
           )}>
           {localValue.map((v, i) => (
             <span
               key={i}
               className="flex bg-gray-3 my-1 rounded-md overflow-hidden">
-              <pre className="bg-gray-1 shadow-inner px-1">{v}</pre>
+              <pre className="bg-gray-4 shadow-inner px-1">{v}</pre>
               <Button
                 className="w-5 h-5 p-1 rounded-l-none"
                 onClick={() => {
@@ -85,6 +86,7 @@ export const TokenInput = forwardRef<HTMLInputElement, StopSequenceInputProps>(
           ))}
           <input
             className={cn(
+              "w-full ring-0 border-0 focus:ring-0 p-0 pr-4",
               "bg-transparent text-sm focus-visible:outline-none",
               "disabled:cursor-not-allowed disabled:opacity-50",
               "transition-colors",

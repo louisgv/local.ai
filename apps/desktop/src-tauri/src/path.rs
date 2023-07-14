@@ -2,35 +2,12 @@ use std::{path::PathBuf, time::SystemTime};
 
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 use walkdir::WalkDir;
-
-/// Default paths - TODO: we should prob move this into config tbh
-#[derive(Clone)]
-pub struct State {
-  pub models_directory_buf: PathBuf,
-  pub threads_directory_buf: PathBuf,
-}
-
-impl State {
-  pub fn new(app: &mut tauri::App) -> Result<(), String> {
-    app.manage(State {
-      models_directory_buf: get_app_dir_path_buf(
-        app.handle(),
-        String::from("models"),
-      )?,
-      threads_directory_buf: get_app_dir_path_buf(
-        app.handle(),
-        String::from("threads"),
-      )?,
-    });
-    Ok(())
-  }
-}
 
 pub fn get_app_dir_path_buf(
   app_handle: AppHandle,
-  namespace: String,
+  namespace: &str,
 ) -> Result<PathBuf, String> {
   let ns_dir = app_handle
     .path_resolver()

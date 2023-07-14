@@ -3,6 +3,7 @@ macro_rules! make {
     #[derive(Clone)]
     pub struct State(
       pub crate::utils::kv_bucket::StateBucket<kv::Json<$state_type>>,
+      tauri::AppHandle,
     );
 
     impl State {
@@ -14,7 +15,10 @@ macro_rules! make {
           String::from($bucket_version),
         )?;
 
-        app.manage(State(std::sync::Arc::new(parking_lot::Mutex::new(bucket))));
+        app.manage(State(
+          std::sync::Arc::new(parking_lot::Mutex::new(bucket)),
+          app.app_handle(),
+        ));
         Ok(())
       }
 

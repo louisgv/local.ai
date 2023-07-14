@@ -13,8 +13,9 @@ export const useHybrid = <T>(defaultValue: T) => {
   )
 
   return {
-    set,
     render,
+    set,
+    ref: dataRef,
     get data() {
       return dataRef.current
     }

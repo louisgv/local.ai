@@ -48,8 +48,6 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     return HttpResponse::ServiceUnavailable().finish();
   }
 
-  let (token_sender, receiver) = flume::unbounded::<Bytes>();
-
   let model_guard = match model::pool::get_model() {
     Some(guard) => guard,
     None => {
@@ -58,6 +56,8 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     }
   };
 
+  let (token_sender, receiver) = flume::unbounded::<Bytes>();
+
   HttpResponse::Ok()
     .append_header(("Content-Type", "text/event-stream"))
     .append_header(("Cache-Control", "no-cache"))
@@ -65,20 +65,16 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     .streaming({
       let abort_flag = Arc::new(RwLock::new(false));
 
-      let inference_thread = match start(InferenceThreadRequest {
-        model_guard: model_guard.clone(),
-        abort_flag: abort_flag.clone(),
-        token_sender,
-        completion_request: payload.0,
-      }) {
-        Some(thread) => thread,
-        None => {
-          println!("Failed to spawn inference thread.");
-          return HttpResponse::InternalServerError().finish();
-        }
-      };
-
-      AbortStream::new(receiver, abort_flag.clone(), inference_thread)
+      AbortStream::new(
+        receiver,
+        abort_flag.clone(),
+        start(InferenceThreadRequest {
+          model_guard: model_guard.clone(),
+          abort_flag: abort_flag.clone(),
+          token_sender,
+          completion_request: payload.0,
+        }),
+      )
     })
 }
 

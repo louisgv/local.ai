@@ -62,6 +62,7 @@ flume = "0.10.14"
 chrono = "0.4.26"
 rand_chacha = "0.3.1"
 time = "0.2.23"
+strum = { version = "0.25", features = ["derive"] }
 
 diesel = { version = "2", features = ["sqlite"] }
 libsqlite3-sys = { version = "0.26.0", features = ["bundled"] }
