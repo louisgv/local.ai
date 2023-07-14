@@ -7,7 +7,8 @@ const baseConfig = {
     "@lab/ui",
     "@lab/theme",
     "@plasmo/utils",
-    "@plasmo/constants"
+    "@plasmo/constants",
+    "@local.ai/sdk"
   ],
   compiler: {
     emotion: true
