@@ -12,19 +12,6 @@ use crate::{
 
 static FILE_EXTENSION: &str = ".l.mdx";
 
-// Move this to a state
-pub fn get_current_threads_path(
-  default_path_state: tauri::State<'_, crate::path::State>,
-  config_bucket_state: tauri::State<'_, crate::config::State>,
-) -> Result<String, String> {
-  let default_models_path_buf = &default_path_state.threads_directory_buf;
-  Ok(
-    config_bucket_state
-      .get(ConfigKey::ThreadsDirectory)
-      .unwrap_or(default_models_path_buf.display().to_string()),
-  )
-}
-
 fn sort_files(files: &mut Vec<FileInfo>) {
   files.retain(|f| f.path.ends_with(FILE_EXTENSION));
   files.sort_unstable_by(|a, b| b.modified.cmp(&a.modified));
@@ -32,11 +19,9 @@ fn sort_files(files: &mut Vec<FileInfo>) {
 
 #[tauri::command]
 pub async fn initialize_threads_dir(
-  default_path_state: tauri::State<'_, crate::path::State>,
   config_bucket_state: tauri::State<'_, crate::config::State>,
 ) -> Result<DirectoryState, String> {
-  let threads_path =
-    get_current_threads_path(default_path_state, config_bucket_state)?;
+  let threads_path = config_bucket_state.read(ConfigKey::ThreadsDirectory)?;
 
   let mut files = crate::path::read_directory(threads_path.as_str()).await?;
 
@@ -53,7 +38,7 @@ pub async fn update_threads_dir(
   dir: &str,
   config_bucket_state: tauri::State<'_, crate::config::State>,
 ) -> Result<DirectoryState, String> {
-  config_bucket_state.set(ConfigKey::ThreadsDirectory, dir.to_string())?;
+  config_bucket_state.write(ConfigKey::ThreadsDirectory, dir)?;
 
   let mut files = crate::path::read_directory(dir).await?;
 
@@ -72,13 +57,11 @@ icon: {icon}
 
 #[tauri::command]
 pub async fn create_thread_file(
-  default_path_state: tauri::State<'_, crate::path::State>,
   config_bucket_state: tauri::State<'_, crate::config::State>,
 ) -> Result<FileInfo, String> {
   let date = Utc::now();
 
-  let threads_path =
-    get_current_threads_path(default_path_state, config_bucket_state)?;
+  let threads_path = config_bucket_state.read(ConfigKey::ThreadsDirectory)?;
 
   let threads_path_buf = std::path::PathBuf::from(&threads_path);
 

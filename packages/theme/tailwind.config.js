@@ -17,14 +17,20 @@ module.exports = {
       keyframes: {
         "k-scroll-x": {
           "0%": { transform: "translateX(0%)" },
-          "25%": { transform: "translateX(-100%)" },
-          "50%": { transform: "translateX(-80%)" },
-          "75%": { transform: "translateX(0%)" },
+          "42%": { transform: "translateX(0%)" },
+          "69%": { transform: "translateX(-99%)" },
+          "88%": { transform: "translateX(-69%)" },
           "100%": { transform: "translateX(0%)" }
+        },
+        "fade-in": {
+          "0%": { opacity: 0 },
+          "100%": { opacity: 1 }
         }
       },
       animation: {
-        "scroll-x": "k-scroll-x 10s linear infinite"
+        "scroll-x": "k-scroll-x 10s linear infinite",
+        "fade-in-once": "fade-in ease-in-out 0.47s forwards",
+        "fade-in-once-delayed": "fade-in ease-in-out 0.47s forwards 1.47s"
       }
     }
   },

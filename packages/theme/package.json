@@ -1,18 +1,18 @@
 {
-  "name": "@localai/theme",
+  "name": "@lab/theme",
   "description": "Theme package, should consist mostly of raw configuration, no integration",
   "private": true,
   "version": "0.0.0",
   "license": "ISC",
   "dependencies": {
     "@plasmo/config": "workspace:*",
-    "@radix-ui/colors": "0.1.8",
-    "@tailwindcss/forms": "0.5.3",
+    "@radix-ui/colors": "1.0.0",
+    "@tailwindcss/forms": "0.5.4",
     "@tailwindcss/typography": "0.5.9",
-    "class-variance-authority": "0.6.0",
+    "class-variance-authority": "0.6.1",
     "clsx": "1.2.1",
     "tailwind-merge": "1.13.2",
-    "tailwindcss": "3.3.2",
+    "tailwindcss": "3.3.3",
     "tailwindcss-animate": "1.0.6",
     "windy-radix-palette": "0.6.1"
   }

@@ -1,8 +1,9 @@
-import { cn } from "@localai/theme/utils"
+import { cn } from "@lab/theme/utils"
 import { ResetIcon } from "@radix-ui/react-icons"
 import { type InputHTMLAttributes, forwardRef } from "react"
 
 import { Button } from "./button"
+import { CornerLabel } from "./label"
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   onRevert?: () => void
@@ -11,21 +12,21 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ onRevert, className, type, children, ...props }, ref) => {
     return (
-      <div className={cn("relative flex h-10 rounded-md w-full", className)}>
+      <div
+        className={cn("relative flex h-10 rounded-md w-full group", className)}>
         {(props.title || props.placeholder) && (
-          <label
-            className={cn(
-              "absolute -top-2 right-2 text-xs bg-gray-3 px-2 py-px rounded-md transition-opacity z-10 text-ellipsis whitespace-nowrap",
+          <CornerLabel
+            className={
               props.title ||
-                props.defaultValue !== undefined ||
-                props.value ||
-                (typeof props.value === "number" &&
-                  (props.value === 0 || isNaN(props.value)))
+              props.defaultValue !== undefined ||
+              props.value ||
+              (typeof props.value === "number" &&
+                (props.value === 0 || isNaN(props.value)))
                 ? "opacity-100"
                 : "opacity-0"
-            )}>
+            }>
             {props.title || props.placeholder}
-          </label>
+          </CornerLabel>
         )}
 
         <input
@@ -34,12 +35,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           className={cn(
             "h-full w-full",
             "px-3 py-2 rounded-md",
-            "border border-gray-6 focus:border-gray-7",
-            "bg-transparent text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none",
+            "border border-gray-6 focus:border-gray-7 active:border-gray-8",
+            "bg-gray-1 focus:bg-gray-2",
+            "text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none",
             "disabled:cursor-not-allowed disabled:opacity-50",
             "transition-all",
-            "outline-1 focus:ring-offset-gray-7 focus-visible:ring-gray-8",
-            "focus-visible:ring-1 focus-visible:ring-offset-2",
+            "outline-1 focus:ring-offset-gray-8 focus-visible:ring-gray-7",
+            "focus-visible:ring-1 focus-visible:ring-offset-1",
             "placeholder:text-gray-10",
             "text-gray-11 focus:text-gray-12",
             className

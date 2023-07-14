@@ -18,7 +18,7 @@ export const FloatInput = forwardRef<HTMLInputElement, FloatInputProps>(
 
     useEffect(() => {
       setLocalValue(value.toFixed(floatingPoint))
-    }, [value])
+    }, [value, floatingPoint])
 
     return (
       <Input
@@ -38,3 +38,5 @@ export const FloatInput = forwardRef<HTMLInputElement, FloatInputProps>(
     )
   }
 )
+
+FloatInput.displayName = "FloatInput"

@@ -1,5 +1,5 @@
-import { Button, SpinnerButton } from "@localai/ui/button"
-import { Input } from "@localai/ui/input"
+import { Button, SpinnerButton } from "@lab/ui/button"
+import { Input } from "@lab/ui/input"
 import {
   DotsHorizontalIcon,
   OpenInNewWindowIcon,
@@ -41,19 +41,18 @@ export function ModelManagerView() {
       <ViewHeader>
         <ChatSideBarToggle />
         <div className="flex w-full">
-          {!!modelsDirectory && (
-            <SpinnerButton
-              className="w-10 p-3 rounded-r-none"
-              Icon={ReloadIcon}
-              isSpinning={isRefreshing}
-              title="Refresh Models Directory"
-              onClick={async () => {
-                await updateModelsDirectory()
-              }}
-            />
-          )}
+          <SpinnerButton
+            className="w-10 p-3 rounded-r-none"
+            Icon={ReloadIcon}
+            isSpinning={isRefreshing}
+            disabled={!modelsDirectory}
+            title="Refresh Models Directory"
+            onClick={async () => {
+              await updateModelsDirectory()
+            }}
+          />
           <Input
-            className="w-full lg:w-96 rounded-none border-gray-3"
+            className="w-full lg:w-72 rounded-none border-gray-3"
             value={modelsDirectory}
             readOnly
             placeholder="Models directory"

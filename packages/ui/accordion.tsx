@@ -1,4 +1,4 @@
-import { cn } from "@localai/theme/utils"
+import { cn } from "@lab/theme/utils"
 import { ChevronDownIcon } from "@radix-ui/react-icons"
 import type { ReactNode } from "react"
 import { useState } from "react"

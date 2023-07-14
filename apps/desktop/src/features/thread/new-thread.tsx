@@ -1,4 +1,4 @@
-import { Button } from "@localai/ui/button"
+import { Button } from "@lab/ui/button"
 import { FilePlusIcon } from "@radix-ui/react-icons"
 
 import { InvokeCommand, invoke } from "~features/invoke"

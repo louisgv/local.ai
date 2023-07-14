@@ -2,7 +2,7 @@ import { createProvider } from "puro"
 import { useContext } from "react"
 import useSWR from "swr"
 
-const fallbackVersion = "0.0.5"
+const fallbackVersion = "0.4.0"
 
 const useGlobalProvider = () => {
   const { data: version } = useSWR("/api/update", (url) =>

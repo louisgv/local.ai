@@ -1,4 +1,4 @@
-import { cn } from "@localai/theme/utils"
+import { cn } from "@lab/theme/utils"
 import type { ReactNode } from "react"
 
 /**
@@ -11,10 +11,15 @@ export const AppLayout = ({
   sidebar = null as ReactNode,
   bottom = null as ReactNode,
   children = null as ReactNode,
-  showSidebar = false
+  showSidebar = false,
+  className = ""
 }) => {
   return (
-    <div className="h-screen w-screen bg-gray-1 text-gray-11 flex">
+    <div
+      className={cn(
+        "h-screen w-screen bg-gray-1 text-gray-11 flex",
+        className
+      )}>
       <div
         className={cn(
           "transition-all border-r border-r-gray-6",

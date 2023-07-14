@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from "react"
 
 import { type ValidCommand, invoke } from "~features/invoke"
-import type { FileInfo } from "~features/model-downloader/model-file"
 
 export const createFileConfigStore =
   <T>(getterCommand: ValidCommand, setterCommand: ValidCommand) =>
-  (file: FileInfo, defaultData?: T) => {
+  (file: { path: string }, defaultData?: T) => {
     const [data, _setData] = useState<T>(defaultData)
 
     useEffect(() => {

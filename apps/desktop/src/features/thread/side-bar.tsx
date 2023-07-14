@@ -1,6 +1,6 @@
-import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
-import { Input } from "@localai/ui/input"
+import { cn } from "@lab/theme/utils"
+import { Button } from "@lab/ui/button"
+import { Input } from "@lab/ui/input"
 import {
   CheckIcon,
   Cross2Icon,
@@ -164,7 +164,7 @@ export function ChatSideBarToggle() {
     return null
   }
   return (
-    <Button onClick={() => toggleSidebar()}>
+    <Button className="w-10 p-3" onClick={() => toggleSidebar()}>
       {isSidebarShowing ? <SidebarCollapse /> : <SidebarExpand />}
     </Button>
   )

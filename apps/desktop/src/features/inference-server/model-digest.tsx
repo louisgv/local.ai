@@ -1,5 +1,5 @@
-import { cn } from "@localai/theme/utils"
-import { SpinnerButton } from "@localai/ui/button"
+import { cn } from "@lab/theme/utils"
+import { SpinnerButton } from "@lab/ui/button"
 import { CrossCircledIcon, ReloadIcon } from "@radix-ui/react-icons"
 import { ShoppingCodeCheck } from "iconoir-react"
 

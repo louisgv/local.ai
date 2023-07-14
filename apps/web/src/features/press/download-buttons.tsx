@@ -1,6 +1,6 @@
-import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
-import { QuickLink } from "@localai/ui/link"
+import { cn } from "@lab/theme/utils"
+import { Button } from "@lab/ui/button"
+import { QuickLink } from "@lab/ui/link"
 import { DownloadIcon, GitHubLogoIcon } from "@radix-ui/react-icons"
 import { AppleMac, Linux, Windows } from "iconoir-react"
 

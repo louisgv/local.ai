@@ -130,8 +130,4 @@ impl CompletionResponse {
 
     Bytes::from(format!("data: {}\n\n", serialized))
   }
-
-  pub fn done() -> Bytes {
-    Bytes::from("data: [DONE]")
-  }
 }

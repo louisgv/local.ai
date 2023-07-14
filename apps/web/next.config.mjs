@@ -4,8 +4,8 @@
 const baseConfig = {
   reactStrictMode: true,
   transpilePackages: [
-    "@localai/ui",
-    "@localai/theme",
+    "@lab/ui",
+    "@lab/theme",
     "@plasmo/utils",
     "@plasmo/constants"
   ],

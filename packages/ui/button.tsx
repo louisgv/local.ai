@@ -1,4 +1,4 @@
-import { cn } from "@localai/theme/utils"
+import { cn } from "@lab/theme/utils"
 import {
   type ButtonHTMLAttributes,
   type ComponentType,
@@ -9,23 +9,27 @@ import { Spinner } from "./spinner"
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {}
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, ...props }, ref) => (
     <button
       {...props}
       ref={ref}
       className={cn(
         "py-2 px-4 h-10",
-        `bg-gray-3 hover:bg-gray-4 text-sm flex flex-row items-center gap-2 rounded-md transition`,
-        "disabled:text-gray-9",
+        `text-sm flex flex-row items-center gap-2 rounded-md transition`,
+        "disabled:text-gray-9 disabled:bg-gray-1",
+        "bg-gray-3 hover:bg-gray-4",
         "text-gray-11 hover:text-gray-12",
+        "active:scale-105",
         className
       )}
     />
   )
 )
 
-export const SpinnerButton = forwardRef<
+Button.displayName = "Button"
+
+const SpinnerButton = forwardRef<
   HTMLButtonElement,
   ButtonProps & {
     Icon?: ComponentType<{ className?: string }>
@@ -41,3 +45,7 @@ export const SpinnerButton = forwardRef<
     {children}
   </Button>
 ))
+
+SpinnerButton.displayName = "SpinnerButton"
+
+export { Button, SpinnerButton }

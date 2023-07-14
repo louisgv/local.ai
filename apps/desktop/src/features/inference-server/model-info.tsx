@@ -1,5 +1,5 @@
-import { cn } from "@localai/theme/utils"
-import { Button } from "@localai/ui/button"
+import { cn } from "@lab/theme/utils"
+import { Button } from "@lab/ui/button"
 import { CrossCircledIcon, InfoCircledIcon } from "@radix-ui/react-icons"
 
 import { useOverlayPopup } from "~features/inference-server/use-overlay-popup"

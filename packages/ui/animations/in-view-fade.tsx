@@ -1,4 +1,4 @@
-import clsx from "clsx"
+import { cn } from "@lab/theme/utils"
 import type { ReactNode } from "react"
 import { useInView } from "react-intersection-observer"
 
@@ -15,7 +15,7 @@ export const InViewFadeUp = ({
     <div
       id={id}
       ref={ref}
-      className={clsx(
+      className={cn(
         "transition-all duration-700 will-change-transform",
         inView
           ? "opacity-100 transform translate-y-0"

@@ -21,6 +21,8 @@ pub static LOADED_MODEL_POOL: Lazy<Mutex<VecDeque<Option<ModelGuard>>>> =
 
 pub static CONCURRENCY_COUNT: Lazy<Mutex<usize>> = Lazy::new(|| Mutex::new(0));
 
+pub static USE_GPU: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
+
 pub fn is_empty() -> bool {
   let models = LOADED_MODEL_POOL.lock();
   models.is_empty()
@@ -40,11 +42,16 @@ pub fn get_n_threads() -> usize {
   num_cpus::get_physical() / (*CONCURRENCY_COUNT.lock())
 }
 
+pub fn get_use_gpu() -> bool {
+  *USE_GPU.lock()
+}
+
 pub async fn spawn_pool(
   path: &str,
   model_config: &ModelConfig,
   concurrency: usize,
   cache_dir: &PathBuf,
+  use_gpu: bool,
 ) -> Result<(), String> {
   let now = std::time::Instant::now();
   let model_path = Path::new(path);
@@ -56,12 +63,13 @@ pub async fn spawn_pool(
   let original_model_path = model_path.to_path_buf();
 
   *CONCURRENCY_COUNT.lock() = concurrency;
+  *USE_GPU.lock() = use_gpu;
 
   for i in 0..concurrency {
     let cache_name = format!("run_cache_{}", i);
     let cache_file_path = cache_dir.join(cache_name);
     let original_model_path = original_model_path.clone();
-    let vocabulary_source = model_config.get_vocab();
+    let tokenizer_source = model_config.get_tokenizer();
     let task = tokio::task::spawn_blocking(move || {
       if !skip_copy {
         fs::copy(&original_model_path, &cache_file_path)
@@ -77,11 +85,12 @@ pub async fn spawn_pool(
       match llm::load_dynamic(
         architecture,
         cache_path.as_path(),
-        vocabulary_source,
+        tokenizer_source,
         llm::ModelParameters {
           prefer_mmap: true,
           // TODO: need to figure out how to assign this properly, and automatically
           // context_size: 8472,
+          use_gpu,
           ..Default::default()
         },
         load_progress_callback_stdout,
@@ -125,14 +134,14 @@ pub async fn load_model<'a>(
   app_handle: AppHandle,
   path: &str,
   concurrency: usize,
+  use_gpu: bool,
 ) -> Result<(), String> {
-  config_state.set(ConfigKey::OnboardState, format!("done"))?;
+  config_state.write(ConfigKey::OnboardState, "done")?;
   model_stats_bucket_state.increment_load_count(path)?;
 
-  let cache_dir =
-    get_app_dir_path_buf(app_handle, String::from("inference_cache"))?;
+  let cache_dir = get_app_dir_path_buf(app_handle, "inference_cache")?;
 
   let model_config = model_config_bucket_state.get(path).unwrap_or_default();
 
-  spawn_pool(path, &model_config, concurrency, &cache_dir).await
+  spawn_pool(path, &model_config, concurrency, &cache_dir, use_gpu).await
 }

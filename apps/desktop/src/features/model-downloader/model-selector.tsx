@@ -1,12 +1,12 @@
-import { cn } from "@localai/theme/utils"
-import { SpinnerButton } from "@localai/ui/button"
+import { cn } from "@lab/theme/utils"
+import { SpinnerButton } from "@lab/ui/button"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from "@localai/ui/select"
+} from "@lab/ui/select"
 import { DownloadIcon } from "@radix-ui/react-icons"
 import { useMemo, useState } from "react"
 import Balancer from "react-wrap-balancer"

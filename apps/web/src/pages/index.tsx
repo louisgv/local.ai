@@ -1,6 +1,6 @@
-import { cn } from "@localai/theme/utils"
-import { BasicLayout } from "@localai/ui/layouts/base"
-import { QuickLink } from "@localai/ui/link"
+import { cn } from "@lab/theme/utils"
+import { BasicLayout } from "@lab/ui/layouts/base"
+import { QuickLink } from "@lab/ui/link"
 import { clsx } from "clsx"
 import {
   BrainElectricity,
@@ -143,8 +143,8 @@ const IndexPage: NextPage = () => (
           </h1>
           <p className="text-xl max-w-xl">
             <Balancer>
-              Experiment with AI models locally with a native app designed to
-              simplify the whole process.
+              Experiment with AI offline, in private. No GPU required! - A
+              native app made to simplify the whole process.
             </Balancer>
           </p>
           <p className="text-md text-gray-10 mt-2">
