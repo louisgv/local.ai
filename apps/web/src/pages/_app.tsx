@@ -6,7 +6,6 @@ import { DynamicFavIcon } from "~providers/seo"
 
 import "@lab/theme/fonts.css"
 import "@lab/theme/tailwind.css"
-import "@lab/theme/scrollbar.css"
 
 import Head from "next/head"
 

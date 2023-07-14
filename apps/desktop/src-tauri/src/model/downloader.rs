@@ -1,4 +1,4 @@
-use crate::model::directory::get_current_models_path;
+use crate::config::ConfigKey;
 use crate::model::integrity::{compute_file_integrity, ModelIntegrity};
 use crate::utils::kv_bucket::{self, get_state_json, StateBucket};
 use kv::Json;
@@ -171,7 +171,6 @@ pub async fn resume_download(
 pub async fn start_download(
   window: Window,
   state: tauri::State<'_, State>,
-  default_path_state: tauri::State<'_, crate::path::State>,
   config_state: tauri::State<'_, crate::config::State>,
   model_integrity_state: tauri::State<'_, crate::model::integrity::State>,
   name: String,
@@ -181,7 +180,7 @@ pub async fn start_download(
   println!("download_model: {}", download_url);
   println!("digest: {}", digest);
 
-  let models_path = get_current_models_path(default_path_state, config_state)?;
+  let models_path = config_state.read(ConfigKey::ModelsDirectory)?;
 
   let output_path_buf = Path::new(&models_path).join(format!("{}.bin", name));
   let output_path = output_path_buf.display().to_string();

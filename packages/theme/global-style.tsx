@@ -6,8 +6,18 @@ export const GlobalStyle = () => (
     body {
       padding: 0;
       margin: 0;
-      font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-        Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        Segoe UI,
+        Roboto,
+        Oxygen,
+        Ubuntu,
+        Cantarell,
+        Fira Sans,
+        Droid Sans,
+        Helvetica Neue,
         sans-serif;
     }
 
@@ -26,27 +36,33 @@ export const GlobalStyle = () => (
     #__next {
     }
 
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: var(--mauve2);
-    }
-
     *::-webkit-scrollbar {
       width: 8px;
       height: 8px;
     }
 
-    body::-webkit-scrollbar-track {
-      background-color: var(--mauve2);
-    }
-
-    body::-webkit-scrollbar-thumb {
-      border: 2px solid var(--mauve2);
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: hsl(var(--gray6));
     }
 
     *::-webkit-scrollbar-thumb {
-      min-height: 42px;
-      background-color: var(--mauve2);
+      box-shadow: inset 0 0 16px 16px hsl(var(--gray6));
+    }
+
+    *::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    *::-webkit-scrollbar-track {
+      margin: 0;
+      width: 24px;
+      background-color: hsl(var(--gray2));
+    }
+
+    *::-webkit-scrollbar-corner {
+      width: auto;
     }
 
     input[type="number"]::-webkit-outer-spin-button,

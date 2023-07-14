@@ -1,4 +1,3 @@
-import type { DefaultSeoProps } from "next-seo"
 import Head from "next/head"
 
 export const DynamicFavIcon = () => {

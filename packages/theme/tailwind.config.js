@@ -29,7 +29,8 @@ module.exports = {
       },
       animation: {
         "scroll-x": "k-scroll-x 10s linear infinite",
-        "fade-in-once": "fade-in ease-in-out 0.47s forwards"
+        "fade-in-once": "fade-in ease-in-out 0.47s forwards",
+        "fade-in-once-delayed": "fade-in ease-in-out 0.47s forwards 1.47s"
       }
     }
   },

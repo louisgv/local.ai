@@ -6,11 +6,13 @@ import {
   vscDarkPlus
 } from "react-syntax-highlighter/dist/cjs/styles/prism"
 
-import { useMatchMedia } from "./hooks/use-match-media"
 import { CornerLabel } from "./label"
+import { useUI } from "./provider"
 
 export const MdxCode: CodeComponent = (props) => {
-  const isDarkTheme = useMatchMedia("(prefers-color-scheme: dark)")
+  const {
+    darkModeState: [isDarkTheme]
+  } = useUI()
 
   const language = useMemo(
     () => /language-(\w+)/.exec(props.className || "")?.[1] || "",

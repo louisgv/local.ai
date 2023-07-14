@@ -86,6 +86,7 @@ export const TokenInput = forwardRef<HTMLInputElement, StopSequenceInputProps>(
           ))}
           <input
             className={cn(
+              "w-full ring-0 border-0 focus:ring-0 p-0 pr-4",
               "bg-transparent text-sm focus-visible:outline-none",
               "disabled:cursor-not-allowed disabled:opacity-50",
               "transition-colors",
