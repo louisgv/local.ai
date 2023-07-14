@@ -64,10 +64,11 @@ export const ServerConfig = () => {
       <SpinnerButton
         isSpinning={isLoading}
         className={cn(
-          "w-32 justify-center border",
+          "w-32 justify-center",
+          "text-white/80 hover:text-white",
           isStarted
-            ? "border-red-7 hover:border-red-8 text-red-11 hover:text-red-12"
-            : "border-green-9 hover:border-green-10 text-green-11 hover:text-green-12"
+            ? "bg-red-9 hover:bg-red-10"
+            : "bg-green-9 hover:bg-green-10"
         )}
         onClick={async () => {
           setIsLoading(true)

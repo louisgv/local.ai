@@ -2,8 +2,7 @@
 
 import type { WebviewWindow } from "@tauri-apps/api/window"
 import { createProvider } from "puro"
-import { useEffect, useRef } from "react"
-import { useContext, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 
 import { createFileConfigStore } from "~features/inference-server/file-config-store"
 import { useInit } from "~features/inference-server/use-init"
@@ -11,6 +10,7 @@ import { useModelsDirectory } from "~features/inference-server/use-models-direct
 import { InvokeCommand, invoke } from "~features/invoke"
 import type { ServerConfig } from "~features/invoke/server"
 import { useToggle } from "~features/layout/use-toggle"
+import { useSystemTheme } from "~features/misc/use-system-theme"
 import type {
   FileInfo,
   ModelMetadata
@@ -76,21 +76,26 @@ const useGlobalProvider = () => {
 
   const knownModels = useModelsApi()
 
+  const { initTheme } = useSystemTheme()
+
   useInit(async () => {
     const { getCurrent } = await import("@tauri-apps/api/window")
     const currentWindow = getCurrent()
     windowRef.current = currentWindow
     _window = currentWindow
 
-    const [isVisible, initialOnboardState] = await Promise.all([
+    const [isVisible, onboardRes] = await Promise.allSettled([
       currentWindow.isVisible(),
       invoke(InvokeCommand.GetConfig, {
-        key: "onboard_state"
-      }).catch<null>((_) => null),
+        path: "onboard_state"
+      }),
+      initTheme(),
       setTitle()
     ])
 
-    onboardState[1](initialOnboardState)
+    if (onboardRes.status === "fulfilled") {
+      onboardState[1](onboardRes.value.data)
+    }
 
     if (!isVisible) {
       await currentWindow.center()

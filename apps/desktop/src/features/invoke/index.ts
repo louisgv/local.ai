@@ -11,7 +11,8 @@ type InvokeCommandMap = {
   [InvokeCommand.LoadModel]: InvokeIO
 
   [InvokeCommand.OpenDirectory]: InvokeIO<{ path: string }>
-  [InvokeCommand.GetConfig]: InvokeIO<{ key: string }, string>
+  [InvokeCommand.GetConfig]: InvokeIO<{ path: string }, { data: string }>
+  [InvokeCommand.SetConfig]: InvokeIO<{ path: string; data: string }>
 } & ThreadCommandMap &
   ModelCommandMap &
   ServerCommandMap

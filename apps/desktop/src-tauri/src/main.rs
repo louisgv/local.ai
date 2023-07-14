@@ -18,7 +18,6 @@ fn main() {
     .manage(inference::server::State::default())
     .plugin(tauri_plugin_persisted_scope::init())
     .setup(|app| {
-      path::State::new(app)?;
       config::State::new(app)?;
 
       model::downloader::State::new(app)?;
@@ -41,6 +40,7 @@ fn main() {
     // NOTE: When adding new commands, make sure to run the generate_ts_enums test to update the TS enum
     .invoke_handler(tauri::generate_handler![
       config::get_config,
+      config::set_config,
       path::read_directory,
       path::write_file,
       path::read_file,

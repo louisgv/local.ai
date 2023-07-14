@@ -136,11 +136,10 @@ pub async fn load_model<'a>(
   concurrency: usize,
   use_gpu: bool,
 ) -> Result<(), String> {
-  config_state.set(ConfigKey::OnboardState, format!("done"))?;
+  config_state.write(ConfigKey::OnboardState, "done")?;
   model_stats_bucket_state.increment_load_count(path)?;
 
-  let cache_dir =
-    get_app_dir_path_buf(app_handle, String::from("inference_cache"))?;
+  let cache_dir = get_app_dir_path_buf(app_handle, "inference_cache")?;
 
   let model_config = model_config_bucket_state.get(path).unwrap_or_default();
 
