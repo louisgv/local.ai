@@ -13,12 +13,10 @@ edition = "2021"
 tauri-build = { version = "1.4.0", features = [] }
 
 [dependencies]
-llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
+# Peg the llm version here to prevent unwanted breaking changes
+llm = { git = "https://github.com/rustformers/llm", rev = "645093e", package = "llm", features = [
   "default",
-  # "cublas",
 ] }
-
-# llm = { git = "https://github.com/RedBoxing/llm.git", branch = "hf-tokenizer", package = "llm" }
 
 tauri = { version = "1.4.0", features = [
   "reqwest-client",
@@ -76,26 +74,20 @@ blake3 = "1.3.3"
 cocoa = "0.24.1"
 objc = "0.2.7"
 
+
 [target.aarch64-apple-darwin.dependencies]
-llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
+llm = { git = "https://github.com/rustformers/llm", rev = "645093e", package = "llm", features = [
   "default",
   "metal",
 ] }
 
 [target."cfg(target_os = \"linux\")".dependencies]
 webkit2gtk = "0.18.2"
-# llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
-#   "default",
-#   "cublas",
-# ] }
+
 
 [target."cfg(target_os = \"windows\")".dependencies]
 webview2-com = "0.19.1"
 windows = "0.39.0"
-# llm = { git = "https://github.com/rustformers/llm", branch = "main", package = "llm", features = [
-#   "default",
-#   "cublas",
-# ] }
 
 # For testing local tauri builder
 # [patch.crates-io]
@@ -109,6 +101,10 @@ default = ["custom-protocol"]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = ["tauri/custom-protocol"]
+
+cublas = ["llm/cublas"]
+clblast = ["llm/clblast"]
+metal = ["llm/metal"]
 
 [profile.dev.package."*"]
 opt-level = 3

@@ -1,7 +1,6 @@
 #[tauri::command]
 pub async fn check_gpu() -> Result<bool, String> {
-  // TODO: actually check if Metal is available in the future (?)
-  if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+  if llm::ggml_get_accelerator() != llm::GgmlAccelerator::None {
     Ok(true)
   } else {
     Ok(false)

@@ -66,12 +66,9 @@ fn get_inference_params(
   completion_request: &CompletionRequest,
 ) -> InferenceParameters {
   let n_threads = model::pool::get_n_threads();
-
   let n_batch = if get_use_gpu() { 240 } else { n_threads };
 
   InferenceParameters {
-    n_threads,
-    n_batch,
     sampler: Arc::new(completion_request.to_top_p_top_k()),
   }
 }
@@ -109,7 +106,6 @@ pub fn start(req: InferenceThreadRequest) -> JoinHandle<()> {
 
     match session.feed_prompt::<Infallible, Prompt>(
       model.as_ref(),
-      &inference_params,
       req.completion_request.prompt.as_str().into(),
       &mut output_request,
       |t| {
