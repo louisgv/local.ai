@@ -97,7 +97,7 @@ const useGlobalProvider = () => {
       onboardState[1](onboardRes.value.data)
     }
 
-    if (!isVisible) {
+    if (isVisible.status === "rejected" || !isVisible.value) {
       await currentWindow.center()
       await currentWindow.show()
     }

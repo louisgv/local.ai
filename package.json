@@ -12,6 +12,7 @@
     "dev:web": "turbo run dev --filter=@localai/web",
     "dev:desktop": "turbo run dev --filter=@localai/desktop",
     "build": "turbo run build",
+    "build:sdk": "turbo run build --filter=@local.ai/sdk",
     "build:web": "turbo run build --filter=@localai/web",
     "build:desktop": "turbo run build --filter=@localai/desktop",
     "build:desktop:sign": "dotenv -- turbo run build --filter=@localai/desktop",

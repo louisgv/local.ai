@@ -82,8 +82,10 @@ jobs:
           Remove-Item -path certificate -include tempCert.txt
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText)
 
-      - name: pnpm i
-        run: pnpm i
+      - name: pnpm stuffs
+        run: |
+          pnpm i
+          pnpm build:sdk
 
       - name: to tauri path
         run: |

@@ -15,7 +15,7 @@ export const createFileConfigStore =
         .catch((_) => {
           _setData(defaultData)
         })
-    }, [file?.path])
+    }, [file?.path, defaultData])
 
     const update = useCallback(
       async (newValue: Partial<T>) => {
