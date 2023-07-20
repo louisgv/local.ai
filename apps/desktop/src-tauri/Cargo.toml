@@ -9,10 +9,21 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[[bin]]
+name = "force-build"
+path = "build.rs"
+required-features = ["build_deps"] 
+
 [build-dependencies]
 tauri-build = { version = "1.4.0", features = [] }
+glob = "0.3"
 
 [dependencies]
+# Only used when the build is run standalone
+tauri-build = { version = "1.4.0", features = [] , optional = true }
+glob = { version = "0.3", optional = true }
+
+
 # Peg the llm version here to prevent unwanted breaking changes
 llm = { git = "https://github.com/rustformers/llm", rev = "645093e", package = "llm", features = [
   "default",
@@ -105,6 +116,8 @@ custom-protocol = ["tauri/custom-protocol"]
 cublas = ["llm/cublas"]
 clblast = ["llm/clblast"]
 metal = ["llm/metal"]
+
+build_deps = ["glob", "tauri-build"]
 
 [profile.dev.package."*"]
 opt-level = 3

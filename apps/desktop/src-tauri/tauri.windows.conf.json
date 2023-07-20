@@ -1,8 +1,0 @@
-{
-  "tauri": {
-    "bundle": {
-      "identifier": "app.localai.desktop",
-      "resources": []
-    }
-  }
-}
