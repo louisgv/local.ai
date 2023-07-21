@@ -158,7 +158,7 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
         {
           async onComment(comment) {
             setStatusMessage(comment)
-            await wait(42)
+            await wait(serverConfig.data.useGpu ? 3 : 42)
           },
           async onData(data) {
             const resp = JSON.parse(data) as StreamResponse
