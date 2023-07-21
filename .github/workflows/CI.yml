@@ -86,6 +86,13 @@ jobs:
           cd apps
           cd desktop
 
+      - name: Get release infos
+        id: release_infos
+        run: |
+          echo "::set-output name=release_body::${{ github.event.release.body || 'Default release body' }}"
+          echo "::set-output name=release_id::${{ github.event.release.id || 'default_id' }}"
+          echo "::set-output name=tag_name::${{ github.event.release.tag_name || 'default_tag' }}"
+
       - name: Build the app
         id: tauri_action
         uses: tauri-apps/tauri-action@dev
@@ -105,11 +112,11 @@ jobs:
 
         with:
           prerelease: false
-          releaseDraft: ${{ startsWith(github.ref, 'refs/tags/') }}
+          releaseDraft: ${{ !startsWith(github.ref, 'refs/tags/') }}
           releaseName: "v__VERSION__"
-          releaseBody: ${{ github.event.release.body }}
-          releaseId: ${{ github.event.release.id }}
-          tagName: ${{ github.event.release.tag_name }}
+          releaseBody: ${{ steps.release_infos.outputs.release_body }}
+          releaseId: ${{ steps.release_infos.outputs.release_id }}
+          tagName: ${{ steps.release_infos.outputs.tag_name }}
           args: "--features ${{ matrix.accelerator }}"
 
       - name: Upload Artifacts
