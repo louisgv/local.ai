@@ -89,9 +89,9 @@ jobs:
       - name: Get release infos
         id: release_infos
         run: |
-          echo "::set-output name=release_body::${{ github.event.release.body || 'Default release body' }}"
-          echo "::set-output name=release_id::${{ github.event.release.id || 'default_id' }}"
-          echo "::set-output name=tag_name::${{ github.event.release.tag_name || 'default_tag' }}"
+          echo "release_body=${{ github.event.release.body || 'Default release body' }}" >> $GITHUB_OUTPUT
+          echo "release_id=${{ github.event.release.id || 'default_id' }}" >> $GITHUB_OUTPUT
+          echo "tag_name=${{ github.event.release.tag_name || 'default_tag' }}" >> $GITHUB_OUTPUT
 
       - name: Build the app
         id: tauri_action
@@ -119,8 +119,15 @@ jobs:
           tagName: ${{ steps.release_infos.outputs.tag_name }}
           args: "--features ${{ matrix.accelerator }}"
 
+      - name: List Artifacts
+        run: |
+          echo ${{steps.tauri_action.outputs.artifactPaths}}
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: artifacts
-          path: ${{steps.tauri_action.outputs.artifactPaths}}
+          name: "linux-${{ matrix.accelerator }}"
+          if-no-files-found: error
+          path: |
+            src-tauri/target/release/bundle/**/*.dep
+            src-tauri/target/release/bundle/**/*.AppImage*
