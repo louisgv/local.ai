@@ -88,6 +88,7 @@ jobs:
 
       - name: Get release infos
         id: release_infos
+        shell: bash
         run: |
           echo "release_body=${{ github.event.release.body || 'Default release body' }}" >> $GITHUB_OUTPUT
           echo "release_id=${{ github.event.release.id || 'default_id' }}" >> $GITHUB_OUTPUT
@@ -120,6 +121,7 @@ jobs:
           args: "--features ${{ matrix.accelerator }}"
 
       - name: List Artifacts
+        shell: bash
         run: |
           echo ${{steps.tauri_action.outputs.artifactPaths}}
 
@@ -129,8 +131,8 @@ jobs:
           name: "linux-${{ matrix.accelerator }}"
           if-no-files-found: error
           path: |
-            src-tauri/target/release/bundle/**/*.dep
-            src-tauri/target/release/bundle/**/*.AppImage*
+            ./src-tauri/target/release/bundle/**/*.dep
+            ./src-tauri/target/release/bundle/**/*.AppImage*
 
   windows:
     strategy:
@@ -222,6 +224,7 @@ jobs:
 
       - name: Get release infos
         id: release_infos
+        shell: bash
         run: |
           echo "release_body=${{ github.event.release.body || 'Default release body' }}" >> $GITHUB_OUTPUT
           echo "release_id=${{ github.event.release.id || 'default_id' }}" >> $GITHUB_OUTPUT
@@ -254,6 +257,7 @@ jobs:
           args: "--features ${{ matrix.accelerator }}"
 
       - name: List Artifacts
+        shell: bash
         run: |
           echo ${{steps.tauri_action.outputs.artifactPaths}}
 
@@ -263,5 +267,108 @@ jobs:
           name: "windows-${{ matrix.accelerator }}"
           if-no-files-found: error
           path: |
-            src-tauri/target/release/bundle/**/*.exe
-            src-tauri/target/release/bundle/**/*.msi
+            ./src-tauri/target/release/bundle/**/*.exe
+            ./src-tauri/target/release/bundle/**/*.msi
+
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [x86_64, aarch64]
+    runs-on: macos-latest
+    steps:
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./apps/desktop/src-tauri -> target"
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.4
+        with:
+          version: "latest"
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: run pnpm
+        run: |
+          pnpm i
+          pnpm build:sdk
+
+      - name: Change directory to tauri path
+        run: |
+          cd apps
+          cd desktop
+
+      - name: Get release infos
+        id: release_infos
+        shell: bash
+        run: |
+          echo "release_body=${{ github.event.release.body || 'Default release body' }}" >> $GITHUB_OUTPUT
+          echo "release_id=${{ github.event.release.id || 'default_id' }}" >> $GITHUB_OUTPUT
+          echo "tag_name=${{ github.event.release.tag_name || 'default_tag' }}" >> $GITHUB_OUTPUT
+
+      - name: Build the app
+        id: tauri_action
+        uses: tauri-apps/tauri-action@dev
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+
+          ENABLE_CODE_SIGNING: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_PROVIDER_SHORT_NAME: ${{ secrets.APPLE_PROVIDER_SHORT_NAME }}
+
+          # Needed to make the build run on Apple Silicon
+          CC: clang
+          CXX: clang++
+          MACOSX_DEPLOYMENT_TARGET: 10.9
+
+
+        with:
+          prerelease: false
+          releaseDraft: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          releaseName: "v__VERSION__"
+          releaseBody: ${{ steps.release_infos.outputs.release_body }}
+          releaseId: ${{ steps.release_infos.outputs.release_id }}
+          tagName: ${{ steps.release_infos.outputs.tag_name }}
+          args: "--target ${{matrix.target}} --features metal"
+
+      - name: List Artifacts
+        shell: bash
+        run: |
+          echo ${{steps.tauri_action.outputs.artifactPaths}}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: "macos"
+          if-no-files-found: error
+          path: |
+            ./src-tauri/target/release/bundle/**/*.dmg
