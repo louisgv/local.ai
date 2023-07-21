@@ -11,6 +11,7 @@ fn main() {
     tauri_build::build();
 }
 
+#[allow(dead_code)]
 fn get_build_dir()->PathBuf{
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let mut build_dir = Path::new(&manifest_dir).join("target");
@@ -18,6 +19,7 @@ fn get_build_dir()->PathBuf{
     build_dir
 }
 
+#[allow(dead_code)]
 fn copy_cuda_dlls(){
     // Get the directory of the output executable.
     let out_dir = get_build_dir();
@@ -71,7 +73,39 @@ fn copy_cuda_dlls(){
     }
 }
 
-
+#[allow(dead_code)]
 fn copy_opencl_dlls(){
-    //TODO
+    // Get the directory of the output executable.
+    let out_dir = get_build_dir();
+
+    let copy_dll = |source:PathBuf| {
+        let dll_file_name = source.file_name().unwrap();
+        let destination = Path::new(&out_dir).join(dll_file_name);
+        if !destination.exists() {
+            fs::copy(&source, &destination)
+                .expect(format!("Failed to copy DLL {}", dll_file_name.to_string_lossy()).as_str());
+            println!("Moved {} to {}", dll_file_name.to_string_lossy(), destination.to_string_lossy());
+        }
+    };
+
+    let clblast_dll;
+    let opencl_dll;
+    #[cfg(target_os  = "windows")]
+    {
+        let clblast_dir = env::var("CLBLAST_PATH").expect("CLBLAST_PATH not found!");
+        clblast_dll = Path::new(&clblast_dir).join("bin").join("clblast.dll");
+
+        let opencl_dir = env::var("OPENCL_PATH").expect("OPENCL_PATH not found!");
+        opencl_dll = Path::new(&opencl_dir).join("bin").join("OpenCL.dll");
+    }
+
+    #[cfg(target_os  = "linux")]
+    {
+        let lib_path = Path::new("/usr/lib/x86_64-linux-gnu");
+        clblast_dll = lib_path.join("libclblast.so");
+        opencl_dll = lib_path.join("libOpenCL.so");
+    }
+
+    copy_dll(clblast_dll);
+    copy_dll(opencl_dll);
 }
