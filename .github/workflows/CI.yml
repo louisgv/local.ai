@@ -226,7 +226,6 @@ jobs:
           cd desktop
 
       - name: Build the app
-        if: matrix.accelerator == 'clblast'
         id: tauri_action
         uses: tauri-apps/tauri-action@dev
         with:
