@@ -117,13 +117,21 @@ jobs:
         run: |
           echo ${{steps.tauri_action.outputs.artifactPaths}}
 
+      - name: List files in deb directory
+        shell: bash
+        run: ls -l /home/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/deb
+      
+      - name: List files in appimage directory
+        run: ls -l /home/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/appimage
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: "linux-${{ matrix.accelerator }}"
           if-no-files-found: error
           path: |
-            ${{steps.tauri_action.outputs.artifactPaths}}
+            /home/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/deb/*.deb
+            /home/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/appimage/*.AppImage*
 
   windows:
     strategy:
@@ -181,9 +189,10 @@ jobs:
           ${{ github.workspace }}\vcpkg\vcpkg.exe install clblast:x64-windows
         shell: pwsh
 
-      - name: Set Windows Environment Variables
+      - name: Set Windows OpenCL Environment Variables
         if: matrix.accelerator == 'clblast'
         run: |
+          echo "RUSTFLAGS=-Ctarget-feature=+crt-static" >> $GITHUB_ENV
           echo "CLBLAST_PATH=${{ github.workspace }}\vcpkg\packages\clblast_x64-windows" >> $GITHUB_ENV
           echo "OPENCL_PATH=${{ github.workspace }}\vcpkg\packages\opencl_x64-windows" >> $GITHUB_ENV
           echo "${{ github.workspace }}\vcpkg\packages\clblast_x64-windows\bin" >> $GITHUB_PATH
@@ -234,6 +243,7 @@ jobs:
           echo "tag_name=${{ github.event.release.tag_name || 'default_tag' }}" >> $GITHUB_OUTPUT
 
       - name: Build the app
+        if: matrix.accelerator == 'clblast'
         id: tauri_action
         uses: tauri-apps/tauri-action@dev
         with:
@@ -244,13 +254,21 @@ jobs:
         run: |
           echo ${{steps.tauri_action.outputs.artifactPaths}}
 
+      - name: List files in msi directory
+        shell: bash
+        run: ls -l D:\a\local.ai\local.ai\apps\desktop\src-tauri\target\release\bundle\msi
+        
+      - name: List files in nsis directory
+        run: ls -l D:\a\local.ai\local.ai\apps\desktop\src-tauri\target\release\bundle\nsis
+  
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: "windows-${{ matrix.accelerator }}"
           if-no-files-found: error
           path: |
-            ${{steps.tauri_action.outputs.artifactPaths}}
+            D:\a\local.ai\local.ai\apps\desktop\src-tauri\target\release\bundle\msi\
+            D:\a\local.ai\local.ai\apps\desktop\src-tauri\target\release\bundle\nsis\
 
 
   macos:
@@ -265,6 +283,7 @@ jobs:
         with:
           toolchain: stable
           override: true
+          target: ${{ matrix.target }}-apple-darwin
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2

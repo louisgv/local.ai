@@ -19,7 +19,7 @@ fn get_build_dir()->PathBuf{
     build_dir
 }
 
-#[allow(dead_code)]
+#[cfg(feature = "cublas")]
 fn copy_cuda_dlls(){
     // Get the directory of the output executable.
     let out_dir = get_build_dir();
@@ -73,7 +73,7 @@ fn copy_cuda_dlls(){
     }
 }
 
-#[allow(dead_code)]
+#[cfg(feature = "clblast")]
 fn copy_opencl_dlls(){
     // Get the directory of the output executable.
     let out_dir = get_build_dir();
