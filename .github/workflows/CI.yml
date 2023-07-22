@@ -97,15 +97,7 @@ jobs:
         run: |
           cd apps
           cd desktop
-
-      - name: Get release infos
-        id: release_infos
-        shell: bash
-        run: |
-          echo "release_body=${{ github.event.release.body || 'Default release body' }}" >> $GITHUB_OUTPUT
-          echo "release_id=${{ github.event.release.id || 'default_id' }}" >> $GITHUB_OUTPUT
-          echo "tag_name=${{ github.event.release.tag_name || 'default_tag' }}" >> $GITHUB_OUTPUT
-
+          
       - name: Build the app
         id: tauri_action
         uses: tauri-apps/tauri-action@dev
@@ -120,7 +112,7 @@ jobs:
       - name: List files in deb directory
         shell: bash
         run: ls -l /home/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/deb
-      
+
       - name: List files in appimage directory
         run: ls -l /home/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/appimage
 
@@ -168,6 +160,10 @@ jobs:
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
       - name: Install vcpkg on windows
         if: matrix.accelerator == 'clblast'
         run: |
@@ -176,7 +172,7 @@ jobs:
           ./bootstrap-vcpkg.sh
           ls -la
         shell: bash
-  
+
       - name: Install OpenCL on windows
         if: matrix.accelerator == 'clblast'
         run: |
@@ -208,10 +204,6 @@ jobs:
           #See https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#install-the-cuda-software
           method: "local"
 
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      
       - name: import windows certificate
         env:
           WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
@@ -223,7 +215,6 @@ jobs:
           Remove-Item -path certificate -include tempCert.txt
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText)
 
-            
       - name: run pnpm
         run: |
           pnpm i
@@ -233,14 +224,6 @@ jobs:
         run: |
           cd apps
           cd desktop
-
-      - name: Get release infos
-        id: release_infos
-        shell: bash
-        run: |
-          echo "release_body=${{ github.event.release.body || 'Default release body' }}" >> $GITHUB_OUTPUT
-          echo "release_id=${{ github.event.release.id || 'default_id' }}" >> $GITHUB_OUTPUT
-          echo "tag_name=${{ github.event.release.tag_name || 'default_tag' }}" >> $GITHUB_OUTPUT
 
       - name: Build the app
         if: matrix.accelerator == 'clblast'
@@ -256,11 +239,12 @@ jobs:
 
       - name: List files in msi directory
         shell: bash
-        run: ls -l D:\a\local.ai\local.ai\apps\desktop\src-tauri\target\release\bundle\msi
-        
+        run: ls -l D:/a/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/msi
+
       - name: List files in nsis directory
-        run: ls -l D:\a\local.ai\local.ai\apps\desktop\src-tauri\target\release\bundle\nsis
-  
+        shell: bash
+        run: ls -l D:/a/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/nsis
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -269,7 +253,6 @@ jobs:
           path: |
             D:\a\local.ai\local.ai\apps\desktop\src-tauri\target\release\bundle\msi\
             D:\a\local.ai\local.ai\apps\desktop\src-tauri\target\release\bundle\nsis\
-
 
   macos:
     strategy:
@@ -321,14 +304,6 @@ jobs:
           cd apps
           cd desktop
 
-      - name: Get release infos
-        id: release_infos
-        shell: bash
-        run: |
-          echo "release_body=${{ github.event.release.body || 'Default release body' }}" >> $GITHUB_OUTPUT
-          echo "release_id=${{ github.event.release.id || 'default_id' }}" >> $GITHUB_OUTPUT
-          echo "tag_name=${{ github.event.release.tag_name || 'default_tag' }}" >> $GITHUB_OUTPUT
-
       - name: Build the app
         id: tauri_action
         uses: tauri-apps/tauri-action@dev
@@ -339,7 +314,6 @@ jobs:
           CXX: clang++
           MACOSX_DEPLOYMENT_TARGET: 10.9
 
-
         with:
           args: "--target ${{matrix.target}}-apple-darwin --features metal"
 
@@ -348,10 +322,19 @@ jobs:
         run: |
           echo ${{steps.tauri_action.outputs.artifactPaths}}
 
+      - name: List files in dmg directory
+        shell: bash
+        run: ls -l /Users/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/${{matrix.target}}-apple-darwin/release/bundle/dmg
+  
+      - name: List files in macos directory
+        shell: bash
+        run: ls -l /Users/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/${{matrix.target}}-apple-darwin/release/bundle/macos
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: "macos"
           if-no-files-found: error
           path: |
-            ${{steps.tauri_action.outputs.artifactPaths}}
+            /Users/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/${{matrix.target}}-apple-darwin/release/bundle/dmg/
+            /Users/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/${{matrix.target}}-apple-darwin/release/bundle/macos/
