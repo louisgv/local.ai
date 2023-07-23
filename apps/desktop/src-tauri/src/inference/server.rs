@@ -4,6 +4,7 @@ use actix_web::web::{Bytes, Json};
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use parking_lot::{Mutex, RwLock};
 use serde::Serialize;
+use serde_json::json;
 
 use std::sync::{
   atomic::{AtomicBool, Ordering},
@@ -97,10 +98,14 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
     rx.recv().unwrap();
 
     let locked_str_buffer = str_buffer.lock();
+    let completion_body = json!({
+      "completion": locked_str_buffer.clone()
+    });
+
     HttpResponse::Ok()
       .append_header(("Content-Type", "text/plain"))
       .append_header(("Cache-Control", "no-cache"))
-      .json(locked_str_buffer.clone())
+      .json(completion_body)
   }
 }
 
