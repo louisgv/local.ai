@@ -110,7 +110,7 @@ pub fn start<'a>(req: InferenceThreadRequest) -> JoinHandle<()> {
 
     println!("Feeding prompt ...");
 
-    if (stream_enabled) {
+    if stream_enabled {
       req.send_event("FEEDING_PROMPT");
     }
 
@@ -125,7 +125,7 @@ pub fn start<'a>(req: InferenceThreadRequest) -> JoinHandle<()> {
         }
 
         if let Some(token) = token_utf8_buf.push(t) {
-          if (stream_enabled) {
+          if stream_enabled {
             req.send_comment(format!("Processing token: {:?}", token).as_str());
           }
         }
@@ -147,7 +147,7 @@ pub fn start<'a>(req: InferenceThreadRequest) -> JoinHandle<()> {
       }
     };
 
-    if (stream_enabled) {
+    if stream_enabled {
       req.send_comment("Generating tokens ...");
       req.send_event("GENERATING_TOKENS");
     }
@@ -211,7 +211,7 @@ pub fn start<'a>(req: InferenceThreadRequest) -> JoinHandle<()> {
 
     println!("Inference stats: {:?}", stats);
 
-    if (stream_enabled) {
+    if stream_enabled {
       if !req.token_sender.is_disconnected() {
         req.send_done();
       }
