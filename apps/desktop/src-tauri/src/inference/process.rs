@@ -22,7 +22,7 @@ pub struct InferenceThreadRequest {
   pub abort_flag: Arc<RwLock<bool>>,
   pub model_guard: ModelGuard,
   pub completion_request: CompletionRequest,
-  pub nonstream_str_buf: Arc<Mutex<String>>,
+  pub nonstream_completion_tokens: Arc<Mutex<String>>,
   pub stream: bool,
   pub tx: Option<Sender<()>>,
 }
@@ -89,7 +89,7 @@ pub fn start<'a>(req: InferenceThreadRequest) -> JoinHandle<()> {
     let mut token_utf8_buf = TokenUtf8Buffer::new();
     let guard = req.model_guard.lock();
     let stream_enabled = req.stream;
-    let mut nonstream_res_str_buf = req.nonstream_str_buf.lock();
+    let mut nonstream_res_str_buf = req.nonstream_completion_tokens.lock();
 
     let model = match guard.as_ref() {
       Some(m) => m,

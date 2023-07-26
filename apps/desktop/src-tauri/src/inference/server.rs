@@ -75,7 +75,7 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
             abort_flag: abort_flag.clone(),
             token_sender,
             completion_request: payload.0,
-            nonstream_str_buf: str_buffer.clone(),
+            nonstream_completion_tokens: str_buffer.clone(),
             stream: true,
             tx: None,
           }),
@@ -83,21 +83,21 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
       })
   } else {
     let abort_flag = Arc::new(RwLock::new(false));
-    let str_buffer = Arc::new(Mutex::new(String::new()));
+    let completion_tokens = Arc::new(Mutex::new(String::new()));
     let (tx, rx) = flume::unbounded::<()>();
     start(InferenceThreadRequest {
       model_guard: model_guard.clone(),
       abort_flag: abort_flag.clone(),
       token_sender,
       completion_request: payload.0,
-      nonstream_str_buf: str_buffer.clone(),
+      nonstream_completion_tokens: completion_tokens.clone(),
       stream: false,
       tx: Some(tx),
     });
 
     rx.recv().unwrap();
 
-    let locked_str_buffer = str_buffer.lock();
+    let locked_str_buffer = completion_tokens.lock();
     let completion_body = json!({
       "completion": locked_str_buffer.clone()
     });
