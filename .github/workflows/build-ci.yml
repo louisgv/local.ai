@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - master
     tags:
       - "*"
   pull_request:
@@ -257,17 +256,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        platform: [macos-latest, self-hosted]
         target: [x86_64, aarch64]
-    runs-on: macos-latest
+
+    runs-on: ${{ matrix.platform }}
     steps:
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-          target: ${{ matrix.target }}-apple-darwin
+      - name: Rust setup
+        if: matrix.platform != 'self-hosted'
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Rust cache
+        if: matrix.platform != 'self-hosted'
         uses: swatinem/rust-cache@v2
         with:
           workspaces: "./apps/desktop/src-tauri -> target"
@@ -314,7 +313,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: 10.9
 
         with:
-          args: "--target ${{matrix.target}}-apple-darwin --features metal"
+          args: "--target ${{matrix.target}}-apple-darwin"
 
       - name: List Artifacts
         shell: bash
@@ -324,7 +323,7 @@ jobs:
       - name: List files in dmg directory
         shell: bash
         run: ls -l /Users/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/${{matrix.target}}-apple-darwin/release/bundle/dmg
-  
+
       - name: List files in macos directory
         shell: bash
         run: ls -l /Users/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/${{matrix.target}}-apple-darwin/release/bundle/macos
