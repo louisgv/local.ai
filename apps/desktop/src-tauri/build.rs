@@ -24,6 +24,7 @@ fn get_build_dir() -> PathBuf {
 #[cfg(feature = "cublas")]
 fn copy_cuda_dlls() {
   use glob::glob;
+  use std::fs;
 
   // Get the directory of the output executable.
   let out_dir = get_build_dir();
