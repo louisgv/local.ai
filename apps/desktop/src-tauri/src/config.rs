@@ -24,22 +24,29 @@ impl State {
     &self,
     sub_path: &str,
   ) -> Result<String, String> {
-    Ok(
+    Ok({
       get_app_dir_path_buf(self.1.clone(), sub_path)?
         .display()
-        .to_string(),
-    )
+        .to_string()
+    })
   }
   pub fn read(&self, key: ConfigKey) -> Result<String, String> {
-    self.get(&key.to_string())?.data.ok_or(match key {
-      ConfigKey::ModelsDirectory => {
-        self.make_default_directory_string("models")?
-      }
-      ConfigKey::ThreadsDirectory => {
-        self.make_default_directory_string("threads")?
-      }
+    match self.get(&key.to_string()) {
+      Ok(val) => Ok(val.data.unwrap_or_else(|| self.default_for_key(&key))),
+      Err(_) => Ok(self.default_for_key(&key)),
+    }
+  }
+
+  fn default_for_key(&self, key: &ConfigKey) -> String {
+    match key {
+      ConfigKey::ModelsDirectory => self
+        .make_default_directory_string("models")
+        .unwrap_or_default(),
+      ConfigKey::ThreadsDirectory => self
+        .make_default_directory_string("threads")
+        .unwrap_or_default(),
       _ => "".to_string(),
-    })
+    }
   }
 
   pub fn write(&self, key: ConfigKey, data: &str) -> Result<(), String> {
