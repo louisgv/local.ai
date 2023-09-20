@@ -39,7 +39,7 @@ async fn post_model() -> impl Responder {
   })
 }
 
-#[post("/completions")]
+#[post("/v1/completions")]
 async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
   println!("Received completion request: {:?}", payload.0);
 
