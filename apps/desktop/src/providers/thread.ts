@@ -134,7 +134,7 @@ const useThreadProvider = ({ thread }: { thread: FileInfo }) => {
       })
 
       const fetchStream = await globalThis.fetch(
-        `http://localhost:${serverConfig.data.port}/completions`,
+        `http://localhost:${serverConfig.data.port}/v1/completions`,
         {
           method: "POST",
           keepalive: true,
