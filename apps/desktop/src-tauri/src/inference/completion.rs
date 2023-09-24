@@ -35,7 +35,7 @@ pub struct CompletionRequest {
 
   sampler: Option<String>,
 
-  stream: Option<bool>,
+  pub stream: Option<bool>,
 
   max_tokens: Option<usize>,
 

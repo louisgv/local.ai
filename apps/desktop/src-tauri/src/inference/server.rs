@@ -1,10 +1,10 @@
 use actix_cors::Cors;
 use actix_web::dev::ServerHandle;
 use actix_web::web::{Bytes, Json};
-
 use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
 use parking_lot::{Mutex, RwLock};
 use serde::Serialize;
+use serde_json::json;
 
 use std::sync::{
   atomic::{AtomicBool, Ordering},
@@ -58,24 +58,55 @@ async fn post_completions(payload: Json<CompletionRequest>) -> impl Responder {
 
   let (token_sender, receiver) = flume::unbounded::<Bytes>();
 
-  HttpResponse::Ok()
-    .append_header(("Content-Type", "text/event-stream"))
-    .append_header(("Cache-Control", "no-cache"))
-    .keep_alive()
-    .streaming({
-      let abort_flag = Arc::new(RwLock::new(false));
+  if let Some(true) = payload.stream {
+    HttpResponse::Ok()
+      .append_header(("Content-Type", "text/event-stream"))
+      .append_header(("Cache-Control", "no-cache"))
+      .keep_alive()
+      .streaming({
+        let abort_flag = Arc::new(RwLock::new(false));
+        let str_buffer = Arc::new(Mutex::new(String::new()));
 
-      AbortStream::new(
-        receiver,
-        abort_flag.clone(),
-        start(InferenceThreadRequest {
-          model_guard: model_guard.clone(),
-          abort_flag: abort_flag.clone(),
-          token_sender,
-          completion_request: payload.0,
-        }),
-      )
-    })
+        AbortStream::new(
+          receiver,
+          abort_flag.clone(),
+          start(InferenceThreadRequest {
+            model_guard: model_guard.clone(),
+            abort_flag: abort_flag.clone(),
+            token_sender,
+            completion_request: payload.0,
+            nonstream_completion_tokens: str_buffer.clone(),
+            stream: true,
+            tx: None,
+          }),
+        )
+      })
+  } else {
+    let abort_flag = Arc::new(RwLock::new(false));
+    let completion_tokens = Arc::new(Mutex::new(String::new()));
+    let (tx, rx) = flume::unbounded::<()>();
+    start(InferenceThreadRequest {
+      model_guard: model_guard.clone(),
+      abort_flag: abort_flag.clone(),
+      token_sender,
+      completion_request: payload.0,
+      nonstream_completion_tokens: completion_tokens.clone(),
+      stream: false,
+      tx: Some(tx),
+    });
+
+    rx.recv().unwrap();
+
+    let locked_str_buffer = completion_tokens.lock();
+    let completion_body = json!({
+      "completion": locked_str_buffer.clone()
+    });
+
+    HttpResponse::Ok()
+      .append_header(("Content-Type", "text/plain"))
+      .append_header(("Cache-Control", "no-cache"))
+      .json(completion_body)
+  }
 }
 
 #[tauri::command]

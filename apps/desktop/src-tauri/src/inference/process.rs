@@ -20,9 +20,11 @@ pub type ModelGuard = Arc<Mutex<Option<Box<dyn Model>>>>;
 pub struct InferenceThreadRequest {
   pub token_sender: Sender<Bytes>,
   pub abort_flag: Arc<RwLock<bool>>,
-
   pub model_guard: ModelGuard,
   pub completion_request: CompletionRequest,
+  pub nonstream_completion_tokens: Arc<Mutex<String>>,
+  pub stream: bool,
+  pub tx: Option<Sender<()>>,
 }
 
 impl InferenceThreadRequest {
@@ -77,7 +79,7 @@ fn get_inference_params(
 }
 
 // Perhaps might be better to clone the model for each thread...
-pub fn start(req: InferenceThreadRequest) -> JoinHandle<()> {
+pub fn start<'a>(req: InferenceThreadRequest) -> JoinHandle<()> {
   println!("Spawning inference thread...");
   actix_web::rt::task::spawn_blocking(move || {
     let mut rng = req.completion_request.get_rng();
@@ -86,6 +88,8 @@ pub fn start(req: InferenceThreadRequest) -> JoinHandle<()> {
 
     let mut token_utf8_buf = TokenUtf8Buffer::new();
     let guard = req.model_guard.lock();
+    let stream_enabled = req.stream;
+    let mut nonstream_res_str_buf = req.nonstream_completion_tokens.lock();
 
     let model = match guard.as_ref() {
       Some(m) => m,
@@ -105,7 +109,10 @@ pub fn start(req: InferenceThreadRequest) -> JoinHandle<()> {
     let start_at = std::time::SystemTime::now();
 
     println!("Feeding prompt ...");
-    req.send_event("FEEDING_PROMPT");
+
+    if stream_enabled {
+      req.send_event("FEEDING_PROMPT");
+    }
 
     match session.feed_prompt::<Infallible, Prompt>(
       model.as_ref(),
@@ -118,7 +125,9 @@ pub fn start(req: InferenceThreadRequest) -> JoinHandle<()> {
         }
 
         if let Some(token) = token_utf8_buf.push(t) {
-          req.send_comment(format!("Processing token: {:?}", token).as_str());
+          if stream_enabled {
+            req.send_comment(format!("Processing token: {:?}", token).as_str());
+          }
         }
 
         Ok(InferenceFeedback::Continue)
@@ -138,8 +147,10 @@ pub fn start(req: InferenceThreadRequest) -> JoinHandle<()> {
       }
     };
 
-    req.send_comment("Generating tokens ...");
-    req.send_event("GENERATING_TOKENS");
+    if stream_enabled {
+      req.send_comment("Generating tokens ...");
+      req.send_event("GENERATING_TOKENS");
+    }
 
     // Reset the utf8 buf
     token_utf8_buf = TokenUtf8Buffer::new();
@@ -176,14 +187,19 @@ pub fn start(req: InferenceThreadRequest) -> JoinHandle<()> {
 
       // Buffer the token until it's valid UTF-8, then call the callback.
       if let Some(tokens) = token_utf8_buf.push(&token) {
-        match req
-          .token_sender
-          .send(CompletionResponse::to_data_bytes(tokens))
-        {
-          Ok(_) => {}
-          Err(_) => {
-            break;
+        if req.stream {
+          match req
+            .token_sender
+            .send(CompletionResponse::to_data_bytes(tokens))
+          {
+            Ok(_) => {}
+            Err(_) => {
+              break;
+            }
           }
+        } else {
+          //Collect tokens into str buffer
+          *nonstream_res_str_buf += &tokens;
         }
       }
 
@@ -195,8 +211,15 @@ pub fn start(req: InferenceThreadRequest) -> JoinHandle<()> {
 
     println!("Inference stats: {:?}", stats);
 
-    if !req.token_sender.is_disconnected() {
-      req.send_done();
+    if stream_enabled {
+      if !req.token_sender.is_disconnected() {
+        req.send_done();
+      }
+    } else {
+      if let Some(tx) = req.tx {
+        //Tell server thread that inference completed, and let it respond
+        let _ = tx.send(());
+      }
     }
 
     // TODO: Might make this into a callback later, for now we just abuse the singleton
