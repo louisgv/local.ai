@@ -1,0 +1,338 @@
+name: CI
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  #   tags:
+  #     - "*"
+  # pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+
+  ENABLE_CODE_SIGNING: ${{ secrets.APPLE_CERTIFICATE }}
+  APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+  APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+  APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+  APPLE_ID: ${{ secrets.APPLE_ID }}
+  APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+  APPLE_PROVIDER_SHORT_NAME: ${{ secrets.APPLE_PROVIDER_SHORT_NAME }}
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        accelerator: ["cublas", "clblast"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./apps/desktop/src-tauri -> target"
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.4
+        with:
+          version: "latest"
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Install CLBlast on linux
+        if: matrix.accelerator == 'clblast'
+        run: sudo apt install libclblast-dev
+
+      - uses: Jimver/cuda-toolkit@v0.2.11
+        name: Install CUDA toolkit on Linux
+        if: matrix.accelerator == 'cublas'
+        id: cuda-toolkit-linux
+        with:
+          cuda: "12.2.0"
+          method: "network"
+          #See e.g. https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/
+          non-cuda-sub-packages: '["libcublas","libcublas-dev"]'
+          sub-packages: '["nvcc","compiler","libraries","libraries-dev","cudart","cudart-dev"]'
+
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: run pnpm
+        run: |
+          pnpm i
+          pnpm build:sdk
+
+      - name: Change directory to tauri path
+        run: |
+          cd apps
+          cd desktop
+
+      - name: Build the app
+        id: tauri_action
+        uses: tauri-apps/tauri-action@dev
+        with:
+          args: "--features ${{ matrix.accelerator }}"
+
+      - name: List Artifacts
+        shell: bash
+        run: |
+          echo ${{steps.tauri_action.outputs.artifactPaths}}
+
+      - name: List files in deb directory
+        shell: bash
+        run: ls -l /home/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/deb
+
+      - name: List files in appimage directory
+        run: ls -l /home/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/appimage
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: "linux-${{ matrix.accelerator }}"
+          if-no-files-found: error
+          path: |
+            /home/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/deb/*.deb
+            /home/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/appimage/*.AppImage*
+
+  windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        accelerator: ["cublas", "clblast"]
+    runs-on: windows-latest
+    steps:
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./apps/desktop/src-tauri -> target"
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.4
+        with:
+          version: "latest"
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install vcpkg on windows
+        if: matrix.accelerator == 'clblast'
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          ls -la
+        shell: bash
+
+      - name: Install OpenCL on windows
+        if: matrix.accelerator == 'clblast'
+        run: |
+          ${{ github.workspace }}\vcpkg\vcpkg.exe install opencl:x64-windows
+        shell: pwsh
+
+      - name: Install CLBlast on windows
+        if: matrix.accelerator == 'clblast'
+        run: |
+          ${{ github.workspace }}\vcpkg\vcpkg.exe install clblast:x64-windows
+        shell: pwsh
+
+      - name: Set Windows OpenCL Environment Variables
+        if: matrix.accelerator == 'clblast'
+        run: |
+          echo "RUSTFLAGS=-Ctarget-feature=+crt-static" >> $GITHUB_ENV
+          echo "CLBLAST_PATH=${{ github.workspace }}\vcpkg\packages\clblast_x64-windows" >> $GITHUB_ENV
+          echo "OPENCL_PATH=${{ github.workspace }}\vcpkg\packages\opencl_x64-windows" >> $GITHUB_ENV
+          echo "${{ github.workspace }}\vcpkg\packages\clblast_x64-windows\bin" >> $GITHUB_PATH
+          echo "${{ github.workspace }}\vcpkg\packages\opencl_x64-windows\bin" >> $GITHUB_PATH
+        shell: bash
+
+      - uses: Jimver/cuda-toolkit@v0.2.11
+        name: Install CUDA toolkit on Windows
+        if: matrix.accelerator == 'cublas'
+        id: cuda-toolkit-windows
+        with:
+          cuda: "12.2.0"
+          #See https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html#install-the-cuda-software
+          method: "local"
+
+      - name: import windows certificate
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          New-Item -ItemType directory -Path certificate
+          Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_CERTIFICATE
+          certutil -decode certificate/tempCert.txt certificate/certificate.pfx
+          Remove-Item -path certificate -include tempCert.txt
+          Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText)
+
+      - name: run pnpm
+        run: |
+          pnpm i
+          pnpm build:sdk
+
+      - name: Change directory to tauri path
+        run: |
+          cd apps
+          cd desktop
+
+      - name: Build the app
+        id: tauri_action
+        uses: tauri-apps/tauri-action@dev
+        with:
+          args: "--features ${{ matrix.accelerator }}"
+
+      - name: List Artifacts
+        shell: bash
+        run: |
+          echo ${{steps.tauri_action.outputs.artifactPaths}}
+
+      - name: List files in msi directory
+        shell: bash
+        run: ls -l D:/a/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/msi
+
+      - name: List files in nsis directory
+        shell: bash
+        run: ls -l D:/a/local.ai/local.ai/apps/desktop/src-tauri/target/release/bundle/nsis
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: "windows-${{ matrix.accelerator }}"
+          if-no-files-found: error
+          path: |
+            D:\a\local.ai\local.ai\apps\desktop\src-tauri\target\release\bundle\msi\
+            D:\a\local.ai\local.ai\apps\desktop\src-tauri\target\release\bundle\nsis\
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, self-hosted]
+        target: [x86_64, aarch64]
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Rust setup
+        if: matrix.platform != 'self-hosted'
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        if: matrix.platform != 'self-hosted'
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./apps/desktop/src-tauri -> target"
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.4
+        with:
+          version: "latest"
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: run pnpm
+        run: |
+          pnpm i
+          pnpm build:sdk
+
+      - name: Change directory to tauri path
+        run: |
+          cd apps
+          cd desktop
+
+      - name: Build the app
+        id: tauri_action
+        uses: tauri-apps/tauri-action@dev
+
+        env:
+          # Needed to make the build run on Apple Silicon
+          CC: clang
+          CXX: clang++
+          MACOSX_DEPLOYMENT_TARGET: 10.9
+
+        with:
+          args: "--target ${{matrix.target}}-apple-darwin"
+
+      - name: List Artifacts
+        shell: bash
+        run: |
+          echo ${{steps.tauri_action.outputs.artifactPaths}}
+
+      - name: List files in dmg directory
+        shell: bash
+        run: ls -l /Users/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/${{matrix.target}}-apple-darwin/release/bundle/dmg
+
+      - name: List files in macos directory
+        shell: bash
+        run: ls -l /Users/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/${{matrix.target}}-apple-darwin/release/bundle/macos
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: "macos-${{ matrix.target }}"
+          if-no-files-found: error
+          path: |
+            /Users/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/${{matrix.target}}-apple-darwin/release/bundle/dmg/
+            /Users/runner/work/local.ai/local.ai/apps/desktop/src-tauri/target/${{matrix.target}}-apple-darwin/release/bundle/macos/

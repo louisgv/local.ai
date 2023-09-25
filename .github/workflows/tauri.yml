@@ -13,6 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         platform: [macos-latest, ubuntu-latest, windows-latest, self-hosted]
+        # include:
+        #   - platform: windows-latest
+        #     args: --config tauri.windows.conf.json
 
     runs-on: ${{ matrix.platform }}
 
@@ -113,3 +116,4 @@ jobs:
           releaseBody: ${{ github.event.release.body }}
           releaseId: ${{ github.event.release.id }}
           tagName: ${{ github.event.release.tag_name }}
+          # args: "${{ matrix.args }}"

@@ -65,13 +65,7 @@ impl InferenceThreadRequest {
 fn get_inference_params(
   completion_request: &CompletionRequest,
 ) -> InferenceParameters {
-  let n_threads = model::pool::get_n_threads();
-
-  let n_batch = if get_use_gpu() { 240 } else { n_threads };
-
   InferenceParameters {
-    n_threads,
-    n_batch,
     sampler: Arc::new(completion_request.to_top_p_top_k()),
   }
 }
@@ -95,7 +89,23 @@ pub fn start(req: InferenceThreadRequest) -> JoinHandle<()> {
       }
     };
 
-    let mut session = model.start_session(Default::default());
+    let n_threads = model::pool::get_n_threads();
+
+    // set the batch_size according to the accelerator
+    let backend = llm::ggml_get_accelerator();
+    let n_batch = match backend{
+      llm::GgmlAccelerator::Metal =>  if get_use_gpu() {1} else {n_threads}, // 1 is the only supported batch size for Metal
+      llm::GgmlAccelerator::None => n_threads,
+      _ => if get_use_gpu() {512} else {n_threads}
+    };
+
+    let session_config = llm::InferenceSessionConfig {
+      n_batch: n_batch,
+      n_threads: n_threads,
+      ..Default::default()
+    };
+
+    let mut session = model.start_session(session_config);
 
     let mut output_request = OutputRequest::default();
 
@@ -109,7 +119,6 @@ pub fn start(req: InferenceThreadRequest) -> JoinHandle<()> {
 
     match session.feed_prompt::<Infallible, Prompt>(
       model.as_ref(),
-      &inference_params,
       req.completion_request.prompt.as_str().into(),
       &mut output_request,
       |t| {
