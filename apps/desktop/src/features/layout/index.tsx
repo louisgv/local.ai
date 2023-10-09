@@ -72,6 +72,10 @@ const BottomBar = () => {
         on={<MoonIcon />}
         off={<SunIcon />}
       />
+      <NavButton route={Route.ServerManager}>
+          <Home /> Server Manager
+        </NavButton>
+
     </div>
   )
 }
